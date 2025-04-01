@@ -12,6 +12,7 @@
     =================================== -->
 <script src="vistas/js/login.js"></script>
 <script src="vistas/js/sucursal.js"></script>
+<script src="vistas/js/almacen.js"></script>
 
 </body>
 
