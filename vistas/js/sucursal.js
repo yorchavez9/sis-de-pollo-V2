@@ -47,7 +47,6 @@ $(document).ready(function () {
             return null;
         }
     };
-
     const mostrarSucursal = async () => {
         const sucursales = await fetchData("ajax/sucursal.ajax.php");
         if (!sucursales) return;
@@ -66,12 +65,15 @@ $(document).ready(function () {
                     <td class="text-center">
                         ${sucursal.estado != 0
                     ? `<button class="btn btn-sm text-white btn-sm btnActivar" style="background-color: #28C76F" idSucursal="${sucursal.id_sucursal}" estadoSucursal="0">Activado</button>`
-                    : `<button class="btn btn-sm text-white btn-sm btnActivar" style="background-color: #F5215C" idSucursal="${sucursal.id_sucursal}" estadoSucursal="1">Desactivado</button>`
+                    : `<button class="btn btn-sm text-white btn-sm btnActivar" style="background-color: #E53250" idSucursal="${sucursal.id_sucursal}" estadoSucursal="1">Desactivado</button>`
                 }
                     </td>
                     <td class="text-center">
                         <a href="#" class="me-3 btnEditarSucursal" idSucursal="${sucursal.id_sucursal}" data-bs-toggle="modal" data-bs-target="#modal_editar_sucursal">
                             <i class="text-warning fas fa-edit fa-lg"></i>
+                        </a>
+                        <a href="#" class="me-3 btnVerDetallesSucursal" idSucursal="${sucursal.id_sucursal}">
+                            <i class="text-primary fas fa-eye fa-lg"></i>
                         </a>
                         <a href="#" class="me-3 btnEliminarSucursal" idSucursal="${sucursal.id_sucursal}">
                             <i class="text-danger fa fa-trash fa-lg"></i>
@@ -172,6 +174,30 @@ $(document).ready(function () {
             Swal.fire("Error", "No se pudo cambiar el estado", "error");
         }
     });
+
+    $("#tabla_sucursal").on("click", ".btnVerDetallesSucursal", async function () {
+        const idSucursal = $(this).attr("idSucursal");
+        const formData = new FormData();
+        formData.append('id_sucursal', idSucursal);
+        formData.append('action', "verDetalles");
+    
+        const response = await fetchData("ajax/sucursal.ajax.php", "POST", formData);
+        if (response?.status) {
+            const data = response.data;
+            $("#detalle_codigo_sucursal").text(data.codigo);
+            $("#detalle_nombre_sucursal").text(data.nombre);
+            $("#detalle_direccion_sucursal").text(data.direccion);
+            $("#detalle_ciudad_sucursal").text(data.ciudad);
+            $("#detalle_telefono_sucursal").text(data.telefono);
+            $("#detalle_responsable_sucursal").text(data.responsable);
+            $("#detalle_es_principal_sucursal").text(data.es_principal ? "Sí" : "No");
+    
+            $("#modal_ver_detalles_sucursal").modal("show");
+        } else {
+            console.error("Error al obtener los detalles de la sucursal:", response?.errors);
+            Swal.fire("Error", "No se pudieron cargar los detalles de la sucursal", "error");
+        }
+    });    
 
     $("#tabla_sucursal").on("click", ".btnEliminarSucursal", async function (e) {
         e.preventDefault();

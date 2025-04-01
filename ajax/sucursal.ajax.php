@@ -88,6 +88,7 @@ class ControladorSucursal
         $respuesta = ModeloSucursal::mdlCambiarEstadoSucursal($tabla, $datos);
         echo $respuesta;
     }
+
     /*=============================================
     BORRAR SUCURSAL
     =============================================*/
@@ -119,6 +120,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 break;
             case 'cambiarEstado':
                 ControladorSucursal::ctrCambiarEstadoSucursal();
+                break;
+            case 'verDetalles':
+                $item = "id_sucursal";
+                $valor = $_POST["id_sucursal"];
+                ControladorSucursal::ctrMostrarSucursales($item, $valor);
                 break;
             case 'eliminar':
                 ControladorSucursal::ctrBorrarSucursal();

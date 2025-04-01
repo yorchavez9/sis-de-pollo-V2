@@ -194,3 +194,48 @@
         </div>
     </div>
 </div>
+
+<!-- MODAL VER DETALLES -->
+<div class="modal fade" id="modal_ver_detalles_sucursal" tabindex="-1" aria-labelledby="modal_ver_detalles_sucursal_Label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la sucursal</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="detalle_codigo_sucursal" class="form-label">Código:</label>
+                    <p id="detalle_codigo_sucursal"></p>
+                </div>
+                <div class="form-group">
+                    <label for="detalle_nombre_sucursal" class="form-label">Nombre:</label>
+                    <p id="detalle_nombre_sucursal"></p>
+                </div>
+                <div class="form-group">
+                    <label for="detalle_direccion_sucursal" class="form-label">Dirección:</label>
+                    <p id="detalle_direccion_sucursal"></p>
+                </div>
+                <div class="form-group">
+                    <label for="detalle_ciudad_sucursal" class="form-label">Ciudad:</label>
+                    <p id="detalle_ciudad_sucursal"></p>
+                </div>
+                <div class="form-group">
+                    <label for="detalle_telefono_sucursal" class="form-label">Teléfono:</label>
+                    <p id="detalle_telefono_sucursal"></p>
+                </div>
+                <div class="form-group">
+                    <label for="detalle_responsable_sucursal" class="form-label">Responsable:</label>
+                    <p id="detalle_responsable_sucursal"></p>
+                </div>
+                <div class="form-group">
+                    <label for="detalle_es_principal_sucursal" class="form-label">¿Es principal?</label>
+                    <p id="detalle_es_principal_sucursal"></p>
+                </div>
+            </div>
+            <div class="text-end mx-4 mb-2">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
