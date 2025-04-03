@@ -126,21 +126,21 @@
                                     
                                     <div class="form-group">
                                         <label class="font-weight-bold">Sucursal Origen <span class="text-danger">*</span></label>
-                                        <select class="form-control select2" name="id_sucursal_origen" required>
+                                        <select class="js-example-basic-single select2" name="id_sucursal_origen" id="id_sucursal_origen" required>
                                             <!-- Dinámico desde JS -->
                                         </select>
                                     </div>
                                     
                                     <div class="form-group">
                                         <label class="font-weight-bold">Sucursal Destino <span class="text-danger">*</span></label>
-                                        <select class="form-control select2" name="id_sucursal_destino" required>
+                                        <select class="js-example-basic-single select2" name="id_sucursal_destino" id="id_sucursal_destino" required>
                                             <!-- Dinámico desde JS -->
                                         </select>
                                     </div>
                                     
                                     <div class="form-group">
                                         <label class="font-weight-bold">Tipo de Envío <span class="text-danger">*</span></label>
-                                        <select class="form-control select2" name="id_tipo_encomienda" required>
+                                        <select class="js-example-basic-single select2" name="id_tipo_encomienda" required>
                                             <option value="1">Productos Perecederos</option>
                                             <option value="2">Productos Secos</option>
                                             <option value="3">Documentos</option>

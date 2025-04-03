@@ -227,8 +227,8 @@ $(document).ready(function () {
             text: "Esta acción no se puede deshacer",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
+            confirmButtonColor: "#655CC9",
+            cancelButtonColor: "#E53250",
             confirmButtonText: "Sí, eliminar"
         });
 
@@ -236,9 +236,6 @@ $(document).ready(function () {
             const formData = new FormData();
             formData.append("action", "eliminar");
             formData.append("id", idTipo);
-            formData.forEach(element => {
-                console.log(element);
-            });
  
             const response = await fetchData("ajax/tipo_documentos.ajax.php", "POST", formData);
             console.log(response);

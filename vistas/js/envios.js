@@ -182,7 +182,9 @@ $(document).ready(function () {
         }
         
         sucursales.data.forEach(sucursal => {
-            select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
+            if (sucursal.estado === 1) {
+                select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
+            }
         });
     };
 

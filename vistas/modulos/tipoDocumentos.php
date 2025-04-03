@@ -143,7 +143,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Es para empresa?</label>
-                                <select class="form-control select-search" name="es_empresa" id="edit_es_empresa_tipo_documento">
+                                <select class="js-example-basic-single select2" name="es_empresa" id="edit_es_empresa_tipo_documento">
                                     <option value="0">No</option>
                                     <option value="1">Sí</option>
                                 </select>
@@ -152,7 +152,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Estado</label>
-                                <select class="form-control select-search" name="estado" id="edit_estado_tipo_documento">
+                                <select class="js-example-basic-single select2" name="estado" id="edit_estado_tipo_documento">
                                     <option value="1">Activo</option>
                                     <option value="0">Inactivo</option>
                                 </select>

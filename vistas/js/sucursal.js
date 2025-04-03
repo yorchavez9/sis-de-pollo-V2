@@ -211,9 +211,9 @@ $(document).ready(function () {
             text: "Esta acción no se puede deshacer",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Sí, eliminar",
+            confirmButtonColor: "#655CC9",
+            cancelButtonColor: "#E53250",
+            confirmButtonText: "Sí, eliminar"
         });
 
         if (result.isConfirmed) {
