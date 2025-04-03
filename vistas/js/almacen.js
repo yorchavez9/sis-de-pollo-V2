@@ -17,7 +17,7 @@ $(document).ready(function () {
     initSelect2('.js-example-basic-single');
     
     // Reinicializar Select2 en modales
-    $('#modal_nuevo_almacen, #modal_editar_almacen').on('shown.bs.modal', function() {
+    $('#modal_nuevo_almacen, #modal_editar_almacen, #modal_nuevo_tipo_documento, #modal_editar_tipo_documento').on('shown.bs.modal', function() {
         initSelect2($(this).find('.js-example-basic-single'), $(this));
     });
 
@@ -90,8 +90,8 @@ $(document).ready(function () {
                     <td>${almacen.tipo}</td>
                     <td class="text-center">
                         ${almacen.estado != 0
-                            ? `<button class="btn btn-sm text-white btn-sm btnActivarAlmacen" style="background-color: #28C76F" idAlmacen="${almacen.id_almacen}" estadoAlmacen="0">Activado</button>`
-                            : `<button class="btn btn-sm text-white btn-sm btnActivarAlmacen" style="background-color: #E53250" idAlmacen="${almacen.id_almacen}" estadoAlmacen="1">Desactivado</button>`
+                            ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarAlmacen" idAlmacen="${almacen.id_almacen}" estadoAlmacen="0">Activado</button>`
+                            : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarAlmacen" idAlmacen="${almacen.id_almacen}" estadoAlmacen="1">Desactivado</button>`
                         }
                     </td>
                     <td class="text-center">

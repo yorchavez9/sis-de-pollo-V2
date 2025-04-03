@@ -28,6 +28,18 @@ ESTILOS DE ESTADO DE COTIZACION
   color: white;
 }
 
+/* ===================================
+ESTILOS DE ESTADO DE ACTIVO O DESACTIVADO
+=================================== */
+
+.btn-estado-success{
+  background: #28C76F;
+}
+
+.btn-estado-danger{
+  background: #E53250;
+}
+
 /* ==================================
 ESTILOS GENERALES
 ================================== */
