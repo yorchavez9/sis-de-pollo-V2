@@ -18,6 +18,7 @@
 <script src="vistas/js/cliente.js"></script>
 <script src="vistas/js/proveedores.js"></script>
 <script src="vistas/js/transportista.js"></script>
+<script src="vistas/js/trabajadores.js"></script>
 
 </body>
 
