@@ -25,7 +25,7 @@
                         <li><a href="tipoDocumentos"><i class="fas fa-id-card"></i> Tipos de Documento</a></li>
                         <li><a href="clientes"><i class="fas fa-user-friends"></i> Clientes</a></li>
                         <li><a href="proveedores"><i class="fas fa-truck"></i> Proveedores</a></li>
-                        <li><a href="transportistas"><i class="fas fa-truck-pickup"></i> Transportistas</a></li>
+                        <li><a href="transportista"><i class="fas fa-truck-pickup"></i> Transportistas</a></li>
                     </ul>
                 </li>
                 
