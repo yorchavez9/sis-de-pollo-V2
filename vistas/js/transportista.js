@@ -78,7 +78,6 @@ $(document).ready(function () {
     // Mostrar lista de transportistas
     const mostrarTransportistas = async () => {
         const transportistas = await fetchData("ajax/transportista.ajax.php");
-        console.log(transportistas);
         if (!transportistas) return;
 
         const tabla = $("#tabla_transportistas");
