@@ -15,6 +15,7 @@
 <script src="vistas/js/almacen.js"></script>
 <script src="vistas/js/envio/envios.js"></script>
 <script src="vistas/js/tipo_documentos.js"></script>
+<script src="vistas/js/cliente.js"></script>
 <script src="vistas/js/transportista.js"></script>
 
 </body>
