@@ -1,3 +1,57 @@
+<style>
+    /* Estilos para el modal mejorado */
+    #modalNuevoEnvio .card {
+        height: 100%;
+        margin-bottom: 0;
+    }
+
+    #modalNuevoEnvio .card-header {
+        padding: 0.75rem 1.25rem;
+    }
+
+    #modalNuevoEnvio .summary-item {
+        font-size: 1.2rem;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    #modalNuevoEnvio .summary-label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    #modalNuevoEnvio .summary-value {
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    #modalNuevoEnvio .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    #modalNuevoEnvio label {
+        margin-bottom: 0.4rem;
+    }
+
+    #modalNuevoEnvio .modal-footer {
+        padding: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+
+    /* Ajustes para los paquetes */
+    #contenedorPaquetes {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 10px;
+        background-color: #f8f9fa;
+    }
+
+    .paquete {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -89,8 +143,77 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Datos dinámicos -->
-                        </tbody>
+    <tr>
+        <td>1</td>
+        <td>ENV-2023-001</td>
+        <td>Almacén Central, Lima</td>
+        <td>Tienda Miraflores, Lima</td>
+        <td>Urgente</td>
+        <td>15/03/2023</td>
+        <td><span class="badge bg-success">Entregado</span></td>
+        <td>Transportes Rápidos SAC</td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-primary">Ver</button>
+            <button class="btn btn-sm btn-warning">Editar</button>
+        </td>
+    </tr>
+    <tr>
+        <td>2</td>
+        <td>ENV-2023-002</td>
+        <td>Almacén Norte, Trujillo</td>
+        <td>Tienda Centro, Chiclayo</td>
+        <td>Estándar</td>
+        <td>18/03/2023</td>
+        <td><span class="badge bg-info">En tránsito</span></td>
+        <td>Logística Norteña</td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-primary">Ver</button>
+            <button class="btn btn-sm btn-warning">Editar</button>
+        </td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>ENV-2023-003</td>
+        <td>Almacén Sur, Arequipa</td>
+        <td>Tienda Plaza, Tacna</td>
+        <td>Refrigerado</td>
+        <td>20/03/2023</td>
+        <td><span class="badge bg-secondary">Programado</span></td>
+        <td>FrioSur Transportes</td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-primary">Ver</button>
+            <button class="btn btn-sm btn-warning">Editar</button>
+        </td>
+    </tr>
+    <tr>
+        <td>4</td>
+        <td>ENV-2023-004</td>
+        <td>Almacén Central, Lima</td>
+        <td>Tienda Mega, Huancayo</td>
+        <td>Estándar</td>
+        <td>22/03/2023</td>
+        <td><span class="badge bg-warning">Retrasado</span></td>
+        <td>Andes Logistic</td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-primary">Ver</button>
+            <button class="btn btn-sm btn-warning">Editar</button>
+        </td>
+    </tr>
+    <tr>
+        <td>5</td>
+        <td>ENV-2023-005</td>
+        <td>Almacén Este, Huánuco</td>
+        <td>Tienda Principal, Pucallpa</td>
+        <td>Urgente</td>
+        <td>25/03/2023</td>
+        <td><span class="badge bg-danger">Cancelado</span></td>
+        <td>Amazon Shipping</td>
+        <td class="text-center">
+            <button class="btn btn-sm btn-primary">Ver</button>
+            <button class="btn btn-sm btn-warning">Editar</button>
+        </td>
+    </tr>
+</tbody>
                     </table>
                 </div>
             </div>
@@ -123,21 +246,21 @@
                                         <label class="font-weight-bold">Código de Envío</label>
                                         <input type="text" class="form-control" name="codigo_envio" readonly>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label class="font-weight-bold">Sucursal Origen <span class="text-danger">*</span></label>
                                         <select class="js-example-basic-single select2" name="id_sucursal_origen" id="id_sucursal_origen" required>
                                             <!-- Dinámico desde JS -->
                                         </select>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label class="font-weight-bold">Sucursal Destino <span class="text-danger">*</span></label>
                                         <select class="js-example-basic-single select2" name="id_sucursal_destino" id="id_sucursal_destino" required>
                                             <!-- Dinámico desde JS -->
                                         </select>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label class="font-weight-bold">Tipo de Envío <span class="text-danger">*</span></label>
                                         <select class="js-example-basic-single select2" name="id_tipo_encomienda" required>
@@ -150,7 +273,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Columna 2: Detalles del envío -->
                         <div class="col-md-4">
                             <div class="card">
@@ -164,12 +287,12 @@
                                             <!-- Dinámico desde JS -->
                                         </select>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label class="font-weight-bold">Fecha Estimada Entrega</label>
                                         <input type="datetime-local" class="form-control" name="fecha_estimada_entrega">
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label class="font-weight-bold">Método de Pago</label>
                                         <select class="form-control select2" name="metodo_pago">
@@ -178,7 +301,7 @@
                                             <option value="POR_COBRAR">Por Cobrar</option>
                                         </select>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label class="font-weight-bold">Instrucciones Especiales</label>
                                         <textarea class="form-control" name="instrucciones" rows="3" placeholder="Ej: Mantener refrigerado a 4°C"></textarea>
@@ -186,7 +309,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Columna 3: Resumen y acciones -->
                         <div class="col-md-4">
                             <div class="card">
@@ -198,28 +321,28 @@
                                         <i class="fas fa-info-circle mr-2"></i>
                                         Complete todos los campos obligatorios y agregue al menos un paquete.
                                     </div>
-                                    
+
                                     <div class="summary-item">
                                         <span class="summary-label">Total Paquetes:</span>
                                         <span class="summary-value" id="totalPaquetesResumen">0</span>
                                     </div>
-                                    
+
                                     <div class="summary-item">
                                         <span class="summary-label">Peso Total:</span>
                                         <span class="summary-value" id="pesoTotalResumen">0.00 kg</span>
                                     </div>
-                                    
+
                                     <div class="summary-item">
                                         <span class="summary-label">Costo Estimado:</span>
                                         <span class="summary-value" id="costoEnvioResumen">$0.00</span>
                                     </div>
-                                    
+
                                     <hr>
-                                    
+
                                     <button type="button" class="btn btn-primary btn-block mb-2" id="btnCalcularCosto">
                                         <i class="fas fa-calculator mr-2"></i> Calcular Costo
                                     </button>
-                                    
+
                                     <button type="button" class="btn btn-outline-secondary btn-block" data-bs-dismiss="modal">
                                         <i class="fas fa-times mr-2"></i> Cancelar
                                     </button>
@@ -227,7 +350,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Sección de Paquetes - Ahora más destacada -->
                     <div class="row mt-3">
                         <div class="col-12">
@@ -320,7 +443,7 @@
                                 </table>
                             </div>
                         </div>
-                        
+
                         <!-- Seguimiento -->
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -336,7 +459,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                         <!-- Paquetes -->
                         <div class="card mb-4">
@@ -363,7 +486,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Documentos -->
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -504,12 +627,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label>Instrucciones de Manejo</label>
                 <textarea class="form-control instrucciones" rows="2"></textarea>
             </div>
-            
+
             <div class="card mt-2">
                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">Ítems del Paquete</h6>
