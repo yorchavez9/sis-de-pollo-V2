@@ -20,6 +20,8 @@
 <script src="vistas/js/transportista.js"></script>
 <script src="vistas/js/trabajadores.js"></script>
 
+<script src="vistas/js/categoria.js"></script>
+
 </body>
 
 </html>
