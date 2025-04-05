@@ -22,6 +22,7 @@
 
 <script src="vistas/js/categoria.js"></script>
 <script src="vistas/js/producto.js"></script>
+<script src="vistas/js/inventario.js"></script>
 
 </body>
 
