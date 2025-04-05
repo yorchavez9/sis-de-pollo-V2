@@ -8,77 +8,88 @@ class ModeloInventario
     MOSTRAR INVENTARIO
     =============================================*/
     static public function mdlMostrarInventario($tabla, $filtroAlmacen = null, $filtroProducto = null, $filtroEstado = null, $item = null, $valor = null)
-    {
-        try {
-            $where = "";
-            $params = [];
+{
+    try {
+        $where = [];
+        $params = [];
 
-            if ($item != null && $valor != null) {
-                $where = " WHERE i.$item = :$item";
-                $params[":$item"] = $valor;
-            } else {
-                // Aplicar filtros
-                $conditions = [];
+        // Convertir 'null' string a null real
+        $filtroAlmacen = ($filtroAlmacen === 'null') ? null : $filtroAlmacen;
+        $filtroProducto = ($filtroProducto === 'null') ? null : $filtroProducto;
+        $filtroEstado = ($filtroEstado === 'null' || $filtroEstado === '') ? null : $filtroEstado;
 
-                if ($filtroAlmacen) {
-                    $conditions[] = "i.id_almacen = :id_almacen";
-                    $params[":id_almacen"] = $filtroAlmacen;
-                }
-
-                if ($filtroProducto) {
-                    $conditions[] = "i.id_producto = :id_producto";
-                    $params[":id_producto"] = $filtroProducto;
-                }
-
-                if ($filtroEstado) {
-                    if ($filtroEstado == "bajo_minimo") {
-                        $conditions[] = "i.stock <= i.stock_minimo AND i.stock_minimo > 0";
-                    } elseif ($filtroEstado == "sobre_maximo") {
-                        $conditions[] = "i.stock >= i.stock_maximo AND i.stock_maximo > 0";
-                    } elseif ($filtroEstado == "normal") {
-                        $conditions[] = "(i.stock > i.stock_minimo OR i.stock_minimo = 0) AND (i.stock < i.stock_maximo OR i.stock_maximo = 0)";
-                    }
-                }
-
-                if (!empty($conditions)) {
-                    $where = " WHERE " . implode(" AND ", $conditions);
-                }
+        // Filtro por item específico (prioridad)
+        if ($item !== null && $valor !== null) {
+            $where[] = "i.$item = :item_valor";
+            $params[':item_valor'] = $valor;
+        } else {
+            // Filtro por almacén
+            if ($filtroAlmacen !== null && $filtroAlmacen !== '') {
+                $where[] = "i.id_almacen = :id_almacen";
+                $params[':id_almacen'] = (int)$filtroAlmacen;
             }
 
-            $stmt = Conexion::conectar()->prepare(
-                "SELECT i.*, p.nombre as nombre_producto, p.codigo as codigo_producto, 
-                a.nombre as nombre_almacen 
-                FROM $tabla i
-                INNER JOIN productos p ON i.id_producto = p.id_producto
-                INNER JOIN almacenes a ON i.id_almacen = a.id_almacen
-                $where
-                ORDER BY a.nombre, p.nombre"
-            );
-
-            foreach ($params as $key => $value) {
-                $stmt->bindParam($key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+            // Filtro por producto
+            if ($filtroProducto !== null && $filtroProducto !== '') {
+                $where[] = "i.id_producto = :id_producto";
+                $params[':id_producto'] = (int)$filtroProducto;
             }
 
-            $stmt->execute();
-
-            if ($item != null && $valor != null) {
-                return json_encode([
-                    "status" => true,
-                    "data" => $stmt->fetch()
-                ]);
-            } else {
-                return json_encode([
-                    "status" => true,
-                    "data" => $stmt->fetchAll()
-                ]);
+            // Filtro por estado de stock
+            if ($filtroEstado !== null && $filtroEstado !== '') {
+                switch (strtolower($filtroEstado)) {
+                    case "bajo_minimo":
+                        $where[] = "i.stock <= i.stock_minimo AND i.stock_minimo > 0";
+                        break;
+                    case "sobre_maximo":
+                        $where[] = "i.stock >= i.stock_maximo AND i.stock_maximo > 0";
+                        break;
+                    case "normal":
+                        $where[] = "(i.stock > i.stock_minimo OR i.stock_minimo = 0) AND (i.stock < i.stock_maximo OR i.stock_maximo = 0)";
+                        break;
+                }
             }
-        } catch (Exception $e) {
-            return json_encode([
-                "status" => false,
-                "message" => $e->getMessage()
-            ]);
         }
+
+        $sql = "SELECT i.*, p.nombre as nombre_producto, p.codigo as codigo_producto, 
+               a.nombre as nombre_almacen 
+               FROM $tabla i
+               INNER JOIN productos p ON i.id_producto = p.id_producto
+               INNER JOIN almacenes a ON i.id_almacen = a.id_almacen";
+
+        if (!empty($where)) {
+            $sql .= " WHERE " . implode(" AND ", $where);
+        }
+
+        $sql .= " ORDER BY a.nombre, p.nombre";
+
+        $stmt = Conexion::conectar()->prepare($sql);
+
+        // Bind de parámetros
+        foreach ($params as $key => $value) {
+            $paramType = is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR;
+            $stmt->bindValue($key, $value, $paramType);
+        }
+
+        $stmt->execute();
+        $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return json_encode([
+            "status" => true,
+            "data" => $resultados,
+            "sql" => $sql, // Para depuración
+            "params" => $params // Para depuración
+        ]);
+
+    } catch (Exception $e) {
+        return json_encode([
+            "status" => false,
+            "message" => $e->getMessage(),
+            "sql" => $sql ?? '',
+            "params" => $params ?? []
+        ]);
     }
+}
 
     /*=============================================
     CONSULTAR INVENTARIO (Producto + Almacén)

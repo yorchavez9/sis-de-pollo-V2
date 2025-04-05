@@ -93,13 +93,15 @@ $(document).ready(function () {
         const filtroAlmacen = $("#filtro_almacen").val();
         const filtroProducto = $("#filtro_producto").val();
         const filtroEstado = $("#filtro_estado").val();
+        console.log(filtroAlmacen, filtroProducto, filtroEstado);
         
         let url = "ajax/inventario.ajax.php";
         if (filtroAlmacen || filtroProducto || filtroEstado) {
             url += `?filtro_almacen=${filtroAlmacen}&filtro_producto=${filtroProducto}&filtro_estado=${filtroEstado}`;
         }
-        
+        console.log(url);
         const inventario = await fetchData(url);
+        console.log(inventario);
         if (!inventario) return;
 
         const tabla = $("#tabla_inventario");
@@ -267,7 +269,6 @@ $(document).ready(function () {
     $("#tabla_inventario").on("click", ".btnHistorialInventario", async function () {
         const idInventario = $(this).attr("idInventario");
         const response = await fetchData(`ajax/inventario.ajax.php?action=historial&id_inventario=${idInventario}`);
-        console.log(response);
         if (response?.status) {
             const tabla = $("#tabla_historial");
             const tbody = tabla.find("tbody");
@@ -308,6 +309,9 @@ $(document).ready(function () {
 
     // Eventos para filtros
     $("#filtro_almacen, #filtro_producto, #filtro_estado").change(async function() {
+        if ($.fn.DataTable.isDataTable("#tabla_inventario")) {
+            $("#tabla_inventario").DataTable().destroy();
+        }
         await mostrarInventario();
     });
 
