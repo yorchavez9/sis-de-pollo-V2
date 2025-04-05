@@ -1,3 +1,33 @@
+<style>
+    /* Estilos para el modal de código de barras */
+#contenedor_codigo_barras {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin: 10px auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#info_producto_codigo {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+#nombre_producto_codigo {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#precio_producto_codigo {
+    font-size: 1.2em;
+    color: #28a745;
+    font-weight: bold;
+}
+
+</style>
+
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -409,6 +439,53 @@
             </div>
             <div class="text-end mx-4 mb-2">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL IMPRIMIR CÓDIGO DE BARRAS -->
+<div class="modal fade" id="modal_imprimir_codigo" tabindex="-1" aria-labelledby="modal_imprimir_codigo_Label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Imprimir Código de Barras</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="cantidad_codigos" class="form-label">Cantidad de etiquetas a imprimir</label>
+                        <input type="number" id="cantidad_codigos" class="form-control" min="1" max="100" value="1">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="tamano_codigos" class="form-label">Tamaño de etiqueta</label>
+                        <select id="tamano_codigos" class="form-select">
+                            <option value="small">Pequeña (25x15mm)</option>
+                            <option value="medium" selected>Mediana (50x30mm)</option>
+                            <option value="large">Grande (75x50mm)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <div id="contenedor_codigo_barras" class="mb-3">
+                            <!-- Aquí se mostrará el código de barras -->
+                        </div>
+                        <div id="info_producto_codigo">
+                            <h5 id="nombre_producto_codigo"></h5>
+                            <p id="precio_producto_codigo"></p>
+                            <p id="codigo_producto_texto"></p>
+                            <input type="hidden" hidden id="codigo_barra_producto">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" id="btn_imprimir_codigo" class="btn btn-primary">
+                    <i class="fas fa-print me-2"></i>Imprimir
+                </button>
             </div>
         </div>
     </div>

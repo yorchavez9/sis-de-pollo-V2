@@ -140,26 +140,47 @@ $(document).ready(function () {
                     <td>${formatCurrency(producto.precio_venta)}</td>
                     <td class="text-center">
                         ${producto.tiene_iva != 0
-                    ? `<span class="badge btn-estado-success">Sí</span>`
-                    : `<span class="badge btn-estado-danger">No</span>`
-                }
+                            ? `<span class="badge btn-estado-success">Sí</span>`
+                            : `<span class="badge btn-estado-danger">No</span>`
+                        }
                     </td>
                     <td class="text-center">
                         ${producto.estado != 0
-                    ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarProducto" idProducto="${producto.id_producto}" estadoProducto="0">Activado</button>`
-                    : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarProducto" idProducto="${producto.id_producto}" estadoProducto="1">Desactivado</button>`
-                }
+                            ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarProducto" idProducto="${producto.id_producto}" estadoProducto="0">Activado</button>`
+                            : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarProducto" idProducto="${producto.id_producto}" estadoProducto="1">Desactivado</button>`
+                        }
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarProducto" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_editar_producto">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                         <a href="#" class="me-3 btnVerDetalles" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_ver_detalles">
-                            <i class="text-primary fas fa-eye fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarProducto" idProducto="${producto.id_producto}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton${producto.id_producto}" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${producto.id_producto}">
+                                <li>
+                                    <a class="dropdown-item btnEditarProducto" href="#" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_editar_producto">
+                                        <i class="text-warning fas fa-edit me-2"></i>Editar
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item btnVerDetalles" href="#" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_ver_detalles">
+                                        <i class="text-primary fas fa-eye me-2"></i>Ver detalles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item btnImprimirCodigo" href="#" idProducto="${producto.id_producto}" 
+                                    codigoBarras="${producto.codigo_barras || producto.codigo}" 
+                                    data-bs-toggle="modal" data-bs-target="#modal_imprimir_codigo">
+                                        <i class="text-info fas fa-barcode me-2"></i>Imprimir código
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item btnEliminarProducto text-danger" href="#" idProducto="${producto.id_producto}">
+                                        <i class="fas fa-trash me-2"></i>Eliminar
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </td>
                 </tr>`;
             tbody.append(fila);

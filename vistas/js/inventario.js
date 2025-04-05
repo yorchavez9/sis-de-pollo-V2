@@ -101,7 +101,6 @@ $(document).ready(function () {
         }
         console.log(url);
         const inventario = await fetchData(url);
-        console.log(inventario);
         if (!inventario) return;
 
         const tabla = $("#tabla_inventario");
