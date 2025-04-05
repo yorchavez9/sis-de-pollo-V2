@@ -1,31 +1,30 @@
 <style>
     /* Estilos para el modal de código de barras */
-#contenedor_codigo_barras {
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    margin: 10px auto;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
+    #contenedor_codigo_barras {
+        background: white;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 10px auto;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
 
-#info_producto_codigo {
-    margin-top: 15px;
-    padding: 10px;
-    background: #f8f9fa;
-    border-radius: 5px;
-}
+    #info_producto_codigo {
+        margin-top: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
 
-#nombre_producto_codigo {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
+    #nombre_producto_codigo {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
 
-#precio_producto_codigo {
-    font-size: 1.2em;
-    color: #28a745;
-    font-weight: bold;
-}
-
+    #precio_producto_codigo {
+        font-size: 1.2em;
+        color: #28a745;
+        font-weight: bold;
+    }
 </style>
 
 <div class="page-wrapper">
@@ -99,7 +98,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Nombre -->
                         <div class="col-md-6">
@@ -120,7 +119,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Descripción -->
                         <div class="col-md-12">
@@ -130,7 +129,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Unidad de Medida -->
                         <div class="col-md-6">
@@ -156,7 +155,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Precio Compra -->
                         <div class="col-md-6">
@@ -175,7 +174,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Tiene IVA -->
                         <div class="col-md-6">
@@ -196,7 +195,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Estado -->
                         <div class="col-md-6">
@@ -233,7 +232,7 @@
                     <input type="hidden" name="id_producto" id="edit_id_producto">
                     <!-- Imagen actual -->
                     <input type="hidden" name="imagen_actual" id="edit_imagen_actual">
-                    
+
                     <div class="row">
                         <!-- Código -->
                         <div class="col-md-6">
@@ -252,7 +251,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Nombre -->
                         <div class="col-md-6">
@@ -273,7 +272,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Descripción -->
                         <div class="col-md-12">
@@ -283,7 +282,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Unidad de Medida -->
                         <div class="col-md-6">
@@ -309,7 +308,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Precio Compra -->
                         <div class="col-md-6">
@@ -328,7 +327,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Tiene IVA -->
                         <div class="col-md-6">
@@ -352,7 +351,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <!-- Estado -->
                         <div class="col-md-6">
@@ -481,11 +480,10 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+
+            <div class="text-end mx-4 mb-2">
+                <button type="button" id="btn_imprimir_codigo" class="btn btn-primary mx-2"><i class="fas fa-print me-2"></i>Imprimir</button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                <button type="button" id="btn_imprimir_codigo" class="btn btn-primary">
-                    <i class="fas fa-print me-2"></i>Imprimir
-                </button>
             </div>
         </div>
     </div>
