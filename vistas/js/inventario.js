@@ -93,13 +93,11 @@ $(document).ready(function () {
         const filtroAlmacen = $("#filtro_almacen").val();
         const filtroProducto = $("#filtro_producto").val();
         const filtroEstado = $("#filtro_estado").val();
-        console.log(filtroAlmacen, filtroProducto, filtroEstado);
         
         let url = "ajax/inventario.ajax.php";
         if (filtroAlmacen || filtroProducto || filtroEstado) {
             url += `?filtro_almacen=${filtroAlmacen}&filtro_producto=${filtroProducto}&filtro_estado=${filtroEstado}`;
         }
-        console.log(url);
         const inventario = await fetchData(url);
         if (!inventario) return;
 

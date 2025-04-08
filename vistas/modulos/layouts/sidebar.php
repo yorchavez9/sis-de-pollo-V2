@@ -26,6 +26,7 @@
                         <li><a href="clientes"><i class="fas fa-user-friends"></i> Clientes</a></li>
                         <li><a href="proveedores"><i class="fas fa-truck"></i> Proveedores</a></li>
                         <li><a href="transportista"><i class="fas fa-truck-pickup"></i> Transportistas</a></li>
+                        <li><a href="transporte"><i class="fas fa-truck-pickup"></i> Transporte</a></li>
                     </ul>
                 </li>
                 

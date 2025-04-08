@@ -20,11 +20,11 @@ $(document).ready(function () {
     let envioActual = null;
 
     // Inicializar todos los Select2 al cargar
-    initSelect2('.select2');
+    initSelect2('.select');
     
     // Reinicializar Select2 en modales
     $('#modalNuevoEnvio, #modalDetalleEnvio, #modalCambiarEstado, #modalSubirDocumento').on('shown.bs.modal', function() {
-        initSelect2($(this).find('.select2'), $(this));
+        initSelect2($(this).find('.select'), $(this));
     });
 
     // Función para validar campos
@@ -102,8 +102,8 @@ $(document).ready(function () {
             const params = new URLSearchParams(filtros);
             url += `&${params.toString()}`;
         }
-
         const envios = await fetchData(url);
+        console.log(envios);
         if (!envios || !envios.status) {
             console.error("Error al cargar envíos:", envios?.message);
             return;
@@ -161,16 +161,13 @@ $(document).ready(function () {
         }
         tabla.DataTable({
             autoWidth: false,
-            responsive: true,
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
-            }
+            responsive: true
         });
     };
 
     // Cargar sucursales en select
     const cargarSucursales = async (selectId, todas = false) => {
-        const sucursales = await fetchData("ajax/sucursal.ajax.php?estado=1");
+        const sucursales = await fetchData("ajax/sucursal.ajax.php");
         if (!sucursales || !sucursales.status) return;
 
         const select = $(`#${selectId}`);
@@ -190,7 +187,7 @@ $(document).ready(function () {
 
     // Cargar transportistas
     const cargarTransportistas = async (selectId) => {
-        const transportistas = await fetchData("ajax/transportistas.ajax.php?estado=1");
+        const transportistas = await fetchData("ajax/transportista.ajax.php");
         if (!transportistas || !transportistas.status) return;
 
         const select = $(`#${selectId}`);
@@ -198,13 +195,13 @@ $(document).ready(function () {
         select.append('<option value="">Seleccionar transportista</option>');
         
         transportistas.data.forEach(transportista => {
-            select.append(`<option value="${transportista.id_transportista}">${transportista.nombre} - ${transportista.tipo_vehiculo || 'Sin vehículo'}</option>`);
+            select.append(`<option value="${transportista.id_persona}">${transportista.nombre}</option>`);
         });
     };
 
     // Cargar productos para items de paquetes
     const cargarProductos = async (select) => {
-        const productos = await fetchData("ajax/productos.ajax.php?estado=1");
+        const productos = await fetchData("ajax/producto.ajax.php");
         if (!productos || !productos.status) return;
 
         select.empty();
@@ -225,6 +222,7 @@ $(document).ready(function () {
         $paquete.find(".btnEliminarPaquete").click(function() {
             $(this).closest(".paquete").remove();
             contadorPaquetes--;
+            actualizarResumen();
         });
         
         $paquete.find(".btnAgregarItem").click(function() {
@@ -238,6 +236,11 @@ $(document).ready(function () {
         $paquete.find(".selectProducto").change(function() {
             const peso = $(this).find("option:selected").data("peso");
             $(this).closest(".item").find(".pesoUnitario").val(peso);
+        });
+        
+        // Eventos para actualizar resumen cuando cambian valores
+        $paquete.find(".peso, .alto, .ancho, .profundidad").on('input', function() {
+            actualizarResumen();
         });
         
         $("#contenedorPaquetes").append($paquete);
@@ -259,6 +262,28 @@ $(document).ready(function () {
         cargarProductos($item.find(".selectProducto"));
         
         tbody.append($item);
+    };
+
+    // Actualizar resumen de paquetes
+    const actualizarResumen = () => {
+        let totalPaquetes = 0;
+        let pesoTotal = 0;
+        let volumenTotal = 0;
+        
+        $(".paquete").each(function() {
+            totalPaquetes++;
+            const peso = parseFloat($(this).find(".peso").val()) || 0;
+            const alto = parseFloat($(this).find(".alto").val()) || 0;
+            const ancho = parseFloat($(this).find(".ancho").val()) || 0;
+            const profundidad = parseFloat($(this).find(".profundidad").val()) || 0;
+            
+            pesoTotal += peso;
+            volumenTotal += (alto * ancho * profundidad) / 1000000; // Convertir a m³
+        });
+        
+        $("#totalPaquetes").val(totalPaquetes);
+        $("#pesoTotal").val(pesoTotal.toFixed(2));
+        $("#volumenTotal").val(volumenTotal.toFixed(2));
     };
 
     // Mostrar detalles de un envío
@@ -299,7 +324,7 @@ $(document).ready(function () {
         // Mostrar paquetes
         const tbodyPaquetes = $("#tablaPaquetes tbody");
         tbodyPaquetes.empty();
-        $("#totalPaquetes").text(envio.paquetes.length);
+        $("#totalPaquetesDetalle").text(envio.paquetes.length);
         
         envio.paquetes.forEach(paquete => {
             let claseEstadoPaquete = "";
@@ -443,14 +468,41 @@ $(document).ready(function () {
     };
 
     // Evento para abrir modal de nuevo envío
-    $(".btn-added").click(function() {
+    $("#btnNuevoEnvio").click(function() {
         resetForm();
+        $("#modalNuevoEnvio").modal("show");
         // Generar código de envío
         $("#formNuevoEnvio [name='codigo_envio']").val(generarCodigoEnvio());
     });
 
     // Evento para agregar paquete
     $("#btnAgregarPaquete").click(agregarPaquete);
+
+    // Evento para calcular costo de envío
+    $("#btnCalcularCosto").click(async function() {
+        const origen = $("#formNuevoEnvio [name='id_sucursal_origen']").val();
+        const destino = $("#formNuevoEnvio [name='id_sucursal_destino']").val();
+        const tipo = $("#formNuevoEnvio [name='id_tipo_encomienda']").val();
+        const pesoTotal = parseFloat($("#pesoTotal").val()) || 0;
+        
+        if (!origen || !destino || !tipo) {
+            Swal.fire("Advertencia", "Debe completar los datos de origen, destino y tipo de envío", "warning");
+            return;
+        }
+        
+        if (pesoTotal <= 0) {
+            Swal.fire("Advertencia", "El peso total debe ser mayor a cero", "warning");
+            return;
+        }
+        
+        const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
+        if (costo) {
+            $("#costoEnvio").val(costo.costo.toFixed(2));
+            Swal.fire("¡Calculado!", `Costo estimado: S/ ${costo.costo.toFixed(2)}. Tiempo estimado: ${costo.tiempo_estimado} horas`, "success");
+        } else {
+            Swal.fire("Error", "No se pudo calcular el costo. Verifique los datos.", "error");
+        }
+    });
 
     // Evento para guardar nuevo envío
     $("#formNuevoEnvio").submit(async function(e) {
@@ -461,12 +513,12 @@ $(document).ready(function () {
         // Recolectar datos del formulario
         const formData = new FormData(this);
         formData.append("action", "crear");
-        formData.append("codigo_envio", generarCodigoEnvio());
         
         // Recolectar datos de paquetes
         const paquetes = [];
         $(".paquete").each(function(index) {
             const paquete = {
+                numero: index + 1,
                 descripcion: $(this).find(".descripcion").val(),
                 peso: $(this).find(".peso").val(),
                 alto: $(this).find(".alto").val(),
@@ -483,7 +535,7 @@ $(document).ready(function () {
                     descripcion: $(this).find(".selectProducto option:selected").text(),
                     cantidad: $(this).find(".cantidad").val(),
                     peso_unitario: $(this).find(".pesoUnitario").val(),
-                    valor_unitario: 0 // Podría calcularse si es necesario
+                    valor_unitario: $(this).find(".valorUnitario").val() || 0
                 });
             });
             
@@ -497,17 +549,21 @@ $(document).ready(function () {
         const pesoTotal = paquetes.reduce((total, p) => total + parseFloat(p.peso), 0);
         formData.append("peso_total", pesoTotal);
         
-        // Calcular costo de envío
-        const costoEnvio = await calcularCostoEnvio(
-            formData.get("id_sucursal_origen"),
-            formData.get("id_sucursal_destino"),
-            formData.get("id_tipo_encomienda"),
-            pesoTotal
-        );
-        formData.append("costo_envio", costoEnvio);
+        // Calcular volumen total
+        const volumenTotal = paquetes.reduce((total, p) => {
+            const volumen = (parseFloat(p.alto) * parseFloat(p.ancho) * parseFloat(p.profundidad)) / 1000000;
+            return total + (isNaN(volumen) ? 0 : volumen);
+        }, 0);
+        formData.append("volumen_total", volumenTotal);
         
+        // Agregar cantidad de paquetes
+        formData.append("cantidad_paquetes", paquetes.length);
+        formData.forEach(element => {
+            console.log(element);
+        });
         // Enviar datos al servidor
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
+        console.log(response);
         if (response?.status) {
             Swal.fire("¡Correcto!", "Envío creado con éxito", "success");
             resetForm();
