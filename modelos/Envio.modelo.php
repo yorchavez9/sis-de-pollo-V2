@@ -7,125 +7,204 @@ class ModeloEnvio
     /*=============================================
     CREAR ENVÍO
     =============================================*/
-    static public function mdlCrearEnvio($tabla, $datos)
-    {
+    static public function mdlCrearEnvio($tabla, $datos) {
+        $pdo = null;
         try {
             $pdo = Conexion::conectar();
             $pdo->beginTransaction();
 
+            // Validación de datos básicos
+            if (empty($datos['codigo_envio']) || empty($datos['id_sucursal_origen']) || 
+                empty($datos['id_sucursal_destino']) || empty($datos['id_tipo_encomienda'])) {
+                throw new Exception("Datos básicos del envío incompletos");
+            }
+
             // Insertar envío principal
             $stmt = $pdo->prepare("INSERT INTO $tabla (
-                codigo_envio, id_sucursal_origen, id_sucursal_destino, id_tipo_encomienda,
-                id_usuario_creador, id_transportista, dni_remitente, nombre_remitente,
-                dni_destinatario, nombre_destinatario, clave_recepcion, fecha_creacion,
-                fecha_estimada_entrega, peso_total, volumen_total, cantidad_paquetes,
-                instrucciones, costo_envio, metodo_pago, estado
+                codigo_envio, 
+                id_sucursal_origen, 
+                id_sucursal_destino, 
+                id_tipo_encomienda,
+                id_usuario_creador, 
+                id_transportista, 
+                dni_remitente, 
+                nombre_remitente,
+                dni_destinatario, 
+                nombre_destinatario, 
+                clave_recepcion,
+                fecha_estimada_entrega, 
+                peso_total, 
+                volumen_total, 
+                cantidad_paquetes,
+                instrucciones, 
+                costo_envio, 
+                metodo_pago,
+                estado
             ) VALUES (
-                :codigo_envio, :id_sucursal_origen, :id_sucursal_destino, :id_tipo_encomienda,
-                :id_usuario_creador, :id_transportista, :dni_remitente, :nombre_remitente,
-                :dni_destinatario, :nombre_destinatario, :clave_recepcion, NOW(),
-                :fecha_estimada_entrega, :peso_total, :volumen_total, :cantidad_paquetes,
-                :instrucciones, :costo_envio, :metodo_pago, 'PENDIENTE'
-            )");
+                :codigo_envio, 
+                :id_sucursal_origen, 
+                :id_sucursal_destino, 
+                :id_tipo_encomienda,
+                :id_usuario_creador, 
+                :id_transportista, 
+                :dni_remitente, 
+                :nombre_remitente,
+                :dni_destinatario, 
+                :nombre_destinatario, 
+                :clave_recepcion,
+                :fecha_estimada_entrega, 
+                :peso_total, 
+                :volumen_total, 
+                :cantidad_paquetes,
+                :instrucciones, 
+                :costo_envio, 
+                :metodo_pago,
+                'PENDIENTE')");
 
-            $stmt->bindParam(":codigo_envio", $datos['codigo_envio'], PDO::PARAM_STR);
-            $stmt->bindParam(":id_sucursal_origen", $datos['id_sucursal_origen'], PDO::PARAM_INT);
-            $stmt->bindParam(":id_sucursal_destino", $datos['id_sucursal_destino'], PDO::PARAM_INT);
-            $stmt->bindParam(":id_tipo_encomienda", $datos['id_tipo_encomienda'], PDO::PARAM_INT);
-            $stmt->bindParam(":id_usuario_creador", $datos['id_usuario_creador'], PDO::PARAM_INT);
-            $stmt->bindParam(":id_transportista", $datos['id_transportista'], PDO::PARAM_INT);
-            $stmt->bindParam(":dni_remitente", $datos['dni_remitente'], PDO::PARAM_STR);
-            $stmt->bindParam(":nombre_remitente", $datos['nombre_remitente'], PDO::PARAM_STR);
-            $stmt->bindParam(":dni_destinatario", $datos['dni_destinatario'], PDO::PARAM_STR);
-            $stmt->bindParam(":nombre_destinatario", $datos['nombre_destinatario'], PDO::PARAM_STR);
-            $stmt->bindParam(":clave_recepcion", $datos['clave_recepcion'], PDO::PARAM_STR);
-            $stmt->bindParam(":fecha_estimada_entrega", $datos['fecha_estimada_entrega'], PDO::PARAM_STR);
-            $stmt->bindParam(":peso_total", $datos['peso_total'], PDO::PARAM_STR);
-            $stmt->bindParam(":volumen_total", $datos['volumen_total'], PDO::PARAM_STR);
-            $stmt->bindParam(":cantidad_paquetes", $datos['cantidad_paquetes'], PDO::PARAM_INT);
-            $stmt->bindParam(":instrucciones", $datos['instrucciones'], PDO::PARAM_STR);
-            $stmt->bindParam(":costo_envio", $datos['costo_envio'], PDO::PARAM_STR);
-            $stmt->bindParam(":metodo_pago", $datos['metodo_pago'], PDO::PARAM_STR);
+            // Bind parameters
+            $params = [
+                ':codigo_envio' => $datos['codigo_envio'],
+                ':id_sucursal_origen' => $datos['id_sucursal_origen'],
+                ':id_sucursal_destino' => $datos['id_sucursal_destino'],
+                ':id_tipo_encomienda' => $datos['id_tipo_encomienda'],
+                ':id_usuario_creador' => $datos['id_usuario_creador'],
+                ':id_transportista' => $datos['id_transportista'] ?? null,
+                ':dni_remitente' => $datos['dni_remitente'] ?? null,
+                ':nombre_remitente' => $datos['nombre_remitente'] ?? null,
+                ':dni_destinatario' => $datos['dni_destinatario'] ?? null,
+                ':nombre_destinatario' => $datos['nombre_destinatario'] ?? null,
+                ':clave_recepcion' => $datos['clave_recepcion'] ?? null,
+                ':fecha_estimada_entrega' => $datos['fecha_estimada_entrega'] ?? null,
+                ':peso_total' => $datos['peso_total'] ?? 0,
+                ':volumen_total' => $datos['volumen_total'] ?? 0,
+                ':cantidad_paquetes' => $datos['cantidad_paquetes'] ?? 1,
+                ':instrucciones' => $datos['instrucciones'] ?? null,
+                ':costo_envio' => $datos['costo_envio'] ?? 0,
+                ':metodo_pago' => $datos['metodo_pago'] ?? 'EFECTIVO'
+            ];
 
-            if (!$stmt->execute()) {
-                $pdo->rollBack();
-                return ["status" => false, "message" => "Error al crear el envío"];
+            if (!$stmt->execute($params)) {
+                $errorInfo = $stmt->errorInfo();
+                throw new Exception("Error al crear envío: " . $errorInfo[2]);
             }
 
             $idEnvio = $pdo->lastInsertId();
 
-            // Insertar paquetes
-            foreach ($datos['paquetes'] as $paquete) {
-                $stmtPaquete = $pdo->prepare("INSERT INTO paquetes (
-                    id_envio, codigo_paquete, descripcion, peso, alto, ancho, profundidad,
-                    valor_declarado, instrucciones_manejo, estado
-                ) VALUES (
-                    :id_envio, :codigo_paquete, :descripcion, :peso, :alto, :ancho, :profundidad,
-                    :valor_declarado, :instrucciones_manejo, 'BUENO'
-                )");
+            // Insertar paquetes si existen
+            if (!empty($datos['paquetes']) && is_array($datos['paquetes'])) {
+                foreach ($datos['paquetes'] as $paquete) {
+                    // Validar datos del paquete
+                    if (empty($paquete['descripcion']) || empty($paquete['peso'])) {
+                        throw new Exception("Datos del paquete incompletos");
+                    }
 
-                $codigoPaquete = "PKG" . substr($datos['codigo_envio'], 3) . "-" . str_pad($paquete['numero'], 3, '0', STR_PAD_LEFT);
-
-                $stmtPaquete->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
-                $stmtPaquete->bindParam(":codigo_paquete", $codigoPaquete, PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":descripcion", $paquete['descripcion'], PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":peso", $paquete['peso'], PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":alto", $paquete['alto'], PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":ancho", $paquete['ancho'], PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":profundidad", $paquete['profundidad'], PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":valor_declarado", $paquete['valor_declarado'] ?? 0, PDO::PARAM_STR);
-                $stmtPaquete->bindParam(":instrucciones_manejo", $paquete['instrucciones'], PDO::PARAM_STR);
-
-                if (!$stmtPaquete->execute()) {
-                    $pdo->rollBack();
-                    return ["status" => false, "message" => "Error al registrar paquetes"];
-                }
-
-                $idPaquete = $pdo->lastInsertId();
-
-                // Insertar items del paquete
-                foreach ($paquete['items'] as $item) {
-                    $stmtItem = $pdo->prepare("INSERT INTO items_paquete (
-                        id_paquete, id_producto, descripcion, cantidad, peso_unitario, valor_unitario, observaciones
+                    $stmtPaquete = $pdo->prepare("INSERT INTO paquetes (
+                        id_envio, codigo_paquete, descripcion, peso, alto, ancho, profundidad,
+                        volumen, valor_declarado, instrucciones_manejo, estado
                     ) VALUES (
-                        :id_paquete, :id_producto, :descripcion, :cantidad, :peso_unitario, :valor_unitario, :observaciones
-                    )");
+                        :id_envio, :codigo_paquete, :descripcion, :peso, :alto, :ancho, :profundidad,
+                        :volumen, :valor_declarado, :instrucciones_manejo, 'BUENO')");
 
-                    $stmtItem->bindParam(":id_paquete", $idPaquete, PDO::PARAM_INT);
-                    $stmtItem->bindParam(":id_producto", $item['id_producto'], PDO::PARAM_INT);
-                    $stmtItem->bindParam(":descripcion", $item['descripcion'], PDO::PARAM_STR);
-                    $stmtItem->bindParam(":cantidad", $item['cantidad'], PDO::PARAM_INT);
-                    $stmtItem->bindParam(":peso_unitario", $item['peso_unitario'], PDO::PARAM_STR);
-                    $stmtItem->bindParam(":valor_unitario", $item['valor_unitario'], PDO::PARAM_STR);
-                    $stmtItem->bindParam(":observaciones", $item['observaciones'] ?? null, PDO::PARAM_STR);
+                    // Calcular volumen si no está definido
+                    $volumen = $paquete['volumen'] ?? 
+                        ($paquete['alto'] * $paquete['ancho'] * $paquete['profundidad']);
 
-                    if (!$stmtItem->execute()) {
-                        $pdo->rollBack();
-                        return ["status" => false, "message" => "Error al registrar items del paquete"];
+                    $codigoPaquete = "PKG" . substr($datos['codigo_envio'], 3) . "-" . 
+                                     str_pad($paquete['numero'], 3, '0', STR_PAD_LEFT);
+
+                    $paramsPaquete = [
+                        ':id_envio' => $idEnvio,
+                        ':codigo_paquete' => $codigoPaquete,
+                        ':descripcion' => $paquete['descripcion'],
+                        ':peso' => $paquete['peso'],
+                        ':alto' => $paquete['alto'] ?? 0,
+                        ':ancho' => $paquete['ancho'] ?? 0,
+                        ':profundidad' => $paquete['profundidad'] ?? 0,
+                        ':volumen' => $volumen,
+                        ':valor_declarado' => $paquete['valor_declarado'] ?? 0,
+                        ':instrucciones_manejo' => $paquete['instrucciones'] ?? null
+                    ];
+
+                    if (!$stmtPaquete->execute($paramsPaquete)) {
+                        $errorInfo = $stmtPaquete->errorInfo();
+                        throw new Exception("Error al registrar paquete: " . $errorInfo[2]);
+                    }
+
+                    $idPaquete = $pdo->lastInsertId();
+
+                    // Insertar items del paquete si existen
+                    if (!empty($paquete['items']) && is_array($paquete['items'])) {
+                        foreach ($paquete['items'] as $item) {
+                            // Validar datos del item
+                            if (empty($item['descripcion']) || empty($item['cantidad'])) {
+                                continue; // O puedes lanzar una excepción si es requerido
+                            }
+
+                            $stmtItem = $pdo->prepare("INSERT INTO items_paquete (
+                                id_paquete, id_producto, descripcion, cantidad, 
+                                peso_unitario, valor_unitario, observaciones
+                            ) VALUES (
+                                :id_paquete, :id_producto, :descripcion, :cantidad, 
+                                :peso_unitario, :valor_unitario, :observaciones)");
+
+                            $paramsItem = [
+                                ':id_paquete' => $idPaquete,
+                                ':id_producto' => $item['id_producto'] ?? null,
+                                ':descripcion' => $item['descripcion'],
+                                ':cantidad' => $item['cantidad'],
+                                ':peso_unitario' => $item['peso_unitario'] ?? 0,
+                                ':valor_unitario' => $item['valor_unitario'] ?? 0,
+                                ':observaciones' => $item['observaciones'] ?? null
+                            ];
+
+                            if (!$stmtItem->execute($paramsItem)) {
+                                $errorInfo = $stmtItem->errorInfo();
+                                throw new Exception("Error al registrar item: " . $errorInfo[2]);
+                            }
+                        }
                     }
                 }
             }
 
             // Registrar primer seguimiento
             $stmtSeguimiento = $pdo->prepare("INSERT INTO seguimiento_envios (
-                id_envio, id_usuario, estado_anterior, estado_nuevo, ubicacion, observaciones
+                id_envio, id_usuario, estado_anterior, estado_nuevo, 
+                ubicacion, observaciones
             ) VALUES (
-                :id_envio, :id_usuario, NULL, 'PENDIENTE', NULL, 'Envío creado'
+                :id_envio, :id_usuario, NULL, 'PENDIENTE', 
+                NULL, 'Envío creado'
             )");
 
-            $stmtSeguimiento->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
-            $stmtSeguimiento->bindParam(":id_usuario", $datos['id_usuario_creador'], PDO::PARAM_INT);
-
-            if (!$stmtSeguimiento->execute()) {
-                $pdo->rollBack();
-                return ["status" => false, "message" => "Error al registrar seguimiento"];
+            if (!$stmtSeguimiento->execute([
+                ':id_envio' => $idEnvio,
+                ':id_usuario' => $datos['id_usuario_creador']
+            ])) {
+                $errorInfo = $stmtSeguimiento->errorInfo();
+                throw new Exception("Error al registrar seguimiento: " . $errorInfo[2]);
             }
 
             $pdo->commit();
-            return ["status" => true, "message" => "Envío registrado con éxito", "id_envio" => $idEnvio];
+            
+            return [
+                'status' => true,
+                'message' => 'Envío registrado con éxito',
+                'id_envio' => $idEnvio,
+                'codigo_envio' => $datos['codigo_envio']
+            ];
+
         } catch (Exception $e) {
-            $pdo->rollBack();
-            return ["status" => false, "message" => $e->getMessage()];
+            if ($pdo && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            return [
+                'status' => false,
+                'message' => 'Error al crear envío: ' . $e->getMessage(),
+                'error_info' => $e->getTraceAsString()
+            ];
+        } finally {
+            if ($pdo) {
+                $pdo = null; // Cerrar conexión
+            }
         }
     }
 

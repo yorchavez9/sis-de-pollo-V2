@@ -1,4 +1,13 @@
 $(document).ready(function () {
+
+    function fechaHoraActual() {
+        const now = new Date();
+        const timezoneOffset = now.getTimezoneOffset() * 60000;
+        const localISOTime = (new Date(now - timezoneOffset)).toISOString().slice(0, 16);
+        $("#fecha_estimada_entrega").val(localISOTime);
+    }
+    fechaHoraActual();
+
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",
@@ -76,7 +85,8 @@ $(document).ready(function () {
             const options = {
                 method,
                 headers: {},
-                cache: "no-cache"
+                cache: "no-cache",
+                credentials: 'same-origin' // Para manejar cookies si es necesario
             };
             
             if (data instanceof FormData) {
@@ -87,10 +97,38 @@ $(document).ready(function () {
             }
             
             const response = await fetch(url, options);
+            
+            if (!response.ok) {
+                // Intentar obtener el mensaje de error del cuerpo de la respuesta
+                let errorDetails = '';
+                try {
+                    const errorResponse = await response.json();
+                    errorDetails = errorResponse.message || JSON.stringify(errorResponse);
+                } catch (e) {
+                    errorDetails = await response.text();
+                }
+                
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorDetails}`);
+            }
+            
             return await response.json();
         } catch (error) {
-            console.error("Error en la solicitud:", error);
-            return { status: false, message: "Error en la conexión" };
+            console.error("Error en la solicitud:", {
+                url,
+                method,
+                errorName: error.name,
+                errorMessage: error.message,
+                stack: error.stack // Solo en desarrollo
+            });
+            
+            return { 
+                status: false, 
+                message: "Error en la conexión",
+                errorDetails: {
+                    name: error.name,
+                    message: error.message,
+                }
+            };
         }
     };
 
@@ -114,6 +152,7 @@ $(document).ready(function () {
         tbody.empty();
 
         envios.data.forEach((envio, index) => {
+            console.log(envio.estado);
             // Formatear fechas
             const fechaEnvio = envio.fecha_envio ? new Date(envio.fecha_envio).toLocaleString() : 'Pendiente';
             
@@ -187,7 +226,7 @@ $(document).ready(function () {
 
     // Cargar transportistas
     const cargarTransportistas = async (selectId) => {
-        const transportistas = await fetchData("ajax/transportista.ajax.php");
+        const transportistas = await fetchData("ajax/transporte.ajax.php");
         if (!transportistas || !transportistas.status) return;
 
         const select = $(`#${selectId}`);
@@ -195,7 +234,7 @@ $(document).ready(function () {
         select.append('<option value="">Seleccionar transportista</option>');
         
         transportistas.data.forEach(transportista => {
-            select.append(`<option value="${transportista.id_persona}">${transportista.nombre}</option>`);
+            select.append(`<option value="${transportista.id_transportista}">${transportista.nombre_completo}</option>`);
         });
     };
 
@@ -395,6 +434,9 @@ $(document).ready(function () {
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
         if (response?.status) {
             Swal.fire("¡Correcto!", "Estado del envío actualizado", "success");
+            if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
+                $("#tablaEnvios").DataTable().destroy();
+            }
             mostrarEnvios();
             if (envioActual && envioActual.id_envio == idEnvio) {
                 mostrarDetalleEnvio(idEnvio);
@@ -558,9 +600,6 @@ $(document).ready(function () {
         
         // Agregar cantidad de paquetes
         formData.append("cantidad_paquetes", paquetes.length);
-        formData.forEach(element => {
-            console.log(element);
-        });
         // Enviar datos al servidor
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
         console.log(response);
@@ -568,6 +607,9 @@ $(document).ready(function () {
             Swal.fire("¡Correcto!", "Envío creado con éxito", "success");
             resetForm();
             $("#modalNuevoEnvio").modal("hide");
+            if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
+                $("#tablaEnvios").DataTable().destroy();
+            }
             mostrarEnvios();
         } else {
             Swal.fire("Error", response?.message || "Error al crear el envío", "error");
@@ -583,6 +625,9 @@ $(document).ready(function () {
             tipo: $("#filtroTipo").val(),
             estado: $("#filtroEstado").val()
         };
+        if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
+            $("#tablaEnvios").DataTable().destroy();
+        }
         mostrarEnvios(filtros);
     });
 
@@ -661,5 +706,8 @@ $(document).ready(function () {
     cargarSucursales("id_sucursal_origen");
     cargarSucursales("id_sucursal_destino");
     cargarTransportistas("id_transportista");
+    if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
+        $("#tablaEnvios").DataTable().destroy();
+    }
     mostrarEnvios();
 });

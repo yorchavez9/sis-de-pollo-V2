@@ -17,7 +17,7 @@
         <div class="card">
             <div class="card-body">
                 <form id="formFiltroEnvios" class="row">
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Sucursal Origen</label>
                             <select class="select" id="filtroOrigen">
@@ -26,7 +26,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-sm-6 col-12">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Sucursal Destino</label>
                             <select class="select" id="filtroDestino">
@@ -35,7 +35,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-2 col-sm-6 col-12">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label>Tipo</label>
                             <select class="select" id="filtroTipo">
@@ -47,7 +47,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-2 col-sm-6 col-12">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label>Estado</label>
                             <select class="select" id="filtroEstado">
@@ -61,10 +61,10 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-lg-2 col-sm-6 col-12">
+                    <div class="col-md-2">
                         <div class="form-group">
                             <label>&nbsp;</label>
-                            <button type="submit" class="btn btn-filters ms-2">
+                            <button type="submit" class="btn btn-primary btn-block">
                                 <i class="fas fa-filter me-2"></i> Filtrar
                             </button>
                         </div>
@@ -123,7 +123,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Fecha Estimada de Entrega</label>
-                                <input type="datetime-local" class="form-control" name="fecha_estimada_entrega">
+                                <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega">
                             </div>
                         </div>
                     </div>

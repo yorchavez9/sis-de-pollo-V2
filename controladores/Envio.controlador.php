@@ -9,7 +9,12 @@ class ControladorEnvio
     static public function ctrCrearEnvio() {
         try {
             if (isset($_POST['action']) && $_POST['action'] == 'crear') {
-
+                // Verificar si paquetes es un JSON válido
+                $paquetes = json_decode($_POST['paquetes'], true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new Exception("JSON de paquetes inválido: " . json_last_error_msg());
+                }
+    
                 $datos = array(
                     "codigo_envio" => $_POST['codigo_envio'],
                     "id_sucursal_origen" => $_POST['id_sucursal_origen'],
@@ -29,17 +34,22 @@ class ControladorEnvio
                     "instrucciones" => $_POST['instrucciones'] ?? null,
                     "costo_envio" => $_POST['costo_envio'] ?? 0,
                     "metodo_pago" => $_POST['metodo_pago'] ?? 'EFECTIVO',
-                    "paquetes" => json_decode($_POST['paquetes'], true)
+                    "paquetes" => $paquetes
                 );
     
+                error_log("Datos recibidos: " . print_r($datos, true)); // Log para depuración
     
                 $respuesta = ModeloEnvio::mdlCrearEnvio("envios", $datos);
                 echo json_encode($respuesta);
+            } else {
+                throw new Exception("Acción no válida o no especificada");
             }
         } catch (Exception $e) {
+            error_log("Error en ctrCrearEnvio: " . $e->getMessage());
             echo json_encode([
                 "status" => false,
-                "message" => "Error detallado: " . $e->getMessage()
+                "message" => "Error: " . $e->getMessage(),
+                "trace" => $e->getTraceAsString()
             ]);
         }
     }

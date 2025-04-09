@@ -84,7 +84,6 @@ $(document).ready(function () {
     // Mostrar lista de transportistas
     const mostrarTransportistas = async () => {
         const response = await fetchData("ajax/transporte.ajax.php");
-        console.log(response);
         if (!response || !response.status) {
             console.error("Error al cargar transportistas:", response?.message);
             return;
