@@ -21,7 +21,8 @@ if (isset($_GET['action'])) {
             
         case 'detalle':
             $idEnvio = $_GET['id'];
-            echo ControladorEnvio::ctrMostrarDetalleEnvio($idEnvio);
+            $response = ControladorEnvio::ctrMostrarDetalleEnvio($idEnvio);
+            echo json_encode($response);
             break;
             
         case 'calcularCosto':

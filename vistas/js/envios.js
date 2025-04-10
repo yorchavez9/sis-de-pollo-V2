@@ -34,6 +34,7 @@ $(document).ready(function () {
     // Reinicializar Select2 en modales
     $('#modalNuevoEnvio, #modalDetalleEnvio, #modalCambiarEstado, #modalSubirDocumento').on('shown.bs.modal', function() {
         initSelect2($(this).find('.select'), $(this));
+        fechaHoraActual();
     });
 
     // Función para validar campos
@@ -141,7 +142,6 @@ $(document).ready(function () {
             url += `&${params.toString()}`;
         }
         const envios = await fetchData(url);
-        console.log(envios);
         if (!envios || !envios.status) {
             console.error("Error al cargar envíos:", envios?.message);
             return;
@@ -152,7 +152,6 @@ $(document).ready(function () {
         tbody.empty();
 
         envios.data.forEach((envio, index) => {
-            console.log(envio.estado);
             // Formatear fechas
             const fechaEnvio = envio.fecha_envio ? new Date(envio.fecha_envio).toLocaleString() : 'Pendiente';
             
@@ -180,10 +179,10 @@ $(document).ready(function () {
                     <td>${envio.transportista || 'No asignado'}</td>
                     <td class="text-center">
                         <button class="btn btn-sm btn-info btnDetalleEnvio me-1" data-id="${envio.id_envio}">
-                            <i class="fas fa-eye"></i>
+                            <i class="fas fa-eye text-white"></i>
                         </button>
                         <button class="btn btn-sm btn-warning btnCambiarEstado me-1" data-id="${envio.id_envio}">
-                            <i class="fas fa-exchange-alt"></i>
+                            <i class="fas fa-exchange-alt text-white"></i>
                         </button>
                         ${envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION' ? 
                             `<button class="btn btn-sm btn-danger btnCancelarEnvio" data-id="${envio.id_envio}">
@@ -328,6 +327,7 @@ $(document).ready(function () {
     // Mostrar detalles de un envío
     const mostrarDetalleEnvio = async (idEnvio) => {
         const response = await fetchData(`ajax/envios.ajax.php?action=detalle&id=${idEnvio}`);
+        console.log(response);
         if (!response || !response.status) {
             Swal.fire("Error", "No se pudo cargar el detalle del envío", "error");
             return;
@@ -602,7 +602,6 @@ $(document).ready(function () {
         formData.append("cantidad_paquetes", paquetes.length);
         // Enviar datos al servidor
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        console.log(response);
         if (response?.status) {
             Swal.fire("¡Correcto!", "Envío creado con éxito", "success");
             resetForm();
@@ -634,6 +633,7 @@ $(document).ready(function () {
     // Evento para ver detalle de envío
     $("#tablaEnvios").on("click", ".btnDetalleEnvio", function() {
         const idEnvio = $(this).data("id");
+        console.log(idEnvio);
         mostrarDetalleEnvio(idEnvio);
     });
 

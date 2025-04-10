@@ -102,8 +102,9 @@
 </div>
 
 <!-- Modal Nuevo Envío -->
+<!-- Modal Nuevo Envío -->
 <div class="modal fade" id="modalNuevoEnvio" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Nuevo Envío</h5>
@@ -113,157 +114,206 @@
             </div>
             <form id="formNuevoEnvio" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Código de Envío</label>
-                                <input type="text" class="form-control" name="codigo_envio" readonly>
-                            </div>
+                    <!-- Sección: Información Básica del Envío -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i> Información del Envío</h6>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Fecha Estimada de Entrega</label>
-                                <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Sucursal Origen <span class="text-danger">*</span></label>
-                                <select class="form-select select" name="id_sucursal_origen" id="id_sucursal_origen" required>
-                                    <option value="" disabled selected>Seleccionar</option>
-                                    <!-- Opciones dinámicas -->
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Sucursal Destino <span class="text-danger">*</span></label>
-                                <select class="form-select select" name="id_sucursal_destino" id="id_sucursal_destino" required>
-                                    <option value="" disabled selected>Seleccionar</option>
-                                    <!-- Opciones dinámicas -->
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Tipo de Envío <span class="text-danger">*</span></label>
-                                <select class="form-select select" name="id_tipo_encomienda" required>
-                                    <option value="" disabled selected>Seleccionar</option>
-                                    <option value="1">Productos Perecederos</option>
-                                    <option value="2">Productos Secos</option>
-                                    <option value="3">Documentos</option>
-                                    <option value="4">Insumos</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Transportista</label>
-                                <select class="form-select select" name="id_transportista" id="id_transportista">
-                                    <option value="" selected>No asignado</option>
-                                    <!-- Opciones dinámicas -->
-                                </select>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Código de Envío</label>
+                                        <input type="text" class="form-control" name="codigo_envio" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Fecha Estimada de Entrega <span class="text-danger">*</span></label>
+                                        <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Tipo de Envío <span class="text-danger">*</span></label>
+                                        <select class="form-select select" name="id_tipo_encomienda" id="id_tipo_encomienda" required>
+                                            <option value="" disabled selected>Seleccionar</option>
+                                            <option value="1">Productos Perecederos</option>
+                                            <option value="2">Productos Secos</option>
+                                            <option value="3">Documentos</option>
+                                            <option value="4">Insumos</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Método de Pago</label>
-                                <select class="form-select select" name="metodo_pago">
-                                    <option value="EFECTIVO">Efectivo</option>
-                                    <option value="CREDITO">Crédito</option>
-                                    <option value="POR_COBRAR">Por Cobrar</option>
-                                </select>
+                    <!-- Sección: Origen y Destino -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-route me-2"></i> Ruta del Envío</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Sucursal Origen <span class="text-danger">*</span></label>
+                                        <select class="form-select select" name="id_sucursal_origen" id="id_sucursal_origen" required>
+                                            <option value="" disabled selected>Seleccionar</option>
+                                            <!-- Opciones dinámicas -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Sucursal Destino <span class="text-danger">*</span></label>
+                                        <select class="form-select select" name="id_sucursal_destino" id="id_sucursal_destino" required>
+                                            <option value="" disabled selected>Seleccionar</option>
+                                            <!-- Opciones dinámicas -->
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>DNI Remitente</label>
-                                <input type="text" class="form-control" name="dni_remitente">
-                            </div>
+                    <!-- Sección: Información de Personas -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-users me-2"></i> Información de Personas</h6>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Nombre Remitente</label>
-                                <input type="text" class="form-control" name="nombre_remitente">
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Remitente</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>DNI Remitente</label>
+                                                <input type="text" class="form-control" name="dni_remitente" placeholder="Ingrese el DNI">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Nombre Remitente</label>
+                                                <input type="text" class="form-control" name="nombre_remitente" placeholder="Ingrese el nombre">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Destinatario</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>DNI Destinatario</label>
+                                                <input type="text" class="form-control" name="dni_destinatario" placeholder="Ingrese el DNI">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label>Nombre Destinatario</label>
+                                                <input type="text" class="form-control" name="nombre_destinatario" placeholder="Ingrese el nombre">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>DNI Destinatario</label>
-                                <input type="text" class="form-control" name="dni_destinatario">
-                            </div>
+                    <!-- Sección: Configuración del Envío -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-cog me-2"></i> Configuración</h6>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Nombre Destinatario</label>
-                                <input type="text" class="form-control" name="nombre_destinatario">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Transportista</label>
+                                        <select class="form-select select" name="id_transportista" id="id_transportista">
+                                            <option value="" selected>No asignado</option>
+                                            <!-- Opciones dinámicas -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Método de Pago</label>
+                                        <select class="form-select select" name="metodo_pago">
+                                            <option value="EFECTIVO">Efectivo</option>
+                                            <option value="CREDITO">Crédito</option>
+                                            <option value="POR_COBRAR">Por Cobrar</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Clave de Recepción</label>
+                                        <input type="text" class="form-control" name="clave_recepcion" placeholder="Ingrese la clave">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group mt-2">
+                                <label>Instrucciones Especiales</label>
+                                <textarea class="form-control" name="instrucciones" rows="2" placeholder="Ingrese instrucciones adicionales"></textarea>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Clave de Recepción</label>
-                        <input type="text" class="form-control" name="clave_recepcion">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Instrucciones Especiales</label>
-                        <textarea class="form-control" name="instrucciones" rows="3"></textarea>
-                    </div>
-
-                    <hr>
-                    <h5 class="mb-3"><i class="fas fa-boxes me-2"></i> Paquetes</h5>
-                    <div id="contenedorPaquetes">
-                        <!-- Paquetes se agregarán aquí -->
-                    </div>
-                    <button type="button" class="btn btn-primary" id="btnAgregarPaquete">
-                        <i class="fas fa-plus me-2"></i> Agregar Paquete
-                    </button>
-
-                    <hr>
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Total Paquetes</label>
-                                <input type="text" class="form-control" id="totalPaquetes" readonly value="0">
+                    <!-- Sección: Paquetes -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-boxes me-2"></i> Paquetes</h6>
+                            <button type="button" class="btn btn-sm btn-primary" id="btnAgregarPaquete">
+                                <i class="fas fa-plus me-1"></i> Agregar Paquete
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div id="contenedorPaquetes">
+                                <!-- Paquetes se agregarán aquí -->
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Peso Total (kg)</label>
-                                <input type="text" class="form-control" id="pesoTotal" readonly value="0.00">
-                            </div>
+                    </div>
+
+                    <!-- Sección: Resumen -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-calculator me-2"></i> Resumen del Envío</h6>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Volumen Total (m³)</label>
-                                <input type="text" class="form-control" id="volumenTotal" readonly value="0.00">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Costo Estimado</label>
-                                <input type="text" class="form-control" id="costoEnvio" readonly value="0.00">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Total Paquetes</label>
+                                        <input type="text" class="form-control" id="totalPaquetes" readonly value="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Peso Total (kg)</label>
+                                        <input type="text" class="form-control" id="pesoTotal" readonly value="0.00">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Volumen Total (m³)</label>
+                                        <input type="text" class="form-control" id="volumenTotal" readonly value="0.00">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Costo Estimado</label>
+                                        <input type="text" class="form-control" id="costoEnvio" value="0.00">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="text-end mx-4 mb-2">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" id="btnCalcularCosto">
                         <i class="fas fa-calculator me-2"></i> Calcular Costo
@@ -575,7 +625,7 @@
                         <textarea class="form-control" id="observacionesEstado" rows="3"></textarea>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="text-end mx-4 mb-2">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                 </div>
