@@ -271,6 +271,7 @@ CREATE TABLE `ventas` (
   CONSTRAINT `ventas_ibfk_4` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+/* TABLA DE DETALLE VENTAS */
 CREATE TABLE `detalle_venta` (
   `id_detalle` int(11) NOT NULL AUTO_INCREMENT,
   `id_venta` int(11) NOT NULL,
