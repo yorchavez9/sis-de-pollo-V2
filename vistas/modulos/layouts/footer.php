@@ -27,6 +27,7 @@
 <script src="vistas/js/inventario.js"></script>
 
 <script src="vistas/js/tipo_comprobantes.js"></script>
+<script src="vistas/js/serie_comprobantes.js"></script>
 
 </body>
 
