@@ -17,6 +17,7 @@ class ControladorEnvio
     
                 $datos = array(
                     "codigo_envio" => $_POST['codigo_envio'],
+                    "id_serie" => $_POST['id_serie'],
                     "id_sucursal_origen" => $_POST['id_sucursal_origen'],
                     "id_sucursal_destino" => $_POST['id_sucursal_destino'],
                     "id_tipo_encomienda" => $_POST['id_tipo_encomienda'],

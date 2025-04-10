@@ -520,6 +520,8 @@ CREATE TABLE `transportistas` (
 CREATE TABLE `envios` (
   `id_envio` int(11) NOT NULL AUTO_INCREMENT,
   `codigo_envio` varchar(20) NOT NULL,
+  `id_serie` int(11) NOT NULL,
+  `numero_comprobante` varchar(10) NOT NULL,
   `id_sucursal_origen` int(11) NOT NULL,
   `id_sucursal_destino` int(11) NOT NULL,
   `id_tipo_encomienda` int(11) NOT NULL,

@@ -21,7 +21,6 @@ $(document).ready(function () {
             data: $(this).serialize(),
             success: function (respuesta) {
             let data = JSON.parse(respuesta);
-            console.log(data);
             if (data.status) {
                 window.location = "inicio";
             } else {

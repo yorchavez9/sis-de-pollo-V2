@@ -204,6 +204,42 @@ $(document).ready(function () {
     };
 
     // Cargar sucursales en select
+    const cargarSerieComprobante = async (selectId, todas = false) => {
+        const series = await fetchData("ajax/serie_comprobante.ajax.php");
+   
+        if (!series || !series.status) return;
+    
+        const select = $(`#${selectId}`);
+        select.empty();
+        if (todas) {
+            select.append('<option value="">Todas</option>');
+        } else {
+            select.append('<option value="" disabled selected>Seleccionar comprobante</option>');
+        }
+        
+        // Recorremos las series y las agregamos al select con data-serie
+        series.data.forEach(serie => {
+            if (serie.estado === 1) {
+                select.append(`
+                    <option 
+                        value="${serie.id_serie}" 
+                        data-serie="${serie.serie}"
+                    >
+                        ${serie.nombre_tipo_comprobante}
+                    </option>
+                `);
+            }
+        });
+    
+        // Evento change: Cuando seleccionan una opción, actualizar el input
+        select.on("change", function() {
+            const selectedOption = $(this).find("option:selected");
+            const serieValue = selectedOption.data("serie") || ""; // Obtiene "B002", "N002", etc.
+            $("#serie").val(serieValue); // Asigna al input
+        });
+    };
+
+    // Cargar sucursales en select
     const cargarSucursales = async (selectId, todas = false) => {
         const sucursales = await fetchData("ajax/sucursal.ajax.php");
         if (!sucursales || !sucursales.status) return;
@@ -327,7 +363,6 @@ $(document).ready(function () {
     // Mostrar detalles de un envío
     const mostrarDetalleEnvio = async (idEnvio) => {
         const response = await fetchData(`ajax/envios.ajax.php?action=detalle&id=${idEnvio}`);
-        console.log(response);
         if (!response || !response.status) {
             Swal.fire("Error", "No se pudo cargar el detalle del envío", "error");
             return;
@@ -600,8 +635,10 @@ $(document).ready(function () {
         
         // Agregar cantidad de paquetes
         formData.append("cantidad_paquetes", paquetes.length);
+
         // Enviar datos al servidor
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
+        console.log(response);
         if (response?.status) {
             Swal.fire("¡Correcto!", "Envío creado con éxito", "success");
             resetForm();
@@ -633,7 +670,6 @@ $(document).ready(function () {
     // Evento para ver detalle de envío
     $("#tablaEnvios").on("click", ".btnDetalleEnvio", function() {
         const idEnvio = $(this).data("id");
-        console.log(idEnvio);
         mostrarDetalleEnvio(idEnvio);
     });
 
@@ -704,6 +740,7 @@ $(document).ready(function () {
     cargarSucursales("filtroOrigen", true);
     cargarSucursales("filtroDestino", true);
     cargarSucursales("id_sucursal_origen");
+    cargarSerieComprobante("id_serie");
     cargarSucursales("id_sucursal_destino");
     cargarTransportistas("id_transportista");
     if ($.fn.DataTable.isDataTable("#tablaEnvios")) {

@@ -7,63 +7,43 @@ class ModeloEnvio
     /*=============================================
     CREAR ENVÍO
     =============================================*/
+
     static public function mdlCrearEnvio($tabla, $datos) {
         $pdo = null;
+
         try {
             $pdo = Conexion::conectar();
             $pdo->beginTransaction();
 
-            // Validación de datos básicos
-            if (empty($datos['codigo_envio']) || empty($datos['id_sucursal_origen']) || 
-                empty($datos['id_sucursal_destino']) || empty($datos['id_tipo_encomienda'])) {
-                throw new Exception("Datos básicos del envío incompletos");
+            /*===== 1. OBTENER COMPROBANTE Y NÚMERO ACTUAL =====*/
+            $stmtSerie = $pdo->prepare("SELECT * FROM series_comprobantes WHERE id_serie = :id_serie");
+            $stmtSerie->bindParam(":id_serie", $datos['id_serie'], PDO::PARAM_INT);
+            $stmtSerie->execute();
+            $serie = $stmtSerie->fetch(PDO::FETCH_ASSOC);
+
+            if (!$serie) {
+                throw new Exception("Serie de comprobante no encontrada");
             }
 
-            // Insertar envío principal
-            $stmt = $pdo->prepare("INSERT INTO $tabla (
-                codigo_envio, 
-                id_sucursal_origen, 
-                id_sucursal_destino, 
-                id_tipo_encomienda,
-                id_usuario_creador, 
-                id_transportista, 
-                dni_remitente, 
-                nombre_remitente,
-                dni_destinatario, 
-                nombre_destinatario, 
-                clave_recepcion,
-                fecha_estimada_entrega, 
-                peso_total, 
-                volumen_total, 
-                cantidad_paquetes,
-                instrucciones, 
-                costo_envio, 
-                metodo_pago,
-                estado
-            ) VALUES (
-                :codigo_envio, 
-                :id_sucursal_origen, 
-                :id_sucursal_destino, 
-                :id_tipo_encomienda,
-                :id_usuario_creador, 
-                :id_transportista, 
-                :dni_remitente, 
-                :nombre_remitente,
-                :dni_destinatario, 
-                :nombre_destinatario, 
-                :clave_recepcion,
-                :fecha_estimada_entrega, 
-                :peso_total, 
-                :volumen_total, 
-                :cantidad_paquetes,
-                :instrucciones, 
-                :costo_envio, 
-                :metodo_pago,
-                'PENDIENTE')");
+            $numero_comprobante = $serie['numero_actual'] + 1;
 
-            // Bind parameters
-            $params = [
+            /*===== 2. INSERTAR ENVÍO PRINCIPAL =====*/
+            $stmtEnvio = $pdo->prepare("INSERT INTO $tabla (
+                codigo_envio, id_serie, numero_comprobante, id_sucursal_origen, id_sucursal_destino, 
+                id_tipo_encomienda, id_usuario_creador, id_transportista, dni_remitente, nombre_remitente, 
+                dni_destinatario, nombre_destinatario, clave_recepcion, fecha_estimada_entrega, 
+                peso_total, volumen_total, cantidad_paquetes, instrucciones, costo_envio, metodo_pago, estado
+            ) VALUES (
+                :codigo_envio, :id_serie, :numero_comprobante, :id_sucursal_origen, :id_sucursal_destino, 
+                :id_tipo_encomienda, :id_usuario_creador, :id_transportista, :dni_remitente, :nombre_remitente, 
+                :dni_destinatario, :nombre_destinatario, :clave_recepcion, :fecha_estimada_entrega, 
+                :peso_total, :volumen_total, :cantidad_paquetes, :instrucciones, :costo_envio, :metodo_pago, 'PENDIENTE'
+            )");
+
+            $paramsEnvio = [
                 ':codigo_envio' => $datos['codigo_envio'],
+                ':id_serie' => $datos['id_serie'],
+                ':numero_comprobante' => $numero_comprobante,
                 ':id_sucursal_origen' => $datos['id_sucursal_origen'],
                 ':id_sucursal_destino' => $datos['id_sucursal_destino'],
                 ':id_tipo_encomienda' => $datos['id_tipo_encomienda'],
@@ -83,34 +63,34 @@ class ModeloEnvio
                 ':metodo_pago' => $datos['metodo_pago'] ?? 'EFECTIVO'
             ];
 
-            if (!$stmt->execute($params)) {
-                $errorInfo = $stmt->errorInfo();
-                throw new Exception("Error al crear envío: " . $errorInfo[2]);
+            if (!$stmtEnvio->execute($paramsEnvio)) {
+                throw new Exception("Error al crear envío: " . implode(' | ', $stmtEnvio->errorInfo()));
             }
 
             $idEnvio = $pdo->lastInsertId();
 
-            // Insertar paquetes si existen
+            /*===== 3. INSERTAR PAQUETES Y SUS ÍTEMS =====*/
             if (!empty($datos['paquetes']) && is_array($datos['paquetes'])) {
                 foreach ($datos['paquetes'] as $paquete) {
-                    // Validar datos del paquete
+
                     if (empty($paquete['descripcion']) || empty($paquete['peso'])) {
                         throw new Exception("Datos del paquete incompletos");
                     }
+
+                    $codigoPaquete = "PKG" . substr($datos['codigo_envio'], 3) . "-" . 
+                                    str_pad($paquete['numero'], 3, '0', STR_PAD_LEFT);
+
+                    $volumen = $paquete['volumen'] ?? (
+                        ($paquete['alto'] ?? 0) * ($paquete['ancho'] ?? 0) * ($paquete['profundidad'] ?? 0)
+                    );
 
                     $stmtPaquete = $pdo->prepare("INSERT INTO paquetes (
                         id_envio, codigo_paquete, descripcion, peso, alto, ancho, profundidad,
                         volumen, valor_declarado, instrucciones_manejo, estado
                     ) VALUES (
                         :id_envio, :codigo_paquete, :descripcion, :peso, :alto, :ancho, :profundidad,
-                        :volumen, :valor_declarado, :instrucciones_manejo, 'BUENO')");
-
-                    // Calcular volumen si no está definido
-                    $volumen = $paquete['volumen'] ?? 
-                        ($paquete['alto'] * $paquete['ancho'] * $paquete['profundidad']);
-
-                    $codigoPaquete = "PKG" . substr($datos['codigo_envio'], 3) . "-" . 
-                                     str_pad($paquete['numero'], 3, '0', STR_PAD_LEFT);
+                        :volumen, :valor_declarado, :instrucciones_manejo, 'BUENO'
+                    )");
 
                     $paramsPaquete = [
                         ':id_envio' => $idEnvio,
@@ -126,18 +106,16 @@ class ModeloEnvio
                     ];
 
                     if (!$stmtPaquete->execute($paramsPaquete)) {
-                        $errorInfo = $stmtPaquete->errorInfo();
-                        throw new Exception("Error al registrar paquete: " . $errorInfo[2]);
+                        throw new Exception("Error al registrar paquete: " . implode(' | ', $stmtPaquete->errorInfo()));
                     }
 
                     $idPaquete = $pdo->lastInsertId();
 
-                    // Insertar items del paquete si existen
+                    // Items dentro del paquete
                     if (!empty($paquete['items']) && is_array($paquete['items'])) {
                         foreach ($paquete['items'] as $item) {
-                            // Validar datos del item
                             if (empty($item['descripcion']) || empty($item['cantidad'])) {
-                                continue; // O puedes lanzar una excepción si es requerido
+                                continue;
                             }
 
                             $stmtItem = $pdo->prepare("INSERT INTO items_paquete (
@@ -145,7 +123,8 @@ class ModeloEnvio
                                 peso_unitario, valor_unitario, observaciones
                             ) VALUES (
                                 :id_paquete, :id_producto, :descripcion, :cantidad, 
-                                :peso_unitario, :valor_unitario, :observaciones)");
+                                :peso_unitario, :valor_unitario, :observaciones
+                            )");
 
                             $paramsItem = [
                                 ':id_paquete' => $idPaquete,
@@ -158,33 +137,35 @@ class ModeloEnvio
                             ];
 
                             if (!$stmtItem->execute($paramsItem)) {
-                                $errorInfo = $stmtItem->errorInfo();
-                                throw new Exception("Error al registrar item: " . $errorInfo[2]);
+                                throw new Exception("Error al registrar item: " . implode(' | ', $stmtItem->errorInfo()));
                             }
                         }
                     }
                 }
             }
 
-            // Registrar primer seguimiento
+            /*===== 4. REGISTRAR SEGUIMIENTO =====*/
             $stmtSeguimiento = $pdo->prepare("INSERT INTO seguimiento_envios (
-                id_envio, id_usuario, estado_anterior, estado_nuevo, 
-                ubicacion, observaciones
+                id_envio, id_usuario, estado_anterior, estado_nuevo, ubicacion, observaciones
             ) VALUES (
-                :id_envio, :id_usuario, NULL, 'PENDIENTE', 
-                NULL, 'Envío creado'
+                :id_envio, :id_usuario, NULL, 'PENDIENTE', NULL, 'Envío creado'
             )");
 
             if (!$stmtSeguimiento->execute([
                 ':id_envio' => $idEnvio,
                 ':id_usuario' => $datos['id_usuario_creador']
             ])) {
-                $errorInfo = $stmtSeguimiento->errorInfo();
-                throw new Exception("Error al registrar seguimiento: " . $errorInfo[2]);
+                throw new Exception("Error al registrar seguimiento: " . implode(' | ', $stmtSeguimiento->errorInfo()));
             }
 
+            /*===== 5. ACTUALIZAR NÚMERO DE COMPROBANTE =====*/
+            $stmtUpdateSerie = $pdo->prepare("UPDATE series_comprobantes SET numero_actual = :numero WHERE id_serie = :id_serie");
+            $stmtUpdateSerie->bindParam(":numero", $numero_comprobante, PDO::PARAM_INT);
+            $stmtUpdateSerie->bindParam(":id_serie", $datos['id_serie'], PDO::PARAM_INT);
+            $stmtUpdateSerie->execute();
+
             $pdo->commit();
-            
+
             return [
                 'status' => true,
                 'message' => 'Envío registrado con éxito',
@@ -203,10 +184,11 @@ class ModeloEnvio
             ];
         } finally {
             if ($pdo) {
-                $pdo = null; // Cerrar conexión
+                $pdo = null; // Cierra la conexión
             }
         }
     }
+
 
     /*=============================================
     MOSTRAR ENVÍOS

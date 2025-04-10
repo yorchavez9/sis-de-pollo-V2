@@ -114,6 +114,31 @@
             </div>
             <form id="formNuevoEnvio" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <!-- Sección: Comprobante serie y numero -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i> Comprobante</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Selecione el comprobante<span class="text-danger">*</span></label>
+                                        <select class="form-select select" name="id_serie" id="id_serie" >
+                                            
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Serie <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" name="serie" id="serie" readonly placeholder="Serie">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Sección: Información Básica del Envío -->
                     <div class="card mb-4">
                         <div class="card-header bg-light">
@@ -130,13 +155,13 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Fecha Estimada de Entrega <span class="text-danger">*</span></label>
-                                        <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega" required>
+                                        <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega" >
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Tipo de Envío <span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_tipo_encomienda" id="id_tipo_encomienda" required>
+                                        <select class="form-select select" name="id_tipo_encomienda" id="id_tipo_encomienda" >
                                             <option value="" disabled selected>Seleccionar</option>
                                             <option value="1">Productos Perecederos</option>
                                             <option value="2">Productos Secos</option>
@@ -159,7 +184,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Sucursal Origen <span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_sucursal_origen" id="id_sucursal_origen" required>
+                                        <select class="form-select select" name="id_sucursal_origen" id="id_sucursal_origen" >
                                             <option value="" disabled selected>Seleccionar</option>
                                             <!-- Opciones dinámicas -->
                                         </select>
@@ -168,7 +193,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Sucursal Destino <span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_sucursal_destino" id="id_sucursal_destino" required>
+                                        <select class="form-select select" name="id_sucursal_destino" id="id_sucursal_destino" >
                                             <option value="" disabled selected>Seleccionar</option>
                                             <!-- Opciones dinámicas -->
                                         </select>
@@ -341,13 +366,13 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Descripción <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control descripcion" required>
+                        <input type="text" class="form-control descripcion" placeholder="Descripción del paquete">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Peso (kg) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control peso" step="0.01" min="0.01" required>
+                        <input type="number" class="form-control peso" step="0.01" min="0.01" placeholder="Peso del paquete" >
                     </div>
                 </div>
             </div>
@@ -355,25 +380,25 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>Alto (cm)</label>
-                        <input type="number" class="form-control alto" step="0.1" min="0">
+                        <input type="number" class="form-control alto" step="0.1" min="0" placeholder="Alto del paquete">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>Ancho (cm)</label>
-                        <input type="number" class="form-control ancho" step="0.1" min="0">
+                        <input type="number" class="form-control ancho" step="0.1" min="0" placeholder="Ancho del paquete">
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>Profundidad (cm)</label>
-                        <input type="number" class="form-control profundidad" step="0.1" min="0">
+                        <input type="number" class="form-control profundidad" step="0.1" min="0" placeholder="Profundidad del paquete">
                     </div>
                 </div>
             </div>
             <div class="form-group">
                 <label>Instrucciones de Manejo</label>
-                <textarea class="form-control instrucciones" rows="2"></textarea>
+                <textarea class="form-control instrucciones" rows="2" placeholder="Instrucciones del paquete"></textarea>
             </div>
             
             <h6 class="mt-4 mb-3"><i class="fas fa-box-open me-2"></i> Ítems del Paquete</h6>
@@ -404,19 +429,19 @@
 <template id="templateItemPaquete">
     <tr class="item">
         <td>
-            <select class="form-control form-control-sm selectProducto" required>
+            <select class="form-control form-control-sm selectProducto" >
                 <option value="" disabled selected>Seleccionar</option>
                 <!-- Opciones dinámicas -->
             </select>
         </td>
         <td>
-            <input type="number" class="form-control form-control-sm cantidad" min="1" value="1" required>
+            <input type="number" class="form-control form-control-sm cantidad" min="1" value="1" placeholder="Cantidad" >
         </td>
         <td>
-            <input type="number" class="form-control form-control-sm pesoUnitario" step="0.01" min="0.01">
+            <input type="number" class="form-control form-control-sm pesoUnitario" step="0.01" min="0.01" placeholder="Peso">
         </td>
         <td>
-            <input type="number" class="form-control form-control-sm valorUnitario" step="0.01" min="0">
+            <input type="number" class="form-control form-control-sm valorUnitario" step="0.01" min="0" placeholder="Valor">
         </td>
         <td class="text-center">
             <button type="button" class="btn btn-sm btn-danger btnEliminarItem">
@@ -611,7 +636,7 @@
                     <input type="hidden" id="idEnvioEstado">
                     <div class="form-group">
                         <label>Nuevo Estado <span class="text-danger">*</span></label>
-                        <select class="form-select" id="nuevoEstado" required>
+                        <select class="form-select" id="nuevoEstado" >
                             <option value="" disabled selected>Seleccionar</option>
                             <option value="PREPARACION">Preparación</option>
                             <option value="EN_TRANSITO">En Tránsito</option>
@@ -649,7 +674,7 @@
                     <input type="hidden" id="idEnvioDocumento">
                     <div class="form-group">
                         <label>Tipo de Documento <span class="text-danger">*</span></label>
-                        <select class="form-select" name="tipo_documento" required>
+                        <select class="form-select" name="tipo_documento" >
                             <option value="" disabled selected>Seleccionar</option>
                             <option value="FOTO">Foto</option>
                             <option value="FACTURA">Factura</option>
@@ -659,7 +684,7 @@
                     </div>
                     <div class="form-group">
                         <label>Documento <span class="text-danger">*</span></label>
-                        <input type="file" class="form-control" name="documento" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <input type="file" class="form-control" name="documento" accept=".pdf,.jpg,.jpeg,.png" >
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
