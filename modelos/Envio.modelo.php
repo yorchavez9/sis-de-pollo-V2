@@ -484,51 +484,62 @@ class ModeloEnvio
     static public function mdlCalcularCostoEnvio($origen, $destino, $tipo, $peso)
     {
         try {
+            // Validar y convertir peso a decimal
+            $peso = (float)str_replace(',', '.', $peso);
+            if ($peso <= 0) {
+                return ["status" => false, "message" => "El peso debe ser mayor a cero"];
+            }
+    
             // Buscar tarifa aplicable
             $stmt = Conexion::conectar()->prepare(
                 "SELECT * FROM tarifas_envio 
                 WHERE id_sucursal_origen = :origen 
                 AND id_sucursal_destino = :destino
                 AND id_tipo_encomienda = :tipo
-                AND :peso BETWEEN rango_peso_min AND rango_peso_max
+                AND rango_peso_min <= :peso 
+                AND (rango_peso_max >= :peso OR costo_kg_extra > 0)
                 AND (vigencia_hasta IS NULL OR vigencia_hasta >= CURDATE())
+                AND vigencia_desde <= CURDATE()
                 AND estado = 1
-                ORDER BY vigencia_desde DESC
+                ORDER BY rango_peso_min DESC, vigencia_desde DESC
                 LIMIT 1"
             );
-
+    
             $stmt->bindParam(":origen", $origen, PDO::PARAM_INT);
             $stmt->bindParam(":destino", $destino, PDO::PARAM_INT);
             $stmt->bindParam(":tipo", $tipo, PDO::PARAM_INT);
             $stmt->bindParam(":peso", $peso, PDO::PARAM_STR);
             $stmt->execute();
             $tarifa = $stmt->fetch();
-
+    
             if ($tarifa) {
                 // Calcular costo basado en la tarifa
-                $costo = $tarifa['costo_base'];
+                $costo = (float)$tarifa['costo_base'];
                 
                 // Si el peso excede el rango base, calcular costo adicional
-                if ($peso > $tarifa['rango_peso_max']) {
-                    $pesoExcedente = $peso - $tarifa['rango_peso_max'];
-                    $costo += ceil($pesoExcedente) * $tarifa['costo_kg_extra'];
+                if ($peso > $tarifa['rango_peso_min']) {
+                    $pesoExcedente = $peso - $tarifa['rango_peso_min'];
+                    $costo += $pesoExcedente * $tarifa['costo_kg_extra'];
                 }
-
+    
+                // Redondear a 2 decimales
+                $costo = round($costo, 2);
+    
                 return [
                     "status" => true,
                     "data" => [
                         "costo" => $costo,
-                        "tiempo_estimado" => $tarifa['tiempo_estimado']
+                        "tiempo_estimado" => $tarifa['tiempo_estimado'] ?? 'No especificado'
                     ]
                 ];
             } else {
                 return [
                     "status" => false,
-                    "message" => "No se encontró tarifa aplicable para este envío"
+                    "message" => "No se encontró tarifa aplicable para la combinación seleccionada"
                 ];
             }
         } catch (Exception $e) {
-            return ["status" => false, "message" => $e->getMessage()];
+            return ["status" => false, "message" => "Error en el sistema: " . $e->getMessage()];
         }
     }
 }

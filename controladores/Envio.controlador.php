@@ -138,16 +138,26 @@ class ControladorEnvio
     CALCULAR COSTO DE ENVÍO
     =============================================*/
     static public function ctrCalcularCostoEnvio()
-    {
-        if (isset($_GET['origen']) && isset($_GET['destino']) && isset($_GET['tipo']) && isset($_GET['peso'])) {
-            $respuesta = ModeloEnvio::mdlCalcularCostoEnvio(
-                $_GET['origen'],
-                $_GET['destino'],
-                $_GET['tipo'],
-                $_GET['peso']
-            );
-            echo json_encode($respuesta);
+{
+    if (isset($_GET['origen'], $_GET['destino'], $_GET['tipo'], $_GET['peso'])) {
+        // Validar que sean números
+        if (!is_numeric($_GET['origen']) || !is_numeric($_GET['destino']) || 
+            !is_numeric($_GET['tipo']) || !is_numeric(str_replace(',', '.', $_GET['peso']))) {
+            echo json_encode(["status" => false, "message" => "Datos inválidos"]);
+            return;
         }
+
+        $respuesta = ModeloEnvio::mdlCalcularCostoEnvio(
+            (int)$_GET['origen'],
+            (int)$_GET['destino'],
+            (int)$_GET['tipo'],
+            (float)str_replace(',', '.', $_GET['peso'])
+        );
+        
+        echo json_encode($respuesta);
+    } else {
+        echo json_encode(["status" => false, "message" => "Faltan parámetros"]);
     }
+}
 }
 ?>

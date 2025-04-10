@@ -363,13 +363,15 @@ $(document).ready(function () {
     // Mostrar detalles de un envío
     const mostrarDetalleEnvio = async (idEnvio) => {
         const response = await fetchData(`ajax/envios.ajax.php?action=detalle&id=${idEnvio}`);
+        console.log(response);
         if (!response || !response.status) {
             Swal.fire("Error", "No se pudo cargar el detalle del envío", "error");
             return;
         }
-
-        const envio = response.data;
+    
+        const envio = response.data.envio;
         envioActual = envio;
+        console.log(envio.codigo_envio);
         
         // Actualizar información básica
         $("#codigoEnvio").text(envio.codigo_envio);
@@ -398,9 +400,9 @@ $(document).ready(function () {
         // Mostrar paquetes
         const tbodyPaquetes = $("#tablaPaquetes tbody");
         tbodyPaquetes.empty();
-        $("#totalPaquetesDetalle").text(envio.paquetes.length);
+        $("#totalPaquetesDetalle").text(response.data.paquetes.length);
         
-        envio.paquetes.forEach(paquete => {
+        response.data.paquetes.forEach(paquete => {
             let claseEstadoPaquete = "";
             switch(paquete.estado) {
                 case 'BUENO': claseEstadoPaquete = "badge bg-success"; break;
@@ -425,7 +427,7 @@ $(document).ready(function () {
         const timeline = $("#timelineSeguimiento");
         timeline.empty();
         
-        envio.seguimiento.forEach(seguimiento => {
+        response.data.seguimiento.forEach(seguimiento => {
             const template = $("#templateSeguimiento").html()
                 .replace("{{estado}}", seguimiento.estado_nuevo.replace('_', ' '))
                 .replace("{{fecha}}", new Date(seguimiento.fecha_registro).toLocaleString())
@@ -438,7 +440,7 @@ $(document).ready(function () {
         const listaDocumentos = $("#listaDocumentos");
         listaDocumentos.empty();
         
-        envio.documentos.forEach(documento => {
+        response.data.documentos.forEach(documento => {
             const template = $("#templateDocumento").html()
                 .replace("{{tipo}}", documento.tipo_documento)
                 .replace("{{fecha}}", new Date(documento.fecha_subida).toLocaleDateString())
@@ -572,12 +574,29 @@ $(document).ready(function () {
             return;
         }
         
-        const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
-        if (costo) {
-            $("#costoEnvio").val(costo.costo.toFixed(2));
-            Swal.fire("¡Calculado!", `Costo estimado: S/ ${costo.costo.toFixed(2)}. Tiempo estimado: ${costo.tiempo_estimado} horas`, "success");
-        } else {
-            Swal.fire("Error", "No se pudo calcular el costo. Verifique los datos.", "error");
+        // Mostrar carga mientras se calcula
+        Swal.fire({
+            title: 'Calculando costo...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        try {
+            const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
+            Swal.close();
+            
+            if (costo?.status) {
+                $("#costoEnvio").val(costo.data.costo.toFixed(2));
+                Swal.fire("¡Calculado!", `Costo estimado: S/ ${costo.data.costo.toFixed(2)}. Tiempo estimado: ${costo.data.tiempo_estimado} horas`, "success");
+            } else {
+                Swal.fire("Error", costo?.message || "No se pudo calcular el costo. Verifique los datos.", "error");
+            }
+        } catch (error) {
+            Swal.close();
+            Swal.fire("Error", "Ocurrió un error al calcular el costo", "error");
+            console.error("Error al calcular costo:", error);
         }
     });
 
@@ -671,6 +690,7 @@ $(document).ready(function () {
     $("#tablaEnvios").on("click", ".btnDetalleEnvio", function() {
         const idEnvio = $(this).data("id");
         mostrarDetalleEnvio(idEnvio);
+        $("#modalDetalleEnvio").modal("show");
     });
 
     // Evento para cambiar estado de envío
