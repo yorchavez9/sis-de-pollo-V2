@@ -12,6 +12,14 @@ ESTILOS DE ESTADO DE COTIZACION
   background: #28C76F;
   color: white;
 }
+.bg-activado{
+  background: #28C76F;
+  color: white;
+}
+.bg-desactivado{
+  background: #E53250;
+  color: white;
+}
 
 .btn-pendiente {
   background: #ffce2b;

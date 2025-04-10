@@ -26,6 +26,8 @@
 <script src="vistas/js/codigo_barra.js"></script>
 <script src="vistas/js/inventario.js"></script>
 
+<script src="vistas/js/tipo_comprobantes.js"></script>
+
 </body>
 
 </html>
