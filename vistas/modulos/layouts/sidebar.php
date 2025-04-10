@@ -123,10 +123,9 @@
                     <a href="javascript:void(0);"><i class="fas fa-cog"></i><span>Configuración</span> <span class="menu-arrow"></span></a>
                     <ul>
                         <li><a href="configuracion-sistema"><i class="fas fa-sliders-h"></i> Sistema</a></li>
-                        <li><a href="tipoComprobantes"><i class="fas fa-ticket-alt"></i> Tipo Comprobantes</a></li>
-                        <li><a href="serieComprobante"><i class="fas fa-ticket-alt"></i> Serie Comprobantes</a></li>
+                        <li><a href="tipoComprobantes"><i class="fas fa-ticket-alt"></i> Comprobantes</a></li>
+                        <li><a href="serieComprobante"><i class="fas fa-list-ol"></i> Folios</a></li>
                         <li><a href="configuracion-correo"><i class="fas fa-envelope"></i> Correo</a></li>
-                        <li><a href="configuracion-folios"><i class="fas fa-list-ol"></i> Folios</a></li>
                     </ul>
                 </li>
             </ul>

@@ -2,7 +2,7 @@
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>Lista de series de comprobantes</h4>
+                <h4>Lista de series y folios de comprobantes</h4>
                 <h6>Administrar series para comprobantes</h6>
             </div>
             <div class="page-btn">
