@@ -1,3 +1,45 @@
+<style>
+    /* Estilos para el dropdown */
+.dropdown-toggle {
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.dropdown-toggle:hover {
+    background-color: #0d6efd;
+    color: white !important;
+}
+
+.dropdown-menu {
+    border: none;
+    border-radius: 8px;
+    min-width: 180px;
+    padding: 5px 0;
+}
+
+.dropdown-item {
+    padding: 8px 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    margin: 2px 8px;
+    transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item span {
+    flex-grow: 1;
+}
+
+/* Colores para íconos */
+.fa-eye { color: #0d6efd; }
+.fa-exchange-alt { color: #ffc107; }
+.fa-times { color: #dc3545; }
+.fa-print { color: #6c757d; }
+</style>
+
 <div class="page-wrapper">
     <div class="content">
         <!-- Encabezado -->
@@ -162,11 +204,7 @@
                                     <div class="form-group">
                                         <label>Tipo de Envío <span class="text-danger">*</span></label>
                                         <select class="form-select select" name="id_tipo_encomienda" id="id_tipo_encomienda" >
-                                            <option value="" disabled selected>Seleccionar</option>
-                                            <option value="1">Productos Perecederos</option>
-                                            <option value="2">Productos Secos</option>
-                                            <option value="3">Documentos</option>
-                                            <option value="4">Insumos</option>
+                                            
                                         </select>
                                     </div>
                                 </div>

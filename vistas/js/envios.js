@@ -153,7 +153,7 @@ $(document).ready(function () {
 
         envios.data.forEach((envio, index) => {
             // Formatear fechas
-            const fechaEnvio = envio.fecha_envio ? new Date(envio.fecha_envio).toLocaleString() : 'Pendiente';
+            const fechaEnvio = envio.fecha_creacion ? new Date(envio.fecha_creacion).toLocaleString() : 'Pendiente';
             
             // Determinar clase para el estado
             let claseEstado = "";
@@ -178,17 +178,52 @@ $(document).ready(function () {
                     <td><span class="${claseEstado}">${envio.estado.replace('_', ' ')}</span></td>
                     <td>${envio.transportista || 'No asignado'}</td>
                     <td class="text-center">
-                        <button class="btn btn-sm btn-info btnDetalleEnvio me-1" data-id="${envio.id_envio}">
-                            <i class="fas fa-eye text-white"></i>
-                        </button>
-                        <button class="btn btn-sm btn-warning btnCambiarEstado me-1" data-id="${envio.id_envio}">
-                            <i class="fas fa-exchange-alt text-white"></i>
-                        </button>
-                        ${envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION' ? 
-                            `<button class="btn btn-sm btn-danger btnCancelarEnvio" data-id="${envio.id_envio}">
-                                <i class="fas fa-times"></i>
-                            </button>` : ''
-                        }
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-primary dropdown-toggle py-1 px-2" type="button" 
+                                    id="dropdownMenuButton${envio.id_envio}" data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            
+                            <ul class="dropdown-menu shadow-sm" aria-labelledby="dropdownMenuButton${envio.id_envio}">
+                                <!-- Opción Ver Detalle -->
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center btnDetalleEnvio" href="#" data-id="${envio.id_envio}">
+                                        <i class="fas fa-eye text-primary me-2"></i>
+                                        <span>Ver Detalle</span>
+                                    </a>
+                                </li>
+                                
+                                <!-- Opción Cambiar Estado -->
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center btnCambiarEstado" href="#" data-id="${envio.id_envio}">
+                                        <i class="fas fa-exchange-alt text-warning me-2"></i>
+                                        <span>Cambiar Estado</span>
+                                    </a>
+                                </li>
+                                
+                                <!-- Opción Cancelar (condicional) -->
+                                ${envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION' ? 
+                                    `<li>
+                                        <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
+                                            <i class="fas fa-times text-danger me-2"></i>
+                                            <span>Cancelar Envío</span>
+                                        </a>
+                                    </li>` : ''
+                                }
+                                
+                                <!-- Separador visual -->
+                                <li><hr class="dropdown-divider"></li>
+                                
+                                <!-- Opción adicional (ejemplo) -->
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center" href="#">
+                                        <i class="fas fa-print text-secondary me-2"></i>
+                                        <span>Imprimir</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                     </td>
                 </tr>`;
             tbody.append(fila);
@@ -236,6 +271,26 @@ $(document).ready(function () {
             const selectedOption = $(this).find("option:selected");
             const serieValue = selectedOption.data("serie") || ""; // Obtiene "B002", "N002", etc.
             $("#serie").val(serieValue); // Asigna al input
+        });
+    };
+
+    // Cargar sucursales en select
+    const cargarTipoEncomienda = async (selectId, todas = false) => {
+        const tipo_encomiendas = await fetchData("ajax/tipo_encomienda.ajax.php");
+        if (!tipo_encomiendas || !tipo_encomiendas.status) return;
+
+        const select = $(`#${selectId}`);
+        select.empty();
+        if (todas) {
+            select.append('<option value="">Todas</option>');
+        } else {
+            select.append('<option value="" disabled selected>Seleccionar sucursal</option>');
+        }
+        
+        tipo_encomiendas.data.forEach(tipo => {
+            if (tipo.estado === 1) {
+                select.append(`<option value="${tipo.id_tipo_encomienda}">${tipo.nombre}</option>`);
+            }
         });
     };
 
@@ -530,8 +585,8 @@ $(document).ready(function () {
     // Calcular costo de envío
     const calcularCostoEnvio = async (idSucursalOrigen, idSucursalDestino, idTipoEncomienda, pesoTotal) => {
         const response = await fetchData(`ajax/envios.ajax.php?action=calcularCosto&origen=${idSucursalOrigen}&destino=${idSucursalDestino}&tipo=${idTipoEncomienda}&peso=${pesoTotal}`);
-        if (response?.status) {
-            return response.data;
+        if (response.status) {
+            return response
         }
         return 0;
     };
@@ -585,9 +640,9 @@ $(document).ready(function () {
         
         try {
             const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
+            console.log(costo);
             Swal.close();
-            
-            if (costo?.status) {
+            if (costo.status) {
                 $("#costoEnvio").val(costo.data.costo.toFixed(2));
                 Swal.fire("¡Calculado!", `Costo estimado: S/ ${costo.data.costo.toFixed(2)}. Tiempo estimado: ${costo.data.tiempo_estimado} horas`, "success");
             } else {
@@ -759,8 +814,9 @@ $(document).ready(function () {
     // Cargar datos iniciales
     cargarSucursales("filtroOrigen", true);
     cargarSucursales("filtroDestino", true);
-    cargarSucursales("id_sucursal_origen");
     cargarSerieComprobante("id_serie");
+    cargarTipoEncomienda("id_tipo_encomienda");
+    cargarSucursales("id_sucursal_origen");
     cargarSucursales("id_sucursal_destino");
     cargarTransportistas("id_transportista");
     if ($.fn.DataTable.isDataTable("#tablaEnvios")) {

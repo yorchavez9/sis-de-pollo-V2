@@ -154,7 +154,7 @@ class ControladorEnvio
             (float)str_replace(',', '.', $_GET['peso'])
         );
         
-        echo json_encode($respuesta);
+        return $respuesta;
     } else {
         echo json_encode(["status" => false, "message" => "Faltan parámetros"]);
     }

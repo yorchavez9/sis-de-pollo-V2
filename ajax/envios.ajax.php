@@ -26,7 +26,8 @@ if (isset($_GET['action'])) {
             break;
             
         case 'calcularCosto':
-            echo ControladorEnvio::ctrCalcularCostoEnvio();
+            $response = ControladorEnvio::ctrCalcularCostoEnvio();
+            echo json_encode($response);
             break;
             
         default:
