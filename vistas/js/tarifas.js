@@ -1,4 +1,11 @@
 $(document).ready(function () {
+
+    function formatCurrency(value) {
+        if (!value) return "S/ 0.00";
+        return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
+    }
+
+
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",
@@ -110,8 +117,8 @@ $(document).ready(function () {
                     <td>${tarifa.nombre_sucursal_destino || 'N/A'}</td>
                     <td>${tarifa.nombre_tipo_encomienda || 'N/A'}</td>
                     <td>${tarifa.rango_peso_min} - ${tarifa.rango_peso_max} kg</td>
-                    <td>S/ ${tarifa.costo_base.toFixed(2)}</td>
-                    <td>S/ ${tarifa.costo_kg_extra ? tarifa.costo_kg_extra.toFixed(2) : '0.00'}</td>
+                    <td>${formatCurrency(tarifa.costo_base)}</td>
+                    <td>${tarifa.costo_kg_extra ? formatCurrency(tarifa.costo_kg_extra ): '0.00'}</td>
                     <td>${tarifa.tiempo_estimado ? tarifa.tiempo_estimado + ' horas' : 'No especificado'}</td>
                     <td>${vigenciaDesde} - ${vigenciaHasta}</td>
                     <td class="text-center">
