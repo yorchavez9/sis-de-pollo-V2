@@ -23,7 +23,7 @@
                                 <th>Descripción</th>
                                 <th>Requiere confirmación</th>
                                 <th class="text-center">Prioridad</th>
-                                <th>Estado</th>
+                                <th class="text-center">Estado</th>
                                 <th class="text-center">Acción</th>
                             </tr>
                         </thead>
