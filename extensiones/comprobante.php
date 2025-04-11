@@ -30,7 +30,7 @@ $data = [
 ];
 
 // Tipo de documento (boleta o ticket)
-$tipoDocumento = 'boleta'; 
+$tipoDocumento = 'ticket'; 
 
 // Productos
 $productos = [
