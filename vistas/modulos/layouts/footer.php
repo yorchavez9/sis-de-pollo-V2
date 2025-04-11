@@ -13,6 +13,7 @@
 <script src="vistas/js/login.js"></script>
 <script src="vistas/js/sucursal.js"></script>
 <script src="vistas/js/almacen.js"></script>
+<script src="vistas/js/tipo_encomiendas.js"></script>
 <script src="vistas/js/envios.js"></script>
 <script src="vistas/js/tipo_documentos.js"></script>
 <script src="vistas/js/cliente.js"></script>

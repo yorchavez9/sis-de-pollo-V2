@@ -13,6 +13,7 @@
                     <ul>
                         <li><a href="sucursales"><i class="fas fa-store"></i> Sucursales</a></li>
                         <li><a href="almacenes"><i class="fas fa-warehouse"></i> Almacenes</a></li>
+                        <li><a href="tipoEncomiendas"><i class="fas fa-truck-moving"></i> Tipo de encomiendas</a></li>
                         <li><a href="envios"><i class="fas fa-truck-moving"></i> Envíos</a></li>
                         <li><a href="tarifas"><i class="fas fa-tags"></i> Tarifas de Envío</a></li>
                     </ul>
