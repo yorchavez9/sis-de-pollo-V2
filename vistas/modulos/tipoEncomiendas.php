@@ -22,7 +22,7 @@
                                 <th>Nombre</th>
                                 <th>Descripción</th>
                                 <th>Requiere confirmación</th>
-                                <th>Prioridad</th>
+                                <th class="text-center">Prioridad</th>
                                 <th>Estado</th>
                                 <th class="text-center">Acción</th>
                             </tr>

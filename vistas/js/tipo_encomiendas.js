@@ -114,7 +114,7 @@ $(document).ready(function () {
                             ? '<span class="badge bg-success">Sí</span>' 
                             : '<span class="badge bg-secondary">No</span>'}
                     </td>
-                    <td>
+                    <td class="text-center">
                         ${getPrioridadBadge(tipo.prioridad)}
                     </td>
                     <td class="text-center">
