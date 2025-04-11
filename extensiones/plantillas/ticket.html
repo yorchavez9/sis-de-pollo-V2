@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style>
+        @page { 
+            margin: 5mm; 
+            size: 80mm auto; /* Definir explícitamente el tamaño */
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9pt;
+            width: 70mm; /* Ligeramente menor que el ancho de la página */
+            margin: 0 auto;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 3mm;
+            margin-bottom: 3mm;
+        }
+        .company-name {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        .document-title {
+            font-size: 12pt;
+            margin: 2mm 0;
+        }
+        .sunat-leyend {
+            font-size: 7pt;
+            background: #f0f0f0;
+            padding: 2mm;
+            text-align: center;
+            margin: 2mm 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2mm 0;
+        }
+        table.items th, table.items td {
+            padding: 1mm 0;
+            border-bottom: 1px dashed #ddd;
+            font-size: 8pt;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 10pt;
+            text-align: right;
+            margin-top: 3mm;
+        }
+        .footer {
+            font-size: 7pt;
+            text-align: center;
+            margin-top: 5mm;
+            border-top: 1px dashed #000;
+            padding-top: 2mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">{{empresa_nombre}}</div>
+        <div>RUC: {{empresa_ruc}}</div>
+        <div class="document-title">BOLETA DE VENTA ELECTRÓNICA</div>
+        <div>N° {{serie_numero}}</div>
+    </div>
+
+    <div class="sunat-leyend">
+        Representación Impresa de la Boleta de Venta Electrónica<br>
+        Consultar en https://e-consultaruc.sunat.gob.pe
+    </div>
+
+    <table>
+        <tr>
+            <td><strong>Señor(es):</strong></td>
+            <td>{{cliente_nombre}}</td>
+        </tr>
+        <tr>
+            <td><strong>DNI/RUC:</strong></td>
+            <td>{{cliente_dni}}</td>
+        </tr>
+        <tr>
+            <td><strong>Dirección:</strong></td>
+            <td>{{cliente_direccion}}</td>
+        </tr>
+        <tr>
+            <td><strong>Fecha Emisión:</strong></td>
+            <td>{{fecha_emision}}</td>
+        </tr>
+        <tr>
+            <td><strong>Moneda:</strong></td>
+            <td>{{moneda}}</td>
+        </tr>
+    </table>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th align="left">Cant.</th>
+                <th align="left">Descripción</th>
+                <th align="right">P.Unit</th>
+                <th align="right">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{items}}
+        </tbody>
+    </table>
+
+    <div class="total">
+        TOTAL: {{total}}
+    </div>
+
+    <div class="footer">
+        <p>Autorizado mediante Resolución de Intendencia N° 034-005-0000000</p>
+        <p>Consulte su comprobante en https://e-consultaruc.sunat.gob.pe</p>
+    </div>
+</body>
+</html>

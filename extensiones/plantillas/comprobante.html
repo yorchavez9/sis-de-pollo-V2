@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        
+        @page { 
+            margin: 10mm; 
+            size: A4 portrait;
+        }
+        
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #f8f9fa;
+            --accent-color: #2980b9;
+            --text-color: #2c3e50;
+            --light-gray: #ecf0f1;
+            --border-color: #e0e0e0;
+        }
+        
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            font-size: 9pt;
+            width: 100%;
+            max-width: 190mm;
+            margin: 0 auto;
+            padding: 0;
+            color: var(--text-color);
+            line-height: 1.3;
+            background-color: white;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 1px solid var(--primary-color);
+            padding-bottom: 4mm;
+            margin-bottom: 4mm;
+            position: relative;
+        }
+        
+        .company-name {
+            font-weight: 700;
+            font-size: 14pt;
+            margin-bottom: 1mm;
+            color: var(--primary-color);
+        }
+        
+        .document-title {
+            font-size: 14pt;
+            margin: 2mm 0;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-color);
+            letter-spacing: 0.5px;
+        }
+        
+        .header-box {
+            background-color: var(--secondary-color);
+            border-radius: 5px;
+            padding: 2mm;
+            margin-top: 2mm;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .sunat-leyend {
+            font-size: 7pt;
+            background: var(--light-gray);
+            padding: 2mm;
+            text-align: center;
+            margin: 3mm 0;
+            border-radius: 5px;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .client-info {
+            margin-bottom: 3mm;
+            background-color: var(--secondary-color);
+            border-radius: 5px;
+            padding: 3mm;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .client-info table {
+            width: 100%;
+            border-spacing: 0;
+        }
+        
+        .client-info td {
+            padding: 1mm 0;
+            vertical-align: top;
+        }
+        
+        .client-info td:first-child {
+            width: 25%;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 3mm 0;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        table.items th {
+            background: var(--primary-color);
+            padding: 2mm;
+            text-align: left;
+            border: none;
+            font-size: 8pt;
+            color: white;
+            font-weight: 500;
+        }
+        
+        table.items tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+        
+        table.items td {
+            padding: 1.5mm;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 8pt;
+        }
+        
+        table.items td:last-child,
+        table.items td:nth-last-child(2) {
+            text-align: right;
+        }
+        
+        .totals {
+            width: 60%;
+            margin-left: auto;
+            margin-top: 3mm;
+        }
+        
+        .totals table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .totals td {
+            padding: 1.5mm;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 8pt;
+        }
+        
+        .totals td:first-child {
+            font-weight: 500;
+            width: 65%;
+            color: var(--text-color);
+        }
+        
+        .totals tr:last-child {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 700;
+        }
+        
+        .totals tr:last-child td {
+            padding: 2mm 1.5mm;
+        }
+        
+        .amount-in-words {
+            margin-top: 3mm;
+            font-style: italic;
+            text-align: center;
+            padding: 2mm;
+            border-radius: 5px;
+            border: 1px dashed var(--primary-color);
+            background-color: var(--secondary-color);
+            font-size: 8pt;
+        }
+        
+        .footer-section {
+            display: flex;
+            margin-top: 3mm;
+            align-items: flex-start;
+        }
+        
+        .legal-info {
+            font-size: 6.5pt;
+            text-align: justify;
+            line-height: 1.3;
+            background-color: var(--light-gray);
+            padding: 2mm;
+            border-radius: 3px;
+            width: 70%;
+        }
+        
+        .qr-section {
+            width: 25%;
+            text-align: center;
+            margin-left: auto;
+        }
+        
+        .qr-code {
+            display: inline-block;
+            padding: 1mm;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            margin-bottom: 1mm;
+        }
+        
+        .qr-code img {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .verification-text {
+            font-size: 7pt;
+            margin-top: 1mm;
+        }
+        
+        .footer {
+            font-size: 7pt;
+            text-align: center;
+            margin-top: 4mm;
+            padding-top: 2mm;
+            color: var(--text-color);
+            border-top: 1px solid var(--primary-color);
+        }
+        
+        .footer p {
+            margin: 0.5mm 0;
+        }
+        
+        @media print {
+            body {
+                font-size: 9pt;
+            }
+            
+            .header, .footer {
+                border-color: var(--primary-color) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            table.items th {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .totals tr:last-child {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">{{empresa_nombre}}</div>
+        <div>RUC: {{empresa_ruc}}</div>
+        
+        <div class="header-box">
+            <div class="document-title">Boleta de Venta Electrónica</div>
+            <div>N° {{serie_numero}}</div>
+        </div>
+    </div>
+
+    <div class="sunat-leyend">
+        Representación Impresa de la Boleta de Venta Electrónica • Verificar en: <strong>https://e-consultaruc.sunat.gob.pe</strong>
+    </div>
+
+    <div class="client-info">
+        <table>
+            <tr>
+                <td>Señor(es):</td>
+                <td>{{cliente_nombre}}</td>
+            </tr>
+            <tr>
+                <td>DNI/RUC:</td>
+                <td>{{cliente_dni}}</td>
+            </tr>
+            <tr>
+                <td>Dirección:</td>
+                <td>{{cliente_direccion}}</td>
+            </tr>
+            <tr>
+                <td>Fecha de Emisión:</td>
+                <td>{{fecha_emision}}</td>
+            </tr>
+            <tr>
+                <td>Moneda:</td>
+                <td>{{moneda}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th>Cantidad</th>
+                <th>Unidad</th>
+                <th>Descripción</th>
+                <th>Valor Unit.</th>
+                <th>Importe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{items}}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td>Op. Gravada:</td>
+                <td>S/ 6.00</td>
+            </tr>
+            <tr>
+                <td>Op. Exonerada:</td>
+                <td>S/ 0.00</td>
+            </tr>
+            <tr>
+                <td>Op. Inafecta:</td>
+                <td>S/ 0.00</td>
+            </tr>
+            <tr>
+                <td>IGV (18%):</td>
+                <td>S/ 0.00</td>
+            </tr>
+            <tr>
+                <td>Otros Cargos/Tributos:</td>
+                <td>S/ 0.00</td>
+            </tr>
+            <tr>
+                <td>Importe Total:</td>
+                <td><strong>{{total}}</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="amount-in-words">
+        SON: SEIS CON 00/100 SOLES
+    </div>
+
+    <div class="footer-section">
+        <div class="legal-info">
+            (*) Sin impuestos. (**) Incluye impuestos, de ser Op. Gravada.<br>
+            Esta es una representación impresa de la Boleta de Venta Electrónica, generada en el Sistema de la SUNAT. 
+            El Emisor Electrónico puede verificarla utilizando su clave SOL, el Adquirente o Usuario puede consultar 
+            su validez en SUNAT Virtual: www.sunat.gob.pe, en Opciones sin Clave SOL/ Consulta de Validez del CPE.
+        </div>
+        
+        <div class="qr-section">
+            <div class="qr-code">
+                <img src="/api/placeholder/60/60" alt="Código QR">
+            </div>
+            <div class="verification-text">
+                Escanee para verificar
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Autorizado mediante Resolución de Intendencia N° 034-005-0000000</p>
+        <p>Consulte su comprobante en https://e-consultaruc.sunat.gob.pe</p>
+    </div>
+</body>
+</html>
