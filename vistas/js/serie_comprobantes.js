@@ -82,12 +82,12 @@ $(document).ready(function () {
         const numActual = parseInt(form.find(`#${prefix}numero_actual_serie`).val());
         const numFinal = parseInt(form.find(`#${prefix}numero_final_serie`).val()) || null;
 
-        if (numActual < numInicial) {
+        /* if (numActual < numInicial) {
             form.find(`#error_${prefix}numero_actual_serie`)
                 .html("El número actual no puede ser menor al inicial")
                 .addClass("text-danger");
             return false;
-        }
+        } */
 
         if (numFinal && numFinal <= numActual) {
             form.find(`#error_${prefix}numero_final_serie`)
