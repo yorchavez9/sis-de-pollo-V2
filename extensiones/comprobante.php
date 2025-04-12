@@ -1,4 +1,7 @@
 <?php
+require_once "../modelos/Envio.modelo.php";
+require_once "../controladores/Envio.controlador.php";
+
 require 'vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -29,8 +32,13 @@ $data = [
     'total'             => 'S/ 6.00'
 ];
 
-// Tipo de documento (boleta o ticket)
-$tipoDocumento = 'ticket'; 
+// Tipo de documento (boleta, ticket o guia remision)
+$tipoDocumento = $_GET["comprobante"]; 
+$idEnvio = $_GET['id'];
+$response = ControladorEnvio::ctrMostrarDetalleEnvio($idEnvio);
+echo var_dump($response);
+
+return;
 
 // Productos
 $productos = [
@@ -57,6 +65,8 @@ foreach ($productos as $producto) {
 // Cargar template HTML
 if($tipoDocumento == 'ticket'){
     $html = file_get_contents('plantillas/ticket.html');
+}else if($tipoDocumento == 'guia_remision'){
+    $html = file_get_contents('plantillas/guia_remision.html');
 }else{
     $html = file_get_contents('plantillas/comprobante.html');
 }

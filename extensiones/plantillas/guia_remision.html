@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Remisión</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+    
+        body {
+            padding: 10px;
+            margin: 0;
+            font-size: 12px;
+        }
+    
+        .container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+        }
+    
+        h1 {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .serie_numero_guia{
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 10xp;
+            color: #333;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+    
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+    
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+    
+        .section-title {
+            font-weight: bold;
+            background-color: #dcdcdc;
+            padding: 6px;
+            margin: 15px 0 5px;
+            font-size: 14px;
+        }
+    
+        .package-header {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    
+        .data-table, .package-table, .items {
+            font-size: 11px;
+        }
+    
+        .no-break {
+            page-break-inside: avoid;
+        }
+    
+        .status {
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: #221f1f;
+            text-align: center;
+        }
+
+        @page {
+            margin: 20px;
+        }
+    </style>
+    
+</head>
+<body>
+
+<div class="container">
+    <h1>Guía de Remisión - SUNAT</h1>
+    <h2 class="serie_numero_guia">GUIA {{serie}}-{{serie_numero}}</h2>
+
+    <!-- Información de la Empresa y Remitente -->
+    <table class="header-table">
+        <tr>
+            <th>Empresa</th>
+            <td>{{empresa_nombre}}</td>
+            <th>RUC</th>
+            <td>{{empresa_ruc}}</td>
+        </tr>
+        <tr>
+            <th>Comprobante</th>
+            <td>{{serie}}-{{serie_numero}}</td>
+            <th>Fecha de Emisión</th>
+            <td>{{fecha_emision}}</td>
+        </tr>
+        <tr>
+            <th>Remitente</th>
+            <td>{{remitente_nombre}}</td>
+            <th>DNI</th>
+            <td>{{remitente_dni}}</td>
+        </tr>
+        <tr>
+            <th>Destinatario</th>
+            <td>{{destinatario_nombre}}</td>
+            <th>DNI</th>
+            <td>{{destinatario_dni}}</td>
+        </tr>
+    </table>
+
+    <!-- Información de Estado -->
+    <table class="footer-table">
+        <tr>
+            <th>Estado de Envío</th>
+            <td><span class="status {{estado}}">{{estado}}</span></td>
+            <th>Fecha Estimada de Entrega</th>
+            <td>{{fecha_estimada_entrega}}</td>
+        </tr>
+        <tr>
+            <th>Punto de Partida</th>
+            <td>{{punto_partida}}</td>
+            <th>Punto de Llegada</th>
+            <td>{{punto_llegada}}</td>
+        </tr>
+    </table>
+
+    <!-- Paquetes -->
+    <table class="data-table">
+   
+     
+            {{paquetes}} <!-- Aquí se insertan los datos de los paquetes -->
+       
+    </table>
+
+    <!-- Seguimiento -->
+    <h3>Seguimiento de la Guía</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Ubicación</th>
+                <th>Observaciones</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{seguimiento}} <!-- Aquí se insertan los datos de seguimiento -->
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <h1>Gracias por su preferencia</h1>
+    </div>
+
+</div>
+
+</body>
+</html>

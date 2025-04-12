@@ -801,7 +801,7 @@ $(document).ready(function () {
     // Evento para imprimir guía
     $("#btnImprimirGuia").click(function() {
         if (!envioActual) return;
-        window.open(`ajax/envios.ajax.php?action=imprimirGuia&id=${envioActual.id_envio}`, "_blank");
+        window.open(`extensiones/guia_remision.php?action=imprimirGuia&comprobante=guia_remision&id=${envioActual.id_envio}`, "_blank");
     });
 
     // Evento para agregar seguimiento

@@ -205,13 +205,15 @@ class ModeloEnvio
                     CONCAT(p.nombre, ' ', p.apellidos) as transportista,
                     e.fecha_creacion, e.fecha_envio, e.fecha_recepcion,
                     e.peso_total, e.volumen_total, e.cantidad_paquetes,
-                    e.estado, e.costo_envio
+                    e.estado, e.costo_envio,
+                    sc.serie
                 FROM $tabla e
                 LEFT JOIN sucursales so ON e.id_sucursal_origen = so.id_sucursal
                 LEFT JOIN sucursales sd ON e.id_sucursal_destino = sd.id_sucursal
                 LEFT JOIN tipo_encomiendas te ON e.id_tipo_encomienda = te.id_tipo_encomienda
                 LEFT JOIN transportistas t ON e.id_transportista = t.id_transportista
                 LEFT JOIN personas p ON t.id_persona = p.id_persona
+                LEFT JOIN series_comprobantes sc ON e.id_serie = e.id_serie
                 $where
                 ORDER BY e.fecha_creacion DESC";
 
@@ -251,7 +253,8 @@ class ModeloEnvio
                     te.nombre as tipo_encomienda,
                     CONCAT(p.nombre, ' ', p.apellidos) as transportista,
                     CONCAT(u.nombre_usuario, ' (', u.usuario, ')') as usuario_creador,
-                    CONCAT(ur.nombre_usuario, ' (', ur.usuario, ')') as usuario_receptor
+                    CONCAT(ur.nombre_usuario, ' (', ur.usuario, ')') as usuario_receptor,
+                    sc.serie
                 FROM envios e
                 LEFT JOIN sucursales so ON e.id_sucursal_origen = so.id_sucursal
                 LEFT JOIN sucursales sd ON e.id_sucursal_destino = sd.id_sucursal
@@ -260,6 +263,7 @@ class ModeloEnvio
                 LEFT JOIN personas p ON t.id_persona = p.id_persona
                 LEFT JOIN usuarios u ON e.id_usuario_creador = u.id_usuario
                 LEFT JOIN usuarios ur ON e.id_usuario_receptor = ur.id_usuario
+                LEFT JOIN series_comprobantes sc ON e.id_serie = e.id_serie
                 WHERE e.id_envio = :id_envio"
             );
             $stmtEnvio->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
