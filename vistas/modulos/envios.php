@@ -106,7 +106,7 @@
                     <div class="col-md-2">
                         <div class="form-group">
                             <label>&nbsp;</label>
-                            <button type="submit" class="btn btn-primary btn-block">
+                            <button type="button" id="btnFiltrarEnvios" class="btn btn-primary btn-block">
                                 <i class="fas fa-filter me-2"></i> Filtrar
                             </button>
                         </div>

@@ -8,7 +8,8 @@ class ModeloEnvio
     CREAR ENVÍO
     =============================================*/
 
-    static public function mdlCrearEnvio($tabla, $datos) {
+    static public function mdlCrearEnvio($tabla, $datos)
+    {
         $pdo = null;
 
         try {
@@ -77,8 +78,8 @@ class ModeloEnvio
                         throw new Exception("Datos del paquete incompletos");
                     }
 
-                    $codigoPaquete = "PKG" . substr($datos['codigo_envio'], 3) . "-" . 
-                                    str_pad($paquete['numero'], 3, '0', STR_PAD_LEFT);
+                    $codigoPaquete = "PKG" . substr($datos['codigo_envio'], 3) . "-" .
+                        str_pad($paquete['numero'], 3, '0', STR_PAD_LEFT);
 
                     $volumen = $paquete['volumen'] ?? (
                         ($paquete['alto'] ?? 0) * ($paquete['ancho'] ?? 0) * ($paquete['profundidad'] ?? 0)
@@ -172,7 +173,6 @@ class ModeloEnvio
                 'id_envio' => $idEnvio,
                 'codigo_envio' => $datos['codigo_envio']
             ];
-
         } catch (Exception $e) {
             if ($pdo && $pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -193,39 +193,75 @@ class ModeloEnvio
     /*=============================================
     MOSTRAR ENVÍOS
     =============================================*/
-    static public function mdlMostrarEnvios($tabla, $item, $valor)
+    static public function mdlMostrarEnvios($tabla, $item = null, $valor = null, $filtros = [])
     {
         try {
-            $where = $item ? "WHERE e.$item = :$item" : "";
+            // Construir la parte WHERE de la consulta
+            $where = '';
+            $conditions = [];
+            $params = [];
+
+            // Si se proporciona un item y valor individual
+            if ($item && $valor) {
+                $conditions[] = "e.$item = :$item";
+                $params[":$item"] = $valor;
+            }
+
+            // Aplicar filtros adicionales
+            if (!empty($filtros)) {
+                if (isset($filtros['origen']) && $filtros['origen']) {
+                    $conditions[] = "e.id_sucursal_origen = :origen";
+                    $params[':origen'] = $filtros['origen'];
+                }
+                if (isset($filtros['destino']) && $filtros['destino']) {
+                    $conditions[] = "e.id_sucursal_destino = :destino";
+                    $params[':destino'] = $filtros['destino'];
+                }
+                if (isset($filtros['tipo']) && $filtros['tipo']) {
+                    $conditions[] = "e.id_tipo_encomienda = :tipo";
+                    $params[':tipo'] = $filtros['tipo'];
+                }
+                if (isset($filtros['estado']) && $filtros['estado']) {
+                    $conditions[] = "e.estado = :estado";
+                    $params[':estado'] = $filtros['estado'];
+                }
+            }
+
+            // Combinar todas las condiciones
+            if (!empty($conditions)) {
+                $where = "WHERE " . implode(" AND ", $conditions);
+            }
+
             $sql = "SELECT 
-                    e.id_envio, e.codigo_envio, 
-                    so.nombre as sucursal_origen, 
-                    sd.nombre as sucursal_destino,
-                    te.nombre as tipo_encomienda,
-                    CONCAT(p.nombre, ' ', p.apellidos) as transportista,
-                    e.fecha_creacion, e.fecha_envio, e.fecha_recepcion,
-                    e.peso_total, e.volumen_total, e.cantidad_paquetes,
-                    e.estado, e.costo_envio,
-                    sc.serie
-                FROM $tabla e
-                LEFT JOIN sucursales so ON e.id_sucursal_origen = so.id_sucursal
-                LEFT JOIN sucursales sd ON e.id_sucursal_destino = sd.id_sucursal
-                LEFT JOIN tipo_encomiendas te ON e.id_tipo_encomienda = te.id_tipo_encomienda
-                LEFT JOIN transportistas t ON e.id_transportista = t.id_transportista
-                LEFT JOIN personas p ON t.id_persona = p.id_persona
-                LEFT JOIN series_comprobantes sc ON e.id_serie = e.id_serie
-                $where
-                ORDER BY e.fecha_creacion DESC";
+                e.id_envio, e.codigo_envio, 
+                so.nombre as sucursal_origen, 
+                sd.nombre as sucursal_destino,
+                te.nombre as tipo_encomienda,
+                CONCAT(p.nombre, ' ', p.apellidos) as transportista,
+                e.fecha_creacion, e.fecha_envio, e.fecha_recepcion,
+                e.peso_total, e.volumen_total, e.cantidad_paquetes,
+                e.estado, e.costo_envio
+            FROM $tabla e
+            LEFT JOIN sucursales so ON e.id_sucursal_origen = so.id_sucursal
+            LEFT JOIN sucursales sd ON e.id_sucursal_destino = sd.id_sucursal
+            LEFT JOIN tipo_encomiendas te ON e.id_tipo_encomienda = te.id_tipo_encomienda
+            LEFT JOIN transportistas t ON e.id_transportista = t.id_transportista
+            LEFT JOIN personas p ON t.id_persona = p.id_persona
+            $where
+            ORDER BY e.fecha_creacion DESC";
 
             $stmt = Conexion::conectar()->prepare($sql);
-            
-            if ($item) {
-                $stmt->bindParam(":" . $item, $valor, PDO::PARAM_STR);
+
+            // Vincular todos los parámetros
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
             }
-            
+
             $stmt->execute();
-            
-            if ($item) {
+
+            if ($item && !empty($filtros)) {
+                return $stmt->fetchAll();
+            } elseif ($item) {
                 return $stmt->fetch();
             } else {
                 return [
@@ -493,7 +529,7 @@ class ModeloEnvio
             if ($peso <= 0) {
                 return ["status" => false, "message" => "El peso debe ser mayor a cero"];
             }
-    
+
             // Buscar tarifa aplicable
             $stmt = Conexion::conectar()->prepare(
                 "SELECT * FROM tarifas_envio 
@@ -508,27 +544,27 @@ class ModeloEnvio
                 ORDER BY rango_peso_min DESC, vigencia_desde DESC
                 LIMIT 1"
             );
-    
+
             $stmt->bindParam(":origen", $origen, PDO::PARAM_INT);
             $stmt->bindParam(":destino", $destino, PDO::PARAM_INT);
             $stmt->bindParam(":tipo", $tipo, PDO::PARAM_INT);
             $stmt->bindParam(":peso", $peso, PDO::PARAM_STR);
             $stmt->execute();
             $tarifa = $stmt->fetch();
-    
+
             if ($tarifa) {
                 // Calcular costo basado en la tarifa
                 $costo = (float)$tarifa['costo_base'];
-                
+
                 // Si el peso excede el rango base, calcular costo adicional
                 if ($peso > $tarifa['rango_peso_min']) {
                     $pesoExcedente = $peso - $tarifa['rango_peso_min'];
                     $costo += $pesoExcedente * $tarifa['costo_kg_extra'];
                 }
-    
+
                 // Redondear a 2 decimales
                 $costo = round($costo, 2);
-    
+
                 return [
                     "status" => true,
                     "data" => [
@@ -547,4 +583,3 @@ class ModeloEnvio
         }
     }
 }
-?>

@@ -141,6 +141,7 @@ $(document).ready(function () {
             const params = new URLSearchParams(filtros);
             url += `&${params.toString()}`;
         }
+        
         const envios = await fetchData(url);
         if (!envios || !envios.status) {
             console.error("Error al cargar envíos:", envios?.message);
@@ -418,7 +419,6 @@ $(document).ready(function () {
     // Mostrar detalles de un envío
     const mostrarDetalleEnvio = async (idEnvio) => {
         const response = await fetchData(`ajax/envios.ajax.php?action=detalle&id=${idEnvio}`);
-        console.log(response);
         if (!response || !response.status) {
             Swal.fire("Error", "No se pudo cargar el detalle del envío", "error");
             return;
@@ -426,7 +426,6 @@ $(document).ready(function () {
     
         const envio = response.data.envio;
         envioActual = envio;
-        console.log(envio.codigo_envio);
         
         // Actualizar información básica
         $("#codigoEnvio").text(envio.codigo_envio);
@@ -640,7 +639,6 @@ $(document).ready(function () {
         
         try {
             const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
-            console.log(costo);
             Swal.close();
             if (costo.status) {
                 $("#costoEnvio").val(costo.data.costo.toFixed(2));
@@ -712,7 +710,6 @@ $(document).ready(function () {
 
         // Enviar datos al servidor
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        console.log(response);
         if (response?.status) {
             Swal.fire("¡Correcto!", "Envío creado con éxito", "success");
             resetForm();
@@ -727,7 +724,7 @@ $(document).ready(function () {
     });
 
     // Evento para filtrar envíos
-    $("#formFiltroEnvios").submit(function(e) {
+    $("#btnFiltrarEnvios").click(function(e) {
         e.preventDefault();
         const filtros = {
             origen: $("#filtroOrigen").val(),

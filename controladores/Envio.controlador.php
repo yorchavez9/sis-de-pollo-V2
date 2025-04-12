@@ -58,9 +58,9 @@ class ControladorEnvio
     /*=============================================
     MOSTRAR ENVÍOS
     =============================================*/
-    static public function ctrMostrarEnvios($item, $valor)
+    static public function ctrMostrarEnvios($item = null, $valor = null, $filtros = [])
     {
-        $respuesta = ModeloEnvio::mdlMostrarEnvios("envios", $item, $valor);
+        $respuesta = ModeloEnvio::mdlMostrarEnvios("envios", $item, $valor, $filtros);
         return $respuesta;
     }
 
