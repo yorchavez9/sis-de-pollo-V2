@@ -31,6 +31,8 @@
 <script src="vistas/js/serie_comprobantes.js"></script>
 <script src="vistas/js/tarifas.js"></script>
 
+<script src="vistas/js/sesion.js"></script>
+
 </body>
 
 </html>

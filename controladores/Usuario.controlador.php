@@ -1,58 +1,53 @@
 <?php
-class ControladorUsuarios{
+class ControladorUsuarios
+{
     /* ============================================
     LOGIN USUARIO
     ============================================ */
-    static public function ctrLoginUsuario(){
+    static public function ctrLoginUsuario()
+    {
         // Iniciar sesión si no está iniciada
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
         }
 
-        if(isset($_POST["ingUsuario"])){
-            if(preg_match('/^[a-zA-Z0-9]+$/', $_POST["ingUsuario"]) && 
-               preg_match('/^[a-zA-Z0-9]+$/', $_POST["ingPassword"])){
-                
+        if (isset($_POST["ingUsuario"])) {
+            if (
+                preg_match('/^[a-zA-Z0-9]+$/', $_POST["ingUsuario"]) &&
+                preg_match('/^[a-zA-Z0-9]+$/', $_POST["ingPassword"])
+            ) {
+
                 $tabla = "usuarios";
                 $item = "usuario";
                 $valor = $_POST["ingUsuario"];
-                
+
                 $respuesta = ModeloUsuarios::mdlMostrarLoginUsuario($tabla, $item, $valor);
-                
-                if($respuesta && $respuesta["usuario"] == $_POST["ingUsuario"]){
+
+                if ($respuesta && $respuesta["usuario"] == $_POST["ingUsuario"]) {
                     // Verificar contraseña
-                    if(password_verify($_POST["ingPassword"], $respuesta["contrasena"])){
-                        
-                        if($respuesta["estado"] == 1){
+                    if (password_verify($_POST["ingPassword"], $respuesta["contrasena"])) {
+
+                        // Después de validar credenciales
+                        if ($respuesta["estado"] == 1) {
                             // Crear sesión
                             $_SESSION["iniciarSesion"] = "ok";
-                            $_SESSION["id_usuario"] = $respuesta["id_usuario"];
-                            $_SESSION["nombre_usuario"] = $respuesta["nombre_usuario"];
-                            $_SESSION["usuario"] = $respuesta["usuario"];
-                            $_SESSION["imagen"] = $respuesta["imagen"];
-                            $_SESSION["id_sucursal"] = $respuesta["id_sucursal"];
-                            
-                            // Registrar último login
+
+                            // Obtener todos los datos de sesión
+                            $datosSesion = ModeloUsuarios::mdlObtenerDatosSesion($respuesta["id_usuario"]);
+
+                            // Asignar a la sesión
+                            $_SESSION["usuario"] = $datosSesion;
+
+                            // Actualizar último login
                             $fecha = date('Y-m-d H:i:s');
-                            $item1 = "ultimo_login";
-                            $valor1 = $fecha;
-                            $item2 = "id_usuario";
-                            $valor2 = $respuesta["id_usuario"];
-                            
-                            ModeloUsuarios::mdlActualizarUsuario($tabla, $item1, $valor1, $item2, $valor2);
-                            
-                            // Obtener roles y permisos del usuario
-                            $roles = ModeloUsuarios::mdlObtenerRolesUsuario($respuesta["id_usuario"]);
-                            $permisos = ModeloUsuarios::mdlObtenerPermisosUsuario($respuesta["id_usuario"]);
-                            
-                            $_SESSION["roles"] = $roles;
-                            $_SESSION["permisos"] = $permisos;
-                            
+                            ModeloUsuarios::mdlActualizarUsuario("usuarios", "ultimo_login", $fecha, "id_usuario", $respuesta["id_usuario"]);
+
                             // Retornar éxito para la redirección con AJAX
                             echo json_encode(array(
                                 "status" => true,
                                 "message" => "Inicio de sesión exitoso",
-                                "redirect" => "inicio"
+                                "redirect" => "inicio",
+                                "datosUsuario" => $datosSesion
                             ));
                             return;
                         } else {
@@ -72,7 +67,7 @@ class ControladorUsuarios{
                 }
             }
         }
-        
+
         // Si llega hasta aquí es porque hubo un error
         echo json_encode(array(
             "success" => false,
@@ -80,5 +75,3 @@ class ControladorUsuarios{
         ));
     }
 }
-
-?>
