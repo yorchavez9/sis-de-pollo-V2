@@ -33,7 +33,7 @@ $(document).ready(function () {
         try {
             // Cargar usuarios
             const usuariosResponse = await fetchData("ajax/usuario.ajax.php");
-            console.log(usuariosResponse);
+
             if (usuariosResponse?.status) {
                 usuariosDisponibles = usuariosResponse.data;
                 llenarSelectUsuarios("#id_usuario_permiso");
@@ -252,7 +252,6 @@ $(document).ready(function () {
     const mostrarPermisos = async () => {
         try {
             const response = await fetchData("ajax/permiso.ajax.php");
-            console.log(response);
 
             if (!response?.status) return;
 
