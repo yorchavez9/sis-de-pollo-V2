@@ -19,6 +19,7 @@
                         <thead>
                             <tr>
                                 <th>N°</th>
+                                <th>Usuario</th>
                                 <th>Rol</th>
                                 <th>Módulos con permisos</th>
                                 <th>Fecha asignación</th>
@@ -46,8 +47,18 @@
             <form id="form_nuevo_permiso">
                 <div class="modal-body">
                     <div class="row">
+                        <!-- Usuario -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Usuario (<span class="text-danger">*</span>)</label>
+                                <select name="id_usuario" id="id_usuario_permiso" class="js-example-basic-single select2">
+                                    <!-- Opciones dinámicas -->
+                                </select>
+                                <small id="error_usuario_permiso"></small>
+                            </div>
+                        </div>
                         <!-- Rol -->
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">Rol (<span class="text-danger">*</span>)</label>
                                 <select name="id_rol" id="id_rol_permiso" class="js-example-basic-single select2">
@@ -57,11 +68,11 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Módulos y Acciones -->
                     <div class="form-group mt-4">
                         <label class="form-label">Seleccione módulos y acciones permitidas (<span class="text-danger">*</span>)</label>
-                        
+
                         <!-- Checkbox para seleccionar todos -->
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="select_all_modulos">
@@ -69,7 +80,7 @@
                                 Seleccionar todos los módulos
                             </label>
                         </div>
-                        
+
                         <div class="row" id="contenedor_modulos_acciones">
                             <!-- Módulos con sus acciones dinámicas -->
                         </div>
@@ -98,17 +109,26 @@
             <form id="form_editar_permiso">
                 <div class="modal-body">
                     <input type="hidden" name="id_permiso" id="edit_id_permiso">
-                    
-                    <!-- Rol -->
-                    <div class="form-group">
-                        <label class="form-label">Rol</label>
-                        <input type="text" id="edit_rol_permiso" class="form-control" readonly>
+                    <div class="row">
+                        <div class="form-group col-md-6">
+                            <label for="form-select"> Seleccione el usuario</label>
+                            <select name="id_usuario" id="edit_id_usuario_permiso" class="js-example-basic-single select2">
+
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="form-select"> Seleccione el rol</label>
+                            <select name="id_rol" id="edit_rol_permiso" class="js-example-basic-single select2">
+
+                            </select>
+                        </div>
                     </div>
-                    
+
+
                     <!-- Módulos y Acciones -->
                     <div class="form-group mt-4">
                         <label class="form-label">Módulos y acciones permitidas (<span class="text-danger">*</span>)</label>
-                        
+
                         <!-- Checkbox para seleccionar todos -->
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="edit_select_all_modulos">
@@ -116,7 +136,7 @@
                                 Seleccionar todos los módulos
                             </label>
                         </div>
-                        
+
                         <div class="row" id="edit_contenedor_modulos_acciones">
                             <!-- Módulos con sus acciones dinámicas -->
                         </div>

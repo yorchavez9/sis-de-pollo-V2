@@ -15,11 +15,12 @@ class ControladorPermiso
     =============================================*/
     static public function ctrGuardarPermiso()
     {
-        if (isset($_POST['id_rol']) && isset($_POST['permisos'])) {
+        if (isset($_POST['id_usuario']) && isset($_POST['id_rol']) && isset($_POST['permisos'])) {
+            $idUsuario = $_POST['id_usuario'];
             $idRol = $_POST['id_rol'];
             $permisos = json_decode($_POST['permisos'], true);
             
-            $respuesta = ModeloPermiso::mdlGuardarPermiso($idRol, $permisos);
+            $respuesta = ModeloPermiso::mdlGuardarPermiso($idUsuario, $idRol, $permisos);
             echo $respuesta;
         } else {
             echo json_encode([
@@ -34,11 +35,12 @@ class ControladorPermiso
     =============================================*/
     static public function ctrActualizarPermiso()
     {
-        if (isset($_POST['id_rol']) && isset($_POST['permisos'])) {
+        if ( isset($_POST['id_usuario']) && isset($_POST['id_rol']) && isset($_POST['permisos'])) {
+            $idUsuario = $_POST['id_usuario'];
             $idRol = $_POST['id_rol'];
             $permisos = json_decode($_POST['permisos'], true);
             
-            $respuesta = ModeloPermiso::mdlActualizarPermiso($idRol, $permisos);
+            $respuesta = ModeloPermiso::mdlActualizarPermiso($idUsuario, $idRol, $permisos);
             echo $respuesta;
         } else {
             echo json_encode([
