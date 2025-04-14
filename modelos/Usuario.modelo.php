@@ -151,4 +151,261 @@ class ModeloUsuarios
         
         return $datosSesion;
     }
+
+
+    /*=============================================
+    MOSTRAR USUARIOS
+    =============================================*/
+    static public function mdlMostrarUsuarios($tabla, $item, $valor)
+    {
+        try {
+            if ($item != null) {
+                $stmt = Conexion::conectar()->prepare(
+                    "SELECT u.*, s.nombre as nombre_sucursal, p.nombre, p.apellidos, 
+                    CONCAT(p.nombre, ' ', p.apellidos) as nombre_persona 
+                    FROM $tabla u 
+                    LEFT JOIN sucursales s ON u.id_sucursal = s.id_sucursal 
+                    LEFT JOIN personas p ON u.id_persona = p.id_persona 
+                    WHERE u.$item = :$item"
+                );
+                $stmt->bindParam(":" . $item, $valor, PDO::PARAM_STR);
+            } else {
+                $stmt = Conexion::conectar()->prepare(
+                    "SELECT u.*, s.nombre as nombre_sucursal, p.nombre, p.apellidos, 
+                    CONCAT(p.nombre, ' ', p.apellidos) as nombre_persona 
+                    FROM $tabla u 
+                    LEFT JOIN sucursales s ON u.id_sucursal = s.id_sucursal 
+                    LEFT JOIN personas p ON u.id_persona = p.id_persona 
+                    ORDER BY u.id_usuario DESC"
+                );
+            }
+            
+            $stmt->execute();
+            return json_encode([
+                "status" => true,
+                "data" => $item != null ? $stmt->fetch() : $stmt->fetchAll()
+            ]);
+        } catch (Exception $e) {
+            return json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+    /*=============================================
+    VERIFICAR USUARIO EXISTENTE (para actualización)
+    =============================================*/
+    static public function mdlVerificarUsuarioExistente($tabla, $item, $valor, $excluirId)
+    {
+        try {
+            $stmt = Conexion::conectar()->prepare(
+                "SELECT COUNT(*) as total FROM $tabla 
+                WHERE $item = :$item AND id_usuario != :excluirId"
+            );
+            $stmt->bindParam(":" . $item, $valor, PDO::PARAM_STR);
+            $stmt->bindParam(":excluirId", $excluirId, PDO::PARAM_INT);
+            $stmt->execute();
+            $resultado = $stmt->fetch();
+            return $resultado['total'] > 0;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    /*=============================================
+    REGISTRAR USUARIO
+    =============================================*/
+    static public function mdlIngresarUsuario($tabla, $datos)
+    {
+        try {
+            $stmt = Conexion::conectar()->prepare(
+                "INSERT INTO $tabla(
+                    id_sucursal, 
+                    id_persona, 
+                    nombre_usuario, 
+                    usuario, 
+                    contrasena, 
+                    imagen,
+                    estado
+                ) VALUES (
+                    :id_sucursal, 
+                    :id_persona, 
+                    :nombre_usuario, 
+                    :usuario, 
+                    :contrasena, 
+                    :imagen,
+                    :estado
+                )"
+            );
+
+            $stmt->bindParam(":id_sucursal", $datos["id_sucursal"], PDO::PARAM_INT);
+            $stmt->bindParam(":id_persona", $datos["id_persona"], PDO::PARAM_INT);
+            $stmt->bindParam(":nombre_usuario", $datos["nombre_usuario"], PDO::PARAM_STR);
+            $stmt->bindParam(":usuario", $datos["usuario"], PDO::PARAM_STR);
+            $stmt->bindParam(":contrasena", $datos["contrasena"], PDO::PARAM_STR);
+            $stmt->bindParam(":imagen", $datos["imagen"], PDO::PARAM_STR);
+            $stmt->bindParam(":estado", $datos["estado"], PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return json_encode([
+                    "status" => true,
+                    "message" => "Usuario registrado con éxito",
+                    "id" => Conexion::conectar()->lastInsertId()
+                ]);
+            } else {
+                return json_encode([
+                    "status" => false,
+                    "message" => "Error al registrar el usuario"
+                ]);
+            }
+        } catch (Exception $e) {
+            return json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+    /*=============================================
+    ACTUALIZAR USUARIO
+    =============================================*/
+    static public function mdlActualizarUsuarioU($tabla, $datos)
+    {
+        try {
+            // Construir la consulta dinámicamente según los campos proporcionados
+            $sql = "UPDATE $tabla SET 
+                id_sucursal = :id_sucursal,
+                id_persona = :id_persona,
+                nombre_usuario = :nombre_usuario,
+                usuario = :usuario";
+            
+            // Agregar contraseña solo si se proporcionó
+            if (!empty($datos["contrasena"])) {
+                $sql .= ", contrasena = :contrasena";
+            }
+            
+            // Agregar imagen solo si se proporcionó
+            if (!empty($datos["imagen"])) {
+                $sql .= ", imagen = :imagen";
+            }
+            
+            $sql .= ", estado = :estado
+                WHERE id_usuario = :id_usuario";
+            
+            $stmt = Conexion::conectar()->prepare($sql);
+
+            $stmt->bindParam(":id_sucursal", $datos["id_sucursal"], PDO::PARAM_INT);
+            $stmt->bindParam(":id_persona", $datos["id_persona"], PDO::PARAM_INT);
+            $stmt->bindParam(":nombre_usuario", $datos["nombre_usuario"], PDO::PARAM_STR);
+            $stmt->bindParam(":usuario", $datos["usuario"], PDO::PARAM_STR);
+            
+            // Bind de contraseña solo si se proporcionó
+            if (!empty($datos["contrasena"])) {
+                $stmt->bindParam(":contrasena", $datos["contrasena"], PDO::PARAM_STR);
+            }
+            
+            // Bind de imagen solo si se proporcionó
+            if (!empty($datos["imagen"])) {
+                $stmt->bindParam(":imagen", $datos["imagen"], PDO::PARAM_STR);
+            }
+            
+            $stmt->bindParam(":estado", $datos["estado"], PDO::PARAM_INT);
+            $stmt->bindParam(":id_usuario", $datos["id_usuario"], PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return json_encode([
+                    "status" => true,
+                    "message" => "Usuario actualizado con éxito"
+                ]);
+            } else {
+                return json_encode([
+                    "status" => false,
+                    "message" => "Error al actualizar el usuario"
+                ]);
+            }
+        } catch (Exception $e) {
+            return json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+    /*=============================================
+    CAMBIAR ESTADO DE USUARIO
+    =============================================*/
+    static public function mdlCambiarEstadoUsuario($tabla, $datos)
+    {
+        try {
+            $stmt = Conexion::conectar()->prepare(
+                "UPDATE $tabla SET estado = :estado WHERE id_usuario = :id_usuario"
+            );
+            
+            $stmt->bindParam(":estado", $datos["estado"], PDO::PARAM_INT);
+            $stmt->bindParam(":id_usuario", $datos["id_usuario"], PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                return json_encode([
+                    "status" => true,
+                    "message" => "Estado del usuario actualizado"
+                ]);
+            } else {
+                return json_encode([
+                    "status" => false,
+                    "message" => "Error al cambiar el estado"
+                ]);
+            }
+        } catch (Exception $e) {
+            return json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+    /*=============================================
+    ELIMINAR USUARIO
+    =============================================*/
+    static public function mdlBorrarUsuario($tabla, $idUsuario)
+    {
+        try {
+            // Obtener información del usuario para eliminar su imagen
+            $usuario = json_decode(self::mdlMostrarUsuarios($tabla, "id_usuario", $idUsuario), true);
+            
+            $stmt = Conexion::conectar()->prepare(
+                "DELETE FROM $tabla WHERE id_usuario = :id_usuario"
+            );
+            $stmt->bindParam(":id_usuario", $idUsuario, PDO::PARAM_INT);
+
+            if ($stmt->execute()) {
+                // Eliminar imagen si existe
+                if ($usuario["data"]["imagen"]) {
+                    $rutaImagen = "../vistas/assets/img/usuarios/" . $usuario["data"]["imagen"];
+                    if (file_exists($rutaImagen)) {
+                        unlink($rutaImagen);
+                    }
+                }
+                
+                return json_encode([
+                    "status" => true,
+                    "message" => "Usuario eliminado con éxito"
+                ]);
+            } else {
+                return json_encode([
+                    "status" => false,
+                    "message" => "Error al eliminar el usuario"
+                ]);
+            }
+        } catch (Exception $e) {
+            return json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
+        }
+    }
+
+
+
+
 }

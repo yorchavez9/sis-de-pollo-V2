@@ -22,6 +22,8 @@
 <script src="vistas/js/transporte.js"></script>
 <script src="vistas/js/trabajadores.js"></script>
 
+<script src="vistas/js/usuarios.js"></script>
+
 <script src="vistas/js/categoria.js"></script>
 <script src="vistas/js/producto.js"></script>
 <script src="vistas/js/codigo_barra.js"></script>
