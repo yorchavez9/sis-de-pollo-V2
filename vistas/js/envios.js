@@ -1,823 +1,839 @@
-$(document).ready(function () {
-
-    function fechaHoraActual() {
-        const now = new Date();
-        const timezoneOffset = now.getTimezoneOffset() * 60000;
-        const localISOTime = (new Date(now - timezoneOffset)).toISOString().slice(0, 16);
-        $("#fecha_estimada_entrega").val(localISOTime);
+class EnviosManager {
+    constructor() {
+      this.contadorPaquetes = 0;
+      this.contadorItems = 0;
+      this.envioActual = null;
+      this.init();
     }
-    fechaHoraActual();
-
-    // Configuración común para Select2
-    const select2Config = {
+  
+    async init() {
+      this.setupSelect2();
+      this.setupEventListeners();
+      await this.loadInitialData();
+      this.fechaHoraActual();
+    }
+  
+    setupSelect2() {
+      this.select2Config = {
         placeholder: "Seleccionar",
-        width: '100%'
-    };
-
-    // Inicializar Select2
-    function initSelect2(selector, dropdownParent = null) {
-        const config = {...select2Config};
-        if (dropdownParent) {
-            config.dropdownParent = dropdownParent;
-        }
-        $(selector).select2(config);
+        width: '100%',
+        language: 'es'
+      };
+  
+      $('.select').select2(this.select2Config);
+      
+      $('#modalNuevoEnvio, #modalDetalleEnvio, #modalCambiarEstado, #modalSubirDocumento').on('shown.bs.modal', () => {
+        $('.select').select2(this.select2Config);
+        this.fechaHoraActual();
+      });
     }
-
-    // Variables globales
-    let contadorPaquetes = 0;
-    let contadorItems = 0;
-    let envioActual = null;
-
-    // Inicializar todos los Select2 al cargar
-    initSelect2('.select');
-    
-    // Reinicializar Select2 en modales
-    $('#modalNuevoEnvio, #modalDetalleEnvio, #modalCambiarEstado, #modalSubirDocumento').on('shown.bs.modal', function() {
-        initSelect2($(this).find('.select'), $(this));
-        fechaHoraActual();
-    });
-
-    // Función para validar campos
-    const validateField = (field, regex, errorField, errorMessage) => {
-        const value = field.val();
-        if (!value) {
-            errorField.html("Este campo es obligatorio").addClass("text-danger");
-            return false;
-        } else if (regex && !regex.test(value)) {
-            errorField.html(errorMessage).addClass("text-danger");
-            return false;
-        } else {
-            errorField.html("").removeClass("text-danger");
-            return true;
-        }
-    };
-
-    // Validación de formulario de envío
-    const validateEnvioForm = () => {
-        const form = $("#formNuevoEnvio");
-        const isValid = [
-            validateField(form.find("[name='id_sucursal_origen']"), null, form.find("#error_origen"), "Selección inválida"),
-            validateField(form.find("[name='id_sucursal_destino']"), null, form.find("#error_destino"), "Selección inválida"),
-            validateField(form.find("[name='id_tipo_encomienda']"), null, form.find("#error_tipo"), "Selección inválida"),
-            // Validar que hay al menos un paquete
-            contadorPaquetes > 0
-        ].every(Boolean);
-        
-        if (contadorPaquetes === 0) {
-            Swal.fire("Advertencia", "Debe agregar al menos un paquete al envío", "warning");
-            return false;
-        }
-        
-        return isValid;
-    };
-
-    // Resetear formulario
-    const resetForm = () => {
-        $("#formNuevoEnvio")[0].reset();
-        $("#contenedorPaquetes").empty();
-        contadorPaquetes = 0;
-        contadorItems = 0;
-        $(".error-message").html("").removeClass("text-danger");
-    };
-
-    // Función para hacer fetch
-    const fetchData = async (url, method = "GET", data = null) => {
+  
+    setupEventListeners() {
+      // Formularios
+      $('#formNuevoEnvio').on('submit', (e) => this.handleCrearEnvio(e));
+      $('#formCambiarEstado').on('submit', (e) => this.handleCambiarEstado(e));
+      $('#formSubirDocumento').on('submit', (e) => this.handleSubirDocumento(e));
+      
+      // Botones
+      $('#btnNuevoEnvio').click(() => this.prepareNuevoEnvio());
+      $('#btnAgregarPaquete').click(() => this.agregarPaquete());
+      $('#btnCalcularCosto').click(() => this.calcularCostoEnvio());
+      $('#btnFiltrarEnvios').click((e) => this.filtrarEnvios(e));
+      $('#btnSubirDocumento').click(() => this.prepareSubirDocumento());
+      $('#btnImprimirGuia').click(() => this.imprimirGuia());
+      $('#btnNuevoSeguimiento').click(() => this.prepareCambiarEstado());
+      
+      // Eventos delegados
+      $('#tablaEnvios').on('click', '.btnDetalleEnvio', (e) => this.mostrarDetalleEnvio($(e.currentTarget).data('id')));
+      $('#tablaEnvios').on('click', '.btnCambiarEstado', (e) => this.prepareCambiarEstado($(e.currentTarget).data('id')));
+      $('#tablaEnvios').on('click', '.btnCancelarEnvio', (e) => this.cancelarEnvio($(e.currentTarget).data('id')));
+      $('#contenedorPaquetes').on('click', '.btnEliminarPaquete', (e) => this.eliminarPaquete(e));
+      $('#contenedorPaquetes').on('click', '.btnAgregarItem', (e) => this.agregarItem(e));
+      $('#contenedorPaquetes').on('change', '.selectProducto', (e) => this.actualizarPesoProducto(e));
+      $('#contenedorPaquetes').on('input', '.peso, .alto, .ancho, .profundidad', () => this.actualizarResumen());
+    }
+  
+    async loadInitialData() {
+      try {
+        await Promise.all([
+          this.cargarSucursales("filtroOrigen", true),
+          this.cargarSucursales("filtroDestino", true),
+          this.cargarSerieComprobante("id_serie"),
+          this.cargarTipoEncomienda("id_tipo_encomienda"),
+          this.cargarSucursales("id_sucursal_origen"),
+          this.cargarSucursales("id_sucursal_destino"),
+          this.cargarTransportistas("id_transportista"),
+          this.mostrarEnvios()
+        ]);
+      } catch (error) {
+        this.showError("Error al cargar datos iniciales", error);
+      }
+    }
+  
+    // ================ MÉTODOS PRINCIPALES ================
+  
+    async mostrarEnvios(filtros = {}) {
         try {
-            const options = {
-                method,
-                headers: {},
-                cache: "no-cache",
-                credentials: 'same-origin' // Para manejar cookies si es necesario
-            };
+            // Crear FormData y agregar los parámetros
+            const formData = new FormData();
+            formData.append('action', 'listar');
             
-            if (data instanceof FormData) {
-                options.body = data;
-            } else if (data) {
-                options.headers["Content-Type"] = "application/json";
-                options.body = JSON.stringify(data);
-            }
-            
-            const response = await fetch(url, options);
-            
-            if (!response.ok) {
-                // Intentar obtener el mensaje de error del cuerpo de la respuesta
-                let errorDetails = '';
-                try {
-                    const errorResponse = await response.json();
-                    errorDetails = errorResponse.message || JSON.stringify(errorResponse);
-                } catch (e) {
-                    errorDetails = await response.text();
+            // Agregar cada filtro al FormData
+            Object.keys(filtros).forEach(key => {
+                if (filtros[key] !== undefined && filtros[key] !== null) {
+                    formData.append(key, filtros[key]);
                 }
-                
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorDetails}`);
+            });
+    
+            // Enviar como POST con FormData
+            const response = await this.fetchData("ajax/envios.ajax.php", "POST", formData);
+            console.log(response);
+    
+            if (!response) {
+                throw new Error("No se recibió respuesta del servidor");
             }
-            
-            return await response.json();
+    
+            if (!response.status) {
+                throw new Error(response.message || "Error desconocido del servidor");
+            }
+    
+            this.renderTablaEnvios(response.data);
         } catch (error) {
-            console.error("Error en la solicitud:", {
-                url,
-                method,
-                errorName: error.name,
-                errorMessage: error.message,
-                stack: error.stack // Solo en desarrollo
+            console.error("Detalles del error:", {
+                error: error.message,
+                stack: error.stack,
+                filtros
             });
-            
-            return { 
-                status: false, 
-                message: "Error en la conexión",
-                errorDetails: {
-                    name: error.name,
-                    message: error.message,
-                }
-            };
+            this.showError("Error al cargar envíos", error);
         }
-    };
-
-    // Mostrar lista de envíos
-    const mostrarEnvios = async (filtros = {}) => {
-        // Construir URL con filtros
-        let url = "ajax/envios.ajax.php?action=listar";
-        if (Object.keys(filtros).length > 0) {
-            const params = new URLSearchParams(filtros);
-            url += `&${params.toString()}`;
-        }
+    }
+  
+    async mostrarDetalleEnvio(idEnvio) {
+      try {
+        const response = await this.fetchData("ajax/envios.ajax.php", "GET", { action: 'detalle', id: idEnvio });
         
-        const envios = await fetchData(url);
-        if (!envios || !envios.status) {
-            console.error("Error al cargar envíos:", envios?.message);
-            return;
-        }
-
-        const tabla = $("#tablaEnvios");
-        const tbody = tabla.find("tbody");
-        tbody.empty();
-
-        envios.data.forEach((envio, index) => {
-            // Formatear fechas
-            const fechaEnvio = envio.fecha_creacion ? new Date(envio.fecha_creacion).toLocaleString() : 'Pendiente';
-            
-            // Determinar clase para el estado
-            let claseEstado = "";
-            switch(envio.estado) {
-                case 'PENDIENTE': claseEstado = "badge bg-secondary"; break;
-                case 'PREPARACION': claseEstado = "badge bg-warning text-dark"; break;
-                case 'EN_TRANSITO': claseEstado = "badge bg-primary"; break;
-                case 'EN_REPARTO': claseEstado = "badge bg-info"; break;
-                case 'ENTREGADO': claseEstado = "badge bg-success"; break;
-                case 'CANCELADO': case 'RECHAZADO': claseEstado = "badge bg-danger"; break;
-                default: claseEstado = "badge bg-secondary";
-            }
-
-            const fila = `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${envio.codigo_envio}</td>
-                    <td>${envio.sucursal_origen}</td>
-                    <td>${envio.sucursal_destino}</td>
-                    <td>${envio.tipo_encomienda}</td>
-                    <td>${fechaEnvio}</td>
-                    <td><span class="${claseEstado}">${envio.estado.replace('_', ' ')}</span></td>
-                    <td>${envio.transportista || 'No asignado'}</td>
-                    <td class="text-center">
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-primary dropdown-toggle py-1 px-2" type="button" 
-                                    id="dropdownMenuButton${envio.id_envio}" data-bs-toggle="dropdown" 
-                                    aria-expanded="false">
-                                <i class="fas fa-cog"></i>
-                            </button>
-                            
-                            <ul class="dropdown-menu shadow-sm" aria-labelledby="dropdownMenuButton${envio.id_envio}">
-                                <!-- Opción Ver Detalle -->
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center btnDetalleEnvio" href="#" data-id="${envio.id_envio}">
-                                        <i class="fas fa-eye text-primary me-2"></i>
-                                        <span>Ver Detalle</span>
-                                    </a>
-                                </li>
-                                
-                                <!-- Opción Cambiar Estado -->
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center btnCambiarEstado" href="#" data-id="${envio.id_envio}">
-                                        <i class="fas fa-exchange-alt text-warning me-2"></i>
-                                        <span>Cambiar Estado</span>
-                                    </a>
-                                </li>
-                                
-                                <!-- Opción Cancelar (condicional) -->
-                                ${envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION' ? 
-                                    `<li>
-                                        <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
-                                            <i class="fas fa-times text-danger me-2"></i>
-                                            <span>Cancelar Envío</span>
-                                        </a>
-                                    </li>` : ''
-                                }
-                                
-                                <!-- Separador visual -->
-                                <li><hr class="dropdown-divider"></li>
-                                
-                                <!-- Opción adicional (ejemplo) -->
-                                <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="#">
-                                        <i class="fas fa-print text-secondary me-2"></i>
-                                        <span>Imprimir</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </td>
-                </tr>`;
-            tbody.append(fila);
-        });
-
-        if ($.fn.DataTable.isDataTable(tabla)) {
-            tabla.DataTable().destroy();
-        }
-        tabla.DataTable({
-            autoWidth: false,
-            responsive: true
-        });
-    };
-
-    // Cargar sucursales en select
-    const cargarSerieComprobante = async (selectId, todas = false) => {
-        const series = await fetchData("ajax/serie_comprobante.ajax.php");
-   
-        if (!series || !series.status) return;
-    
-        const select = $(`#${selectId}`);
-        select.empty();
-        if (todas) {
-            select.append('<option value="">Todas</option>');
-        } else {
-            select.append('<option value="" disabled selected>Seleccionar comprobante</option>');
-        }
+        if (!response.status) throw new Error(response.message);
         
-        // Recorremos las series y las agregamos al select con data-serie
-        series.data.forEach(serie => {
-            if (serie.estado === 1) {
-                select.append(`
-                    <option 
-                        value="${serie.id_serie}" 
-                        data-serie="${serie.serie}"
-                    >
-                        ${serie.nombre_tipo_comprobante}
-                    </option>
-                `);
-            }
-        });
-    
-        // Evento change: Cuando seleccionan una opción, actualizar el input
-        select.on("change", function() {
-            const selectedOption = $(this).find("option:selected");
-            const serieValue = selectedOption.data("serie") || ""; // Obtiene "B002", "N002", etc.
-            $("#serie").val(serieValue); // Asigna al input
-        });
-    };
-
-    // Cargar sucursales en select
-    const cargarTipoEncomienda = async (selectId, todas = false) => {
-        const tipo_encomiendas = await fetchData("ajax/tipo_encomienda.ajax.php");
-        if (!tipo_encomiendas || !tipo_encomiendas.status) return;
-
-        const select = $(`#${selectId}`);
-        select.empty();
-        if (todas) {
-            select.append('<option value="">Todas</option>');
-        } else {
-            select.append('<option value="" disabled selected>Seleccionar sucursal</option>');
-        }
-        
-        tipo_encomiendas.data.forEach(tipo => {
-            if (tipo.estado === 1) {
-                select.append(`<option value="${tipo.id_tipo_encomienda}">${tipo.nombre}</option>`);
-            }
-        });
-    };
-
-    // Cargar sucursales en select
-    const cargarSucursales = async (selectId, todas = false) => {
-        const sucursales = await fetchData("ajax/sucursal.ajax.php");
-        if (!sucursales || !sucursales.status) return;
-
-        const select = $(`#${selectId}`);
-        select.empty();
-        if (todas) {
-            select.append('<option value="">Todas</option>');
-        } else {
-            select.append('<option value="" disabled selected>Seleccionar sucursal</option>');
-        }
-        
-        sucursales.data.forEach(sucursal => {
-            if (sucursal.estado === 1) {
-                select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
-            }
-        });
-    };
-
-    // Cargar transportistas
-    const cargarTransportistas = async (selectId) => {
-        const transportistas = await fetchData("ajax/transporte.ajax.php");
-        if (!transportistas || !transportistas.status) return;
-
-        const select = $(`#${selectId}`);
-        select.empty();
-        select.append('<option value="">Seleccionar transportista</option>');
-        
-        transportistas.data.forEach(transportista => {
-            select.append(`<option value="${transportista.id_transportista}">${transportista.nombre_completo}</option>`);
-        });
-    };
-
-    // Cargar productos para items de paquetes
-    const cargarProductos = async (select) => {
-        const productos = await fetchData("ajax/producto.ajax.php");
-        if (!productos || !productos.status) return;
-
-        select.empty();
-        select.append('<option value="" disabled selected>Seleccionar producto</option>');
-        
-        productos.data.forEach(producto => {
-            select.append(`<option value="${producto.id_producto}" data-peso="${producto.peso || 0}">${producto.codigo} - ${producto.nombre}</option>`);
-        });
-    };
-
-    // Agregar paquete al formulario
-    const agregarPaquete = () => {
-        contadorPaquetes++;
-        const template = $("#templatePaquete").html();
-        const $paquete = $(template.replace(/{{numero}}/g, contadorPaquetes));
-        
-        // Asignar eventos al paquete
-        $paquete.find(".btnEliminarPaquete").click(function() {
-            $(this).closest(".paquete").remove();
-            contadorPaquetes--;
-            actualizarResumen();
-        });
-        
-        $paquete.find(".btnAgregarItem").click(function() {
-            agregarItem($(this).closest(".paquete").find(".table-items tbody"));
-        });
-        
-        // Cargar productos para este paquete
-        cargarProductos($paquete.find(".selectProducto"));
-        
-        // Evento para actualizar peso cuando se selecciona producto
-        $paquete.find(".selectProducto").change(function() {
-            const peso = $(this).find("option:selected").data("peso");
-            $(this).closest(".item").find(".pesoUnitario").val(peso);
-        });
-        
-        // Eventos para actualizar resumen cuando cambian valores
-        $paquete.find(".peso, .alto, .ancho, .profundidad").on('input', function() {
-            actualizarResumen();
-        });
-        
-        $("#contenedorPaquetes").append($paquete);
-    };
-
-    // Agregar ítem a un paquete
-    const agregarItem = (tbody) => {
-        contadorItems++;
-        const template = $("#templateItemPaquete").html();
-        const $item = $(template);
-        
-        // Asignar eventos al ítem
-        $item.find(".btnEliminarItem").click(function() {
-            $(this).closest(".item").remove();
-            contadorItems--;
-        });
-        
-        // Cargar productos para este ítem
-        cargarProductos($item.find(".selectProducto"));
-        
-        tbody.append($item);
-    };
-
-    // Actualizar resumen de paquetes
-    const actualizarResumen = () => {
-        let totalPaquetes = 0;
-        let pesoTotal = 0;
-        let volumenTotal = 0;
-        
-        $(".paquete").each(function() {
-            totalPaquetes++;
-            const peso = parseFloat($(this).find(".peso").val()) || 0;
-            const alto = parseFloat($(this).find(".alto").val()) || 0;
-            const ancho = parseFloat($(this).find(".ancho").val()) || 0;
-            const profundidad = parseFloat($(this).find(".profundidad").val()) || 0;
-            
-            pesoTotal += peso;
-            volumenTotal += (alto * ancho * profundidad) / 1000000; // Convertir a m³
-        });
-        
-        $("#totalPaquetes").val(totalPaquetes);
-        $("#pesoTotal").val(pesoTotal.toFixed(2));
-        $("#volumenTotal").val(volumenTotal.toFixed(2));
-    };
-
-    // Mostrar detalles de un envío
-    const mostrarDetalleEnvio = async (idEnvio) => {
-        const response = await fetchData(`ajax/envios.ajax.php?action=detalle&id=${idEnvio}`);
-        if (!response || !response.status) {
-            Swal.fire("Error", "No se pudo cargar el detalle del envío", "error");
-            return;
-        }
-    
-        const envio = response.data.envio;
-        envioActual = envio;
-        
-        // Actualizar información básica
-        $("#codigoEnvio").text(envio.codigo_envio);
-        $("#detalleCodigo").text(envio.codigo_envio);
-        $("#detalleOrigen").text(envio.sucursal_origen);
-        $("#detalleDestino").text(envio.sucursal_destino);
-        $("#detalleTipo").text(envio.tipo_encomienda);
-        $("#detalleTransportista").text(envio.transportista || 'No asignado');
-        $("#detalleFechaCreacion").text(new Date(envio.fecha_creacion).toLocaleString());
-        $("#detalleFechaEnvio").text(envio.fecha_envio ? new Date(envio.fecha_envio).toLocaleString() : 'Pendiente');
-        $("#detalleFechaRecepcion").text(envio.fecha_recepcion ? new Date(envio.fecha_recepcion).toLocaleString() : 'Pendiente');
-        
-        // Estado
-        let claseEstado = "";
-        switch(envio.estado) {
-            case 'PENDIENTE': claseEstado = "badge bg-secondary"; break;
-            case 'PREPARACION': claseEstado = "badge bg-warning text-dark"; break;
-            case 'EN_TRANSITO': claseEstado = "badge bg-primary"; break;
-            case 'EN_REPARTO': claseEstado = "badge bg-info"; break;
-            case 'ENTREGADO': claseEstado = "badge bg-success"; break;
-            case 'CANCELADO': case 'RECHAZADO': claseEstado = "badge bg-danger"; break;
-            default: claseEstado = "badge bg-secondary";
-        }
-        $("#detalleEstado").html(`<span class="${claseEstado}">${envio.estado.replace('_', ' ')}</span>`);
-        
-        // Mostrar paquetes
-        const tbodyPaquetes = $("#tablaPaquetes tbody");
-        tbodyPaquetes.empty();
-        $("#totalPaquetesDetalle").text(response.data.paquetes.length);
-        
-        response.data.paquetes.forEach(paquete => {
-            let claseEstadoPaquete = "";
-            switch(paquete.estado) {
-                case 'BUENO': claseEstadoPaquete = "badge bg-success"; break;
-                case 'DANADO': claseEstadoPaquete = "badge bg-danger"; break;
-                case 'PERDIDO': claseEstadoPaquete = "badge bg-dark"; break;
-                case 'ENTREGADO': claseEstadoPaquete = "badge bg-primary"; break;
-                default: claseEstadoPaquete = "badge bg-secondary";
-            }
-            
-            const fila = `
-                <tr>
-                    <td>${paquete.codigo_paquete}</td>
-                    <td>${paquete.descripcion}</td>
-                    <td>${paquete.peso} kg</td>
-                    <td>${paquete.volumen ? paquete.volumen + ' m³' : 'N/A'}</td>
-                    <td><span class="${claseEstadoPaquete}">${paquete.estado}</span></td>
-                </tr>`;
-            tbodyPaquetes.append(fila);
-        });
-        
-        // Mostrar seguimiento
-        const timeline = $("#timelineSeguimiento");
-        timeline.empty();
-        
-        response.data.seguimiento.forEach(seguimiento => {
-            const template = $("#templateSeguimiento").html()
-                .replace("{{estado}}", seguimiento.estado_nuevo.replace('_', ' '))
-                .replace("{{fecha}}", new Date(seguimiento.fecha_registro).toLocaleString())
-                .replace("{{observaciones}}", seguimiento.observaciones || 'Sin observaciones')
-                .replace("{{usuario}}", seguimiento.usuario || 'Sistema');
-            timeline.append(template);
-        });
-        
-        // Mostrar documentos
-        const listaDocumentos = $("#listaDocumentos");
-        listaDocumentos.empty();
-        
-        response.data.documentos.forEach(documento => {
-            const template = $("#templateDocumento").html()
-                .replace("{{tipo}}", documento.tipo_documento)
-                .replace("{{fecha}}", new Date(documento.fecha_subida).toLocaleDateString())
-                .replace("{{url}}", documento.ruta_archivo)
-                .replace("{{id}}", documento.id_documento);
-            
-            const $doc = $(template);
-            $doc.find(".btnVerDocumento").attr("href", documento.ruta_archivo);
-            $doc.find(".btnEliminarDocumento").click(function() {
-                eliminarDocumento(documento.id_documento);
-            });
-            
-            listaDocumentos.append($doc);
-        });
-        
-        // Mostrar modal
-        $("#modalDetalleEnvio").modal("show");
-    };
-
-    // Actualizar estado de un envío
-    const actualizarEstadoEnvio = async (idEnvio, estado, observaciones = null) => {
+        this.envioActual = response.data.envio;
+        this.renderDetalleEnvio(response.data);
+        $('#modalDetalleEnvio').modal('show');
+      } catch (error) {
+        this.showError("Error al cargar detalle", error);
+      }
+    }
+  
+    async actualizarEstadoEnvio(idEnvio, estado, observaciones = null) {
+      try {
         const formData = new FormData();
         formData.append("id_envio", idEnvio);
         formData.append("estado", estado);
         formData.append("observaciones", observaciones);
         formData.append("action", "cambiarEstado");
         
-        const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        if (response?.status) {
-            Swal.fire("¡Correcto!", "Estado del envío actualizado", "success");
-            if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
-                $("#tablaEnvios").DataTable().destroy();
-            }
-            mostrarEnvios();
-            if (envioActual && envioActual.id_envio == idEnvio) {
-                mostrarDetalleEnvio(idEnvio);
-            }
-            $("#modalCambiarEstado").modal("hide");
+        const response = await this.fetchData("ajax/envios.ajax.php", "POST", formData);
+        
+        if (response.status) {
+          this.showSuccess("Estado del envío actualizado");
+          await this.mostrarEnvios();
+          
+          if (this.envioActual && this.envioActual.id_envio == idEnvio) {
+            await this.mostrarDetalleEnvio(idEnvio);
+          }
+          
+          $('#modalCambiarEstado').modal('hide');
         } else {
-            Swal.fire("Error", response?.message || "Error al actualizar el estado", "error");
+          throw new Error(response.message);
         }
-    };
-
-    // Subir documento para un envío
-    const subirDocumento = async (idEnvio, formData) => {
-        formData.append("id_envio", idEnvio);
+      } catch (error) {
+        this.showError("Error al actualizar estado", error);
+      }
+    }
+  
+    // ================ MÉTODOS DE FORMULARIOS ================
+  
+    prepareNuevoEnvio() {
+      this.resetForm();
+      $("#formNuevoEnvio [name='codigo_envio']").val(this.generarCodigoEnvio());
+      $('#modalNuevoEnvio').modal('show');
+    }
+  
+    async handleCrearEnvio(e) {
+      e.preventDefault();
+      
+      try {
+        if (!this.validateEnvioForm()) return;
+        
+        const formData = new FormData(e.target);
+        formData.append("action", "crear");
+        formData.append("paquetes", JSON.stringify(this.getPaquetesData()));
+        
+        const response = await this.fetchData("ajax/envios.ajax.php", "POST", formData);
+        
+        if (response.status) {
+          this.showSuccess("Envío creado con éxito");
+          this.resetForm();
+          $('#modalNuevoEnvio').modal('hide');
+          await this.mostrarEnvios();
+        } else {
+          throw new Error(response.message);
+        }
+      } catch (error) {
+        this.showError("Error al crear envío", error);
+      }
+    }
+  
+    prepareCambiarEstado(idEnvio = null) {
+      const envioId = idEnvio || (this.envioActual && this.envioActual.id_envio);
+      if (!envioId) return;
+      
+      $("#idEnvioEstado").val(envioId);
+      $('#modalCambiarEstado').modal('show');
+    }
+  
+    async handleCambiarEstado(e) {
+      e.preventDefault();
+      
+      try {
+        const idEnvio = $("#idEnvioEstado").val();
+        const estado = $("#nuevoEstado").val();
+        const observaciones = $("#observacionesEstado").val();
+        
+        if (!idEnvio || !estado) {
+          throw new Error("Datos incompletos");
+        }
+        
+        await this.actualizarEstadoEnvio(idEnvio, estado, observaciones);
+      } catch (error) {
+        this.showError("Error al cambiar estado", error);
+      }
+    }
+  
+    prepareSubirDocumento() {
+      if (!this.envioActual) return;
+      $("#idEnvioDocumento").val(this.envioActual.id_envio);
+      $('#modalSubirDocumento').modal('show');
+    }
+  
+    async handleSubirDocumento(e) {
+      e.preventDefault();
+      
+      try {
+        if (!this.envioActual) return;
+        
+        const formData = new FormData(e.target);
+        formData.append("id_envio", this.envioActual.id_envio);
         formData.append("action", "subirDocumento");
         
-        const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        if (response?.status) {
-            Swal.fire("¡Correcto!", "Documento subido con éxito", "success");
-            mostrarDetalleEnvio(idEnvio);
-            $("#modalSubirDocumento").modal("hide");
-            $("#formSubirDocumento")[0].reset();
+        const response = await this.fetchData("ajax/envios.ajax.php", "POST", formData);
+        
+        if (response.status) {
+          this.showSuccess("Documento subido con éxito");
+          $('#modalSubirDocumento').modal('hide');
+          e.target.reset();
+          await this.mostrarDetalleEnvio(this.envioActual.id_envio);
         } else {
-            Swal.fire("Error", response?.message || "Error al subir el documento", "error");
+          throw new Error(response.message);
         }
-    };
-
-    // Eliminar documento
-    const eliminarDocumento = async (idDocumento) => {
-        const result = await Swal.fire({
-            title: "¿Eliminar documento?",
-            text: "Esta acción no se puede deshacer",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Sí, eliminar"
+      } catch (error) {
+        this.showError("Error al subir documento", error);
+      }
+    }
+  
+    // ================ MÉTODOS DE PAQUETES ================
+  
+    agregarPaquete() {
+      this.contadorPaquetes++;
+      const template = $("#templatePaquete").html();
+      const $paquete = $(template.replace(/{{numero}}/g, this.contadorPaquetes));
+      
+      $("#contenedorPaquetes").append($paquete);
+      this.cargarProductos($paquete.find(".selectProducto"));
+      this.actualizarResumen();
+    }
+  
+    eliminarPaquete(e) {
+      $(e.currentTarget).closest(".paquete").remove();
+      this.contadorPaquetes--;
+      this.actualizarResumen();
+    }
+  
+    agregarItem(e) {
+      const tbody = $(e.currentTarget).closest(".paquete").find(".table-items tbody");
+      this.contadorItems++;
+      
+      const template = $("#templateItemPaquete").html();
+      const $item = $(template);
+      
+      tbody.append($item);
+      this.cargarProductos($item.find(".selectProducto"));
+    }
+  
+    actualizarPesoProducto(e) {
+      const peso = $(e.currentTarget).find("option:selected").data("peso") || 0;
+      $(e.currentTarget).closest(".item").find(".pesoUnitario").val(peso);
+    }
+  
+    getPaquetesData() {
+      const paquetes = [];
+      
+      $(".paquete").each((index, element) => {
+        const $paquete = $(element);
+        
+        paquetes.push({
+          numero: index + 1,
+          descripcion: $paquete.find(".descripcion").val(),
+          peso: $paquete.find(".peso").val(),
+          alto: $paquete.find(".alto").val(),
+          ancho: $paquete.find(".ancho").val(),
+          profundidad: $paquete.find(".profundidad").val(),
+          instrucciones: $paquete.find(".instrucciones").val(),
+          items: this.getItemsPaquete($paquete)
+        });
+      });
+      
+      return paquetes;
+    }
+  
+    getItemsPaquete($paquete) {
+      const items = [];
+      
+      $paquete.find(".item").each((index, element) => {
+        const $item = $(element);
+        const $selectProducto = $item.find(".selectProducto");
+        
+        items.push({
+          id_producto: $selectProducto.val(),
+          descripcion: $selectProducto.find("option:selected").text(),
+          cantidad: $item.find(".cantidad").val(),
+          peso_unitario: $item.find(".pesoUnitario").val(),
+          valor_unitario: $item.find(".valorUnitario").val() || 0
+        });
+      });
+      
+      return items;
+    }
+  
+    actualizarResumen() {
+      let totalPaquetes = 0;
+      let pesoTotal = 0;
+      let volumenTotal = 0;
+      
+      $(".paquete").each((index, element) => {
+        const $paquete = $(element);
+        totalPaquetes++;
+        
+        const peso = parseFloat($paquete.find(".peso").val()) || 0;
+        const alto = parseFloat($paquete.find(".alto").val()) || 0;
+        const ancho = parseFloat($paquete.find(".ancho").val()) || 0;
+        const profundidad = parseFloat($paquete.find(".profundidad").val()) || 0;
+        
+        pesoTotal += peso;
+        volumenTotal += (alto * ancho * profundidad) / 1000000;
+      });
+      
+      $("#totalPaquetes").val(totalPaquetes);
+      $("#pesoTotal").val(pesoTotal.toFixed(2));
+      $("#volumenTotal").val(volumenTotal.toFixed(2));
+    }
+  
+    // ================ MÉTODOS DE CARGA DE DATOS ================
+  
+    async cargarSucursales(selectId, todas = false) {
+      try {
+        const response = await this.fetchData("ajax/sucursal.ajax.php");
+        
+        if (!response.status) throw new Error(response.message);
+        
+        const $select = $(`#${selectId}`).empty();
+        $select.append(todas ? 
+          '<option value="">Todas</option>' : 
+          '<option value="" disabled selected>Seleccionar sucursal</option>');
+        
+        response.data.forEach(sucursal => {
+          if (sucursal.estado === 1) {
+            $select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
+          }
+        });
+      } catch (error) {
+        this.showError("Error al cargar sucursales", error);
+      }
+    }
+  
+    async cargarSerieComprobante(selectId) {
+      try {
+        const response = await this.fetchData("ajax/serie_comprobante.ajax.php");
+        
+        if (!response.status) throw new Error(response.message);
+        
+        const $select = $(`#${selectId}`).empty();
+        $select.append('<option value="" disabled selected>Seleccionar comprobante</option>');
+        
+        response.data.forEach(serie => {
+          if (serie.estado === 1) {
+            $select.append(`
+              <option value="${serie.id_serie}" data-serie="${serie.serie}">
+                ${serie.nombre_tipo_comprobante}
+              </option>
+            `);
+          }
         });
         
-        if (result.isConfirmed) {
-            const formData = new FormData();
-            formData.append("id_documento", idDocumento);
-            formData.append("action", "eliminarDocumento");
-            
-            const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-            if (response?.status) {
-                Swal.fire("¡Eliminado!", "Documento eliminado", "success");
-                mostrarDetalleEnvio(envioActual.id_envio);
-            } else {
-                Swal.fire("Error", response?.message || "Error al eliminar el documento", "error");
-            }
-        }
-    };
-
-    // Calcular costo de envío
-    const calcularCostoEnvio = async (idSucursalOrigen, idSucursalDestino, idTipoEncomienda, pesoTotal) => {
-        const response = await fetchData(`ajax/envios.ajax.php?action=calcularCosto&origen=${idSucursalOrigen}&destino=${idSucursalDestino}&tipo=${idTipoEncomienda}&peso=${pesoTotal}`);
-        if (response.status) {
-            return response
-        }
-        return 0;
-    };
-
-    // Generar código único para envío
-    const generarCodigoEnvio = () => {
-        const fecha = new Date();
-        const year = fecha.getFullYear().toString().slice(-2);
-        const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
-        const day = fecha.getDate().toString().padStart(2, '0');
-        const random = Math.floor(1000 + Math.random() * 9000);
-        return `ENV${year}${month}${day}${random}`;
-    };
-
-    // Evento para abrir modal de nuevo envío
-    $("#btnNuevoEnvio").click(function() {
-        resetForm();
-        $("#modalNuevoEnvio").modal("show");
-        // Generar código de envío
-        $("#formNuevoEnvio [name='codigo_envio']").val(generarCodigoEnvio());
-    });
-
-    // Evento para agregar paquete
-    $("#btnAgregarPaquete").click(agregarPaquete);
-
-    // Evento para calcular costo de envío
-    $("#btnCalcularCosto").click(async function() {
+        $select.on("change", () => {
+          const serieValue = $select.find("option:selected").data("serie") || "";
+          $("#serie").val(serieValue);
+        });
+      } catch (error) {
+        this.showError("Error al cargar series", error);
+      }
+    }
+  
+    async cargarTipoEncomienda(selectId, todas = false) {
+      try {
+        const response = await this.fetchData("ajax/tipo_encomienda.ajax.php");
+        
+        if (!response.status) throw new Error(response.message);
+        
+        const $select = $(`#${selectId}`).empty();
+        $select.append(todas ? 
+          '<option value="">Todas</option>' : 
+          '<option value="" disabled selected>Seleccionar tipo</option>');
+        
+        response.data.forEach(tipo => {
+          if (tipo.estado === 1) {
+            $select.append(`<option value="${tipo.id_tipo_encomienda}">${tipo.nombre}</option>`);
+          }
+        });
+      } catch (error) {
+        this.showError("Error al cargar tipos de encomienda", error);
+      }
+    }
+  
+    async cargarTransportistas(selectId) {
+      try {
+        const response = await this.fetchData("ajax/transporte.ajax.php");
+        
+        if (!response.status) throw new Error(response.message);
+        
+        const $select = $(`#${selectId}`).empty();
+        $select.append('<option value="">Seleccionar transportista</option>');
+        
+        response.data.forEach(transportista => {
+          $select.append(`<option value="${transportista.id_transportista}">${transportista.nombre_completo}</option>`);
+        });
+      } catch (error) {
+        this.showError("Error al cargar transportistas", error);
+      }
+    }
+  
+    async cargarProductos($select) {
+      try {
+        const response = await this.fetchData("ajax/producto.ajax.php");
+        
+        if (!response.status) throw new Error(response.message);
+        
+        $select.empty().append('<option value="" disabled selected>Seleccionar producto</option>');
+        
+        response.data.forEach(producto => {
+          $select.append(`
+            <option value="${producto.id_producto}" data-peso="${producto.peso || 0}">
+              ${producto.codigo} - ${producto.nombre}
+            </option>
+          `);
+        });
+      } catch (error) {
+        this.showError("Error al cargar productos", error);
+      }
+    }
+  
+    // ================ MÉTODOS DE CÁLCULO ================
+  
+    async calcularCostoEnvio() {
+      try {
         const origen = $("#formNuevoEnvio [name='id_sucursal_origen']").val();
         const destino = $("#formNuevoEnvio [name='id_sucursal_destino']").val();
         const tipo = $("#formNuevoEnvio [name='id_tipo_encomienda']").val();
         const pesoTotal = parseFloat($("#pesoTotal").val()) || 0;
         
         if (!origen || !destino || !tipo) {
-            Swal.fire("Advertencia", "Debe completar los datos de origen, destino y tipo de envío", "warning");
-            return;
+          throw new Error("Complete origen, destino y tipo de envío");
         }
         
         if (pesoTotal <= 0) {
-            Swal.fire("Advertencia", "El peso total debe ser mayor a cero", "warning");
-            return;
+          throw new Error("El peso total debe ser mayor a cero");
         }
         
-        // Mostrar carga mientras se calcula
-        Swal.fire({
-            title: 'Calculando costo...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
+        const response = await this.fetchData("ajax/envios.ajax.php", "GET", {
+          action: 'calcularCosto',
+          origen,
+          destino,
+          tipo,
+          peso: pesoTotal
         });
         
-        try {
-            const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
-            Swal.close();
-            if (costo.status) {
-                $("#costoEnvio").val(costo.data.costo.toFixed(2));
-                Swal.fire("¡Calculado!", `Costo estimado: S/ ${costo.data.costo.toFixed(2)}. Tiempo estimado: ${costo.data.tiempo_estimado} horas`, "success");
-            } else {
-                Swal.fire("Error", costo?.message || "No se pudo calcular el costo. Verifique los datos.", "error");
-            }
-        } catch (error) {
-            Swal.close();
-            Swal.fire("Error", "Ocurrió un error al calcular el costo", "error");
-            console.error("Error al calcular costo:", error);
+        if (response.status) {
+          $("#costoEnvio").val(response.data.costo.toFixed(2));
+          this.showSuccess(`
+            Costo estimado: S/ ${response.data.costo.toFixed(2)}<br>
+            Tiempo estimado: ${response.data.tiempo_estimado} horas
+          `);
+        } else {
+          throw new Error(response.message);
         }
-    });
-
-    // Evento para guardar nuevo envío
-    $("#formNuevoEnvio").submit(async function(e) {
-        e.preventDefault();
+      } catch (error) {
+        this.showError("Error al calcular costo", error);
+      }
+    }
+  
+    // ================ MÉTODOS DE RENDERIZADO ================
+  
+    renderTablaEnvios(envios) {
+      const tbody = $("#tablaEnvios tbody").empty();
+      
+      envios.forEach((envio, index) => {
+        const fila = `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${envio.codigo_envio}</td>
+            <td>${envio.sucursal_origen}</td>
+            <td>${envio.sucursal_destino}</td>
+            <td>${envio.tipo_encomienda}</td>
+            <td>${envio.fecha_creacion ? new Date(envio.fecha_creacion).toLocaleString() : 'Pendiente'}</td>
+            <td><span class="${this.getClaseEstado(envio.estado)}">${envio.estado.replace('_', ' ')}</span></td>
+            <td>${envio.transportista || 'No asignado'}</td>
+            <td class="text-center">${this.renderAccionesEnvio(envio)}</td>
+          </tr>`;
         
-        if (!validateEnvioForm()) return;
+        tbody.append(fila);
+      });
+  
+      this.initDataTable("#tablaEnvios");
+    }
+  
+    renderDetalleEnvio(data) {
+      const { envio, paquetes, seguimiento, documentos } = data;
+      
+      // Información básica
+      $("#codigoEnvio, #detalleCodigo").text(envio.codigo_envio);
+      $("#detalleOrigen").text(envio.sucursal_origen);
+      $("#detalleDestino").text(envio.sucursal_destino);
+      $("#detalleTipo").text(envio.tipo_encomienda);
+      $("#detalleTransportista").text(envio.transportista || 'No asignado');
+      $("#detalleFechaCreacion").text(new Date(envio.fecha_creacion).toLocaleString());
+      $("#detalleFechaEnvio").text(envio.fecha_envio ? new Date(envio.fecha_envio).toLocaleString() : 'Pendiente');
+      $("#detalleFechaRecepcion").text(envio.fecha_recepcion ? new Date(envio.fecha_recepcion).toLocaleString() : 'Pendiente');
+      $("#detalleEstado").html(`<span class="${this.getClaseEstado(envio.estado)}">${envio.estado.replace('_', ' ')}</span>`);
+      
+      // Paquetes
+      const tbodyPaquetes = $("#tablaPaquetes tbody").empty();
+      $("#totalPaquetesDetalle").text(paquetes.length);
+      
+      paquetes.forEach(paquete => {
+        const fila = `
+          <tr>
+            <td>${paquete.codigo_paquete}</td>
+            <td>${paquete.descripcion}</td>
+            <td>${paquete.peso} kg</td>
+            <td>${paquete.volumen ? paquete.volumen + ' m³' : 'N/A'}</td>
+            <td><span class="${this.getClaseEstadoPaquete(paquete.estado)}">${paquete.estado}</span></td>
+          </tr>`;
+        tbodyPaquetes.append(fila);
+      });
+      
+      // Seguimiento
+      const timeline = $("#timelineSeguimiento").empty();
+      seguimiento.forEach(seguimiento => {
+        const template = $("#templateSeguimiento").html()
+          .replace("{{estado}}", seguimiento.estado_nuevo.replace('_', ' '))
+          .replace("{{fecha}}", new Date(seguimiento.fecha_registro).toLocaleString())
+          .replace("{{observaciones}}", seguimiento.observaciones || 'Sin observaciones')
+          .replace("{{usuario}}", seguimiento.usuario || 'Sistema');
+        timeline.append(template);
+      });
+      
+      // Documentos
+      const listaDocumentos = $("#listaDocumentos").empty();
+      documentos.forEach(documento => {
+        const template = $("#templateDocumento").html()
+          .replace("{{tipo}}", documento.tipo_documento)
+          .replace("{{fecha}}", new Date(documento.fecha_subida).toLocaleDateString())
+          .replace("{{url}}", documento.ruta_archivo)
+          .replace("{{id}}", documento.id_documento);
         
-        // Recolectar datos del formulario
-        const formData = new FormData(this);
-        formData.append("action", "crear");
+        const $doc = $(template);
+        $doc.find(".btnVerDocumento").attr("href", documento.ruta_archivo);
+        $doc.find(".btnEliminarDocumento").click(() => this.eliminarDocumento(documento.id_documento));
         
-        // Recolectar datos de paquetes
-        const paquetes = [];
-        $(".paquete").each(function(index) {
-            const paquete = {
-                numero: index + 1,
-                descripcion: $(this).find(".descripcion").val(),
-                peso: $(this).find(".peso").val(),
-                alto: $(this).find(".alto").val(),
-                ancho: $(this).find(".ancho").val(),
-                profundidad: $(this).find(".profundidad").val(),
-                instrucciones: $(this).find(".instrucciones").val(),
-                items: []
+        listaDocumentos.append($doc);
+      });
+    }
+  
+    renderAccionesEnvio(envio) {
+      return `
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-primary dropdown-toggle py-1 px-2" type="button" 
+                  data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-cog"></i>
+          </button>
+          
+          <ul class="dropdown-menu shadow-sm">
+            <li>
+              <a class="dropdown-item d-flex align-items-center btnDetalleEnvio" href="#" data-id="${envio.id_envio}">
+                <i class="fas fa-eye text-primary me-2"></i>
+                <span>Ver Detalle</span>
+              </a>
+            </li>
+            
+            <li>
+              <a class="dropdown-item d-flex align-items-center btnCambiarEstado" href="#" data-id="${envio.id_envio}">
+                <i class="fas fa-exchange-alt text-warning me-2"></i>
+                <span>Cambiar Estado</span>
+              </a>
+            </li>
+            
+            ${['PENDIENTE', 'PREPARACION'].includes(envio.estado) ? `
+            <li>
+              <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
+                <i class="fas fa-times text-danger me-2"></i>
+                <span>Cancelar Envío</span>
+              </a>
+            </li>
+            ` : ''}
+            
+            <li><hr class="dropdown-divider"></li>
+            
+            <li>
+              <a class="dropdown-item d-flex align-items-center" href="#">
+                <i class="fas fa-print text-secondary me-2"></i>
+                <span>Imprimir</span>
+              </a>
+            </li>
+          </ul>
+        </div>`;
+    }
+  
+    // ================ MÉTODOS DE UTILIDAD ================
+  
+    async fetchData(url, method = "GET", data = null) {
+        try {
+            const options = {
+                method,
+                headers: {},
+                cache: "no-cache",
+                credentials: 'same-origin'
             };
             
-            // Recolectar items del paquete
-            $(this).find(".item").each(function() {
-                paquete.items.push({
-                    id_producto: $(this).find(".selectProducto").val(),
-                    descripcion: $(this).find(".selectProducto option:selected").text(),
-                    cantidad: $(this).find(".cantidad").val(),
-                    peso_unitario: $(this).find(".pesoUnitario").val(),
-                    valor_unitario: $(this).find(".valorUnitario").val() || 0
-                });
-            });
-            
-            paquetes.push(paquete);
-        });
-        
-        // Agregar paquetes al FormData
-        formData.append("paquetes", JSON.stringify(paquetes));
-        
-        // Calcular peso total
-        const pesoTotal = paquetes.reduce((total, p) => total + parseFloat(p.peso), 0);
-        formData.append("peso_total", pesoTotal);
-        
-        // Calcular volumen total
-        const volumenTotal = paquetes.reduce((total, p) => {
-            const volumen = (parseFloat(p.alto) * parseFloat(p.ancho) * parseFloat(p.profundidad)) / 1000000;
-            return total + (isNaN(volumen) ? 0 : volumen);
-        }, 0);
-        formData.append("volumen_total", volumenTotal);
-        
-        // Agregar cantidad de paquetes
-        formData.append("cantidad_paquetes", paquetes.length);
-
-        // Enviar datos al servidor
-        const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        if (response?.status) {
-            Swal.fire("¡Correcto!", "Envío creado con éxito", "success");
-            resetForm();
-            $("#modalNuevoEnvio").modal("hide");
-            if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
-                $("#tablaEnvios").DataTable().destroy();
+            // Manejo diferente para GET vs otros métodos
+            if (method === "GET" && data) {
+                // Para GET, convertir a query string
+                const params = new URLSearchParams();
+                for (const key in data) {
+                    if (data[key] !== undefined && data[key] !== null) {
+                        params.append(key, data[key]);
+                    }
+                }
+                url = `${url}?${params.toString()}`;
+            } else if (data) {
+                // Para POST/PUT, etc.
+                if (data instanceof FormData) {
+                    // No establecer Content-Type para FormData, el navegador lo hará con el boundary correcto
+                    options.body = data;
+                } else {
+                    options.headers["Content-Type"] = "application/json";
+                    options.body = JSON.stringify(data);
+                }
             }
-            mostrarEnvios();
-        } else {
-            Swal.fire("Error", response?.message || "Error al crear el envío", "error");
+            
+            const response = await fetch(url, options);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `Error HTTP ${response.status}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error("Fetch error:", { url, method, error: error.message });
+            throw error;
         }
-    });
-
-    // Evento para filtrar envíos
-    $("#btnFiltrarEnvios").click(function(e) {
-        e.preventDefault();
+    }
+  
+    getClaseEstado(estado) {
+      const estados = {
+        'PENDIENTE': "badge bg-secondary",
+        'PREPARACION': "badge bg-warning text-dark",
+        'EN_TRANSITO': "badge bg-primary",
+        'EN_REPARTO': "badge bg-info",
+        'ENTREGADO': "badge bg-success",
+        'CANCELADO': "badge bg-danger",
+        'RECHAZADO': "badge bg-danger"
+      };
+      return estados[estado] || "badge bg-secondary";
+    }
+  
+    getClaseEstadoPaquete(estado) {
+      const estados = {
+        'BUENO': "badge bg-success",
+        'DANADO': "badge bg-danger",
+        'PERDIDO': "badge bg-dark",
+        'ENTREGADO': "badge bg-primary"
+      };
+      return estados[estado] || "badge bg-secondary";
+    }
+  
+    initDataTable(selector) {
+      if ($.fn.DataTable.isDataTable(selector)) {
+        $(selector).DataTable().destroy();
+      }
+      
+      $(selector).DataTable({
+        autoWidth: false,
+        responsive: true,
+        language: {
+          url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+        }
+      });
+    }
+  
+    validateEnvioForm() {
+      const form = $("#formNuevoEnvio");
+      let isValid = true;
+      
+      // Validar campos obligatorios
+      if (!form.find("[name='id_sucursal_origen']").val()) {
+        $("#error_origen").html("Seleccione sucursal origen").addClass("text-danger");
+        isValid = false;
+      }
+      
+      if (!form.find("[name='id_sucursal_destino']").val()) {
+        $("#error_destino").html("Seleccione sucursal destino").addClass("text-danger");
+        isValid = false;
+      }
+      
+      if (!form.find("[name='id_tipo_encomienda']").val()) {
+        $("#error_tipo").html("Seleccione tipo de encomienda").addClass("text-danger");
+        isValid = false;
+      }
+      
+      // Validar al menos un paquete
+      if (this.contadorPaquetes === 0) {
+        this.showWarning("Debe agregar al menos un paquete al envío");
+        isValid = false;
+      }
+      
+      return isValid;
+    }
+  
+    resetForm() {
+      $("#formNuevoEnvio")[0].reset();
+      $("#contenedorPaquetes").empty();
+      this.contadorPaquetes = 0;
+      this.contadorItems = 0;
+      $(".error-message").html("").removeClass("text-danger");
+    }
+  
+    fechaHoraActual() {
+      const now = new Date();
+      const timezoneOffset = now.getTimezoneOffset() * 60000;
+      const localISOTime = new Date(now - timezoneOffset).toISOString().slice(0, 16);
+      $("#fecha_estimada_entrega").val(localISOTime);
+    }
+  
+    generarCodigoEnvio() {
+      const fecha = new Date();
+      const year = fecha.getFullYear().toString().slice(-2);
+      const month = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const day = fecha.getDate().toString().padStart(2, '0');
+      const random = Math.floor(1000 + Math.random() * 9000);
+      return `ENV${year}${month}${day}${random}`;
+    }
+  
+    async filtrarEnvios(e) {
+      e.preventDefault();
+      
+      try {
         const filtros = {
-            origen: $("#filtroOrigen").val(),
-            destino: $("#filtroDestino").val(),
-            tipo: $("#filtroTipo").val(),
-            estado: $("#filtroEstado").val()
+          origen: $("#filtroOrigen").val(),
+          destino: $("#filtroDestino").val(),
+          tipo: $("#filtroTipo").val(),
+          estado: $("#filtroEstado").val()
         };
-        if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
-            $("#tablaEnvios").DataTable().destroy();
-        }
-        mostrarEnvios(filtros);
-    });
-
-    // Evento para ver detalle de envío
-    $("#tablaEnvios").on("click", ".btnDetalleEnvio", function() {
-        const idEnvio = $(this).data("id");
-        mostrarDetalleEnvio(idEnvio);
-        $("#modalDetalleEnvio").modal("show");
-    });
-
-    // Evento para cambiar estado de envío
-    $("#tablaEnvios").on("click", ".btnCambiarEstado", function() {
-        const idEnvio = $(this).data("id");
-        $("#idEnvioEstado").val(idEnvio);
-        $("#modalCambiarEstado").modal("show");
-    });
-
-    // Evento para cancelar envío
-    $("#tablaEnvios").on("click", ".btnCancelarEnvio", async function() {
-        const idEnvio = $(this).data("id");
         
+        await this.mostrarEnvios(filtros);
+      } catch (error) {
+        this.showError("Error al filtrar envíos", error);
+      }
+    }
+  
+    async cancelarEnvio(idEnvio) {
+      try {
         const result = await Swal.fire({
-            title: "¿Cancelar este envío?",
-            text: "Esta acción no se puede deshacer",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Sí, cancelar"
+          title: "¿Cancelar este envío?",
+          text: "Esta acción no se puede deshacer",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, cancelar"
         });
         
         if (result.isConfirmed) {
-            await actualizarEstadoEnvio(idEnvio, "CANCELADO", "Envío cancelado por el usuario");
+          await this.actualizarEstadoEnvio(idEnvio, "CANCELADO", "Envío cancelado por el usuario");
         }
-    });
-
-    // Evento para enviar formulario de cambio de estado
-    $("#formCambiarEstado").submit(function(e) {
-        e.preventDefault();
-        const idEnvio = $("#idEnvioEstado").val();
-        const estado = $("#nuevoEstado").val();
-        const observaciones = $("#observacionesEstado").val();
-        actualizarEstadoEnvio(idEnvio, estado, observaciones);
-    });
-
-    // Evento para abrir modal de subir documento
-    $("#btnSubirDocumento").click(function() {
-        if (!envioActual) return;
-        $("#idEnvioDocumento").val(envioActual.id_envio);
-        $("#modalSubirDocumento").modal("show");
-    });
-
-    // Evento para subir documento
-    $("#formSubirDocumento").submit(function(e) {
-        e.preventDefault();
-        if (!envioActual) return;
-        const formData = new FormData(this);
-        subirDocumento(envioActual.id_envio, formData);
-    });
-
-    // Evento para imprimir guía
-    $("#btnImprimirGuia").click(function() {
-        if (!envioActual) return;
-        window.open(`extensiones/guia_remision.php?action=imprimirGuia&comprobante=guia_remision&id=${envioActual.id_envio}`, "_blank");
-    });
-
-    // Evento para agregar seguimiento
-    $("#btnNuevoSeguimiento").click(function() {
-        if (!envioActual) return;
-        $("#idEnvioEstado").val(envioActual.id_envio);
-        $("#modalCambiarEstado").modal("show");
-    });
-
-    // Cargar datos iniciales
-    cargarSucursales("filtroOrigen", true);
-    cargarSucursales("filtroDestino", true);
-    cargarSerieComprobante("id_serie");
-    cargarTipoEncomienda("id_tipo_encomienda");
-    cargarSucursales("id_sucursal_origen");
-    cargarSucursales("id_sucursal_destino");
-    cargarTransportistas("id_transportista");
-    if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
-        $("#tablaEnvios").DataTable().destroy();
+      } catch (error) {
+        this.showError("Error al cancelar envío", error);
+      }
     }
-    mostrarEnvios();
-});
+  
+    async eliminarDocumento(idDocumento) {
+      try {
+        const result = await Swal.fire({
+          title: "¿Eliminar documento?",
+          text: "Esta acción no se puede deshacer",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, eliminar"
+        });
+        
+        if (result.isConfirmed) {
+          const response = await this.fetchData("ajax/envios.ajax.php", "POST", {
+            action: "eliminarDocumento",
+            id_documento: idDocumento
+          });
+          
+          if (response.status) {
+            this.showSuccess("Documento eliminado");
+            await this.mostrarDetalleEnvio(this.envioActual.id_envio);
+          } else {
+            throw new Error(response.message);
+          }
+        }
+      } catch (error) {
+        this.showError("Error al eliminar documento", error);
+      }
+    }
+  
+    imprimirGuia() {
+      if (!this.envioActual) return;
+      window.open(`extensiones/guia_remision.php?action=imprimirGuia&comprobante=guia_remision&id=${this.envioActual.id_envio}`, "_blank");
+    }
+  
+    showSuccess(message) {
+      Swal.fire("¡Éxito!", message, "success");
+    }
+  
+    showWarning(message) {
+      Swal.fire("Advertencia", message, "warning");
+    }
+  
+    showError(title, error) {
+      console.error(title, error);
+      Swal.fire("Error", `${title}: ${error.message}`, "error");
+    }
+  }
+  
+  // Inicialización cuando el DOM esté listo
+  $(document).ready(() => {
+    window.enviosManager = new EnviosManager();
+  });

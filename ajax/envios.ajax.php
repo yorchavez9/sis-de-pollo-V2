@@ -5,22 +5,36 @@ require_once "../controladores/Envio.controlador.php";
 // Establecer cabecera JSON para todas las respuestas
 header('Content-Type: application/json');
 
+// Función para obtener los datos de entrada según el método de solicitud
+function getRequestData() {
+    return $_SERVER['REQUEST_METHOD'] === 'POST' ? $_POST : $_GET;
+}
+
+// Obtener datos de la solicitud
+$requestData = getRequestData();
+
 // Manejar solicitudes AJAX
-if (isset($_GET['action'])) {
-    switch ($_GET['action']) {
+if (isset($requestData['action'])) {
+    switch ($requestData['action']) {
         case 'listar':
+            // Obtener filtros según el método de solicitud
             $filtros = [
-                'origen' => $_GET['origen'] ?? null,
-                'destino' => $_GET['destino'] ?? null,
-                'tipo' => $_GET['tipo'] ?? null,
-                'estado' => $_GET['estado'] ?? null
+                'origen' => $requestData['origen'] ?? null,
+                'destino' => $requestData['destino'] ?? null,
+                'tipo' => $requestData['tipo'] ?? null,
+                'estado' => $requestData['estado'] ?? null
             ];
-            $response =  ControladorEnvio::ctrMostrarEnvios(null, null, $filtros);
+            
+            $response = ControladorEnvio::ctrMostrarEnvios(null, null, $filtros);
             echo json_encode($response);
             break;
             
         case 'detalle':
-            $idEnvio = $_GET['id'];
+            $idEnvio = $requestData['id'] ?? null;
+            if (!$idEnvio) {
+                echo json_encode(['status' => false, 'message' => 'ID de envío no proporcionado']);
+                break;
+            }
             $response = ControladorEnvio::ctrMostrarDetalleEnvio($idEnvio);
             echo json_encode($response);
             break;
@@ -30,28 +44,30 @@ if (isset($_GET['action'])) {
             echo json_encode($response);
             break;
             
-        default:
-            echo json_encode(['status' => false, 'message' => 'Acción no válida']);
-    }
-} elseif (isset($_POST['action'])) {
-    switch ($_POST['action']) {
         case 'crear':
-            ControladorEnvio::ctrCrearEnvio();
+            // Manejar la creación con FormData (incluyendo archivos)
+            $response = ControladorEnvio::ctrCrearEnvio();
+            echo json_encode($response);
             break;
             
         case 'cambiarEstado':
-            echo ControladorEnvio::ctrCambiarEstadoEnvio();
+            $response = ControladorEnvio::ctrCambiarEstadoEnvio();
+            echo json_encode($response);
             break;
             
         case 'subirDocumento':
-            echo ControladorEnvio::ctrSubirDocumentoEnvio();
+            $response = ControladorEnvio::ctrSubirDocumentoEnvio();
+            echo json_encode($response);
             break;
             
         case 'eliminarDocumento':
-            echo ControladorEnvio::ctrEliminarDocumentoEnvio();
+            $response = ControladorEnvio::ctrEliminarDocumentoEnvio();
+            echo json_encode($response);
             break;
             
         default:
             echo json_encode(['status' => false, 'message' => 'Acción no válida']);
     }
+} else {
+    echo json_encode(['status' => false, 'message' => 'Acción no especificada']);
 }

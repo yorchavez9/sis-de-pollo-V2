@@ -618,7 +618,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="btnImprimirGuia">
-                    <i class="fas fa-print me-2"></i> Imprimir Guía
+                    <i class="fas fa-print me-2 text-white"></i> Imprimir Guía
                 </button>
             </div>
         </div>
