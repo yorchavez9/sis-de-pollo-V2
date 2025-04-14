@@ -102,7 +102,7 @@ $(document).ready(function () {
                     <td>${usuario.usuario}</td>
                     <td class="text-center">
                         ${usuario.imagen 
-                            ? `<img src="vistas/assets/img/usuarios/${usuario.imagen}" alt="Imagen usuario" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">` 
+                            ? `<img src="vistas/img/usuarios/${usuario.imagen}" alt="Imagen usuario" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">` 
                             : '<i class="fas fa-user-circle fa-2x"></i>'}
                     </td>
                     <td>${usuario.ultimo_login ? new Date(usuario.ultimo_login).toLocaleString() : 'Nunca'}</td>
@@ -185,8 +185,11 @@ $(document).ready(function () {
         if (validateUsuarioForm("form_nuevo_usuario")) {
             const datos = new FormData($("#form_nuevo_usuario")[0]);
             datos.append('action', 'crear');
+            datos.forEach(element => {
+                console.log(element);
+            });
             const response = await fetchData("ajax/usuario.ajax.php", "POST", datos);
-            
+            console.log(response);
             if (response?.status) {
                 resetForm("form_nuevo_usuario");
                 $("#modal_nuevo_usuario").modal("hide");
@@ -226,7 +229,7 @@ $(document).ready(function () {
             
             // Mostrar imagen actual si existe
             if (data.imagen) {
-                $("#preview_imagen_usuario").attr("src", `vistas/assets/img/usuarios/${data.imagen}`).show();
+                $("#preview_imagen_usuario").attr("src", `vistas/img/usuarios/${data.imagen}`).show();
             } else {
                 $("#preview_imagen_usuario").hide();
             }
