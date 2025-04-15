@@ -362,25 +362,25 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Total Paquetes</label>
-                                        <input type="text" class="form-control" id="totalPaquetes" readonly value="0">
+                                        <input type="text" class="form-control" name="cantidad_paquetes" id="totalPaquetes" readonly value="0">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Peso Total (kg)</label>
-                                        <input type="text" class="form-control" id="pesoTotal" readonly value="0.00">
+                                        <input type="text" class="form-control" name="peso_total" id="pesoTotal" readonly value="0.00">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Volumen Total (m³)</label>
-                                        <input type="text" class="form-control" id="volumenTotal" readonly value="0.00">
+                                        <input type="text" class="form-control" name="volumen_total" id="volumenTotal" readonly value="0.00">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Costo Estimado</label>
-                                        <input type="text" class="form-control" id="costoEnvio" value="0.00">
+                                        <input type="text" class="form-control" name="costo_envio" id="costoEnvio" value="0.00">
                                     </div>
                                 </div>
                             </div>

@@ -218,7 +218,7 @@ $(document).ready(function () {
                                 
                                 <!-- Opción adicional (ejemplo) -->
                                 <li>
-                                    <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <a class="dropdown-item d-flex align-items-center btnImprimirEnvio" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-print text-secondary me-2"></i>
                                         <span>Imprimir</span>
                                     </a>
@@ -704,13 +704,11 @@ $(document).ready(function () {
             return total + (isNaN(volumen) ? 0 : volumen);
         }, 0);
         formData.append("volumen_total", volumenTotal);
-
-        // Agregar cantidad de paquetes
         formData.append("cantidad_paquetes", paquetes.length);
-
-        // Enviar datos al servidor
+        formData.forEach(element => {
+            console.log(element);
+        });
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        console.log(response);
         if (response?.status) {
             Swal.fire({
                 title: "¡Correcto!",
@@ -763,6 +761,12 @@ $(document).ready(function () {
         const idEnvio = $(this).data("id");
         $("#idEnvioEstado").val(idEnvio);
         $("#modalCambiarEstado").modal("show");
+    });
+
+    // Evento para cambiar estado de envío
+    $("#tablaEnvios").on("click", ".btnImprimirEnvio", function () {
+        const idEnvio = $(this).data("id");
+        window.open(`extensiones/comprobante.php?action=imprimirComprobante&id=${idEnvio}`, "_blank");
     });
 
     // Evento para cancelar envío

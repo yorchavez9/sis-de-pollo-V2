@@ -2,259 +2,221 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Boleta de Venta Electrónica</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        /* Estilos optimizados y organizados */
         
+        /* Configuración de página */
         @page { 
             margin: 10mm; 
             size: A4 portrait;
         }
         
+        /* Variables CSS */
         :root {
-            --primary-color: #3498db;
-            --secondary-color: #f8f9fa;
-            --accent-color: #2980b9;
-            --text-color: #2c3e50;
-            --light-gray: #ecf0f1;
-            --border-color: #e0e0e0;
+            --color-primario: #3498db;
+            --color-secundario: #f8f9fa;
+            --color-texto: #2c3e50;
+            --color-borde: #e0e0e0;
+            --color-fondo-claro: #ecf0f1;
         }
         
+        /* Estilos base */
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             font-size: 9pt;
             width: 100%;
             max-width: 190mm;
             margin: 0 auto;
             padding: 0;
-            color: var(--text-color);
+            color: var(--color-texto);
             line-height: 1.3;
-            background-color: white;
         }
         
-        .header {
+        /* Encabezado */
+        .encabezado {
             text-align: center;
-            border-bottom: 1px solid var(--primary-color);
+            border-bottom: 1px solid var(--color-primario);
             padding-bottom: 4mm;
             margin-bottom: 4mm;
-            position: relative;
         }
         
-        .company-name {
-            font-weight: 700;
+        .nombre-empresa {
+            font-weight: bold;
             font-size: 14pt;
             margin-bottom: 1mm;
-            color: var(--primary-color);
+            color: var(--color-primario);
         }
         
-        .document-title {
+        .titulo-documento {
             font-size: 14pt;
             margin: 2mm 0;
             text-transform: uppercase;
-            font-weight: 700;
-            color: var(--text-color);
-            letter-spacing: 0.5px;
+            font-weight: bold;
         }
         
-        .header-box {
-            background-color: var(--secondary-color);
+        .contenedor-encabezado {
+            background-color: var(--color-secundario);
             border-radius: 5px;
             padding: 2mm;
             margin-top: 2mm;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
-        .sunat-leyend {
+        /* Leyenda SUNAT */
+        .leyenda-sunat {
             font-size: 7pt;
-            background: var(--light-gray);
+            background: var(--color-fondo-claro);
             padding: 2mm;
             text-align: center;
             margin: 3mm 0;
             border-radius: 5px;
-            border: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         
-        .client-info {
+        /* Información del cliente */
+        .info-cliente {
             margin-bottom: 3mm;
-            background-color: var(--secondary-color);
+            background-color: var(--color-secundario);
             border-radius: 5px;
             padding: 3mm;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         
-        .client-info table {
+        .info-cliente table {
             width: 100%;
             border-spacing: 0;
         }
         
-        .client-info td {
+        .info-cliente td {
             padding: 1mm 0;
             vertical-align: top;
         }
         
-        .client-info td:first-child {
+        .info-cliente td:first-child {
             width: 25%;
             font-weight: 500;
-            color: var(--primary-color);
+            color: var(--color-primario);
         }
         
-        table.items {
+        /* Tabla de items */
+        .tabla-items {
             width: 100%;
             border-collapse: collapse;
             margin: 3mm 0;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
-        table.items th {
-            background: var(--primary-color);
+        .tabla-items th {
+            background: var(--color-primario);
             padding: 2mm;
             text-align: left;
-            border: none;
-            font-size: 8pt;
             color: white;
             font-weight: 500;
         }
         
-        table.items tr:nth-child(even) {
-            background-color: var(--secondary-color);
+        .tabla-items tr:nth-child(even) {
+            background-color: var(--color-secundario);
         }
         
-        table.items td {
+        .tabla-items td {
             padding: 1.5mm;
-            border: none;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 8pt;
+            border-bottom: 1px solid var(--color-borde);
         }
         
-        table.items td:last-child,
-        table.items td:nth-last-child(2) {
+        .tabla-items td.align-right {
             text-align: right;
         }
         
-        .totals {
+        /* Totales */
+        .seccion-totales {
             width: 60%;
             margin-left: auto;
             margin-top: 3mm;
         }
         
-        .totals table {
+        .tabla-totales {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 5px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
-        .totals td {
+        .tabla-totales td {
             padding: 1.5mm;
-            border: none;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 8pt;
+            border-bottom: 1px solid var(--color-borde);
         }
         
-        .totals td:first-child {
+        .tabla-totales td:first-child {
             font-weight: 500;
-            width: 65%;
-            color: var(--text-color);
+            width: 88%;
         }
         
-        .totals tr:last-child {
-            background-color: var(--primary-color);
+        .fila-total {
+            background-color: var(--color-primario);
             color: white;
-            font-weight: 700;
+            font-weight: bold;
         }
         
-        .totals tr:last-child td {
-            padding: 2mm 1.5mm;
-        }
-        
-        .amount-in-words {
+        /* Monto en letras */
+        .monto-letras {
             margin-top: 3mm;
             font-style: italic;
             text-align: center;
             padding: 2mm;
             border-radius: 5px;
-            border: 1px dashed var(--primary-color);
-            background-color: var(--secondary-color);
-            font-size: 8pt;
+            border: 1px dashed var(--color-primario);
+            background-color: var(--color-secundario);
         }
         
-        .footer-section {
+        /* Pie de página */
+        .pie-pagina {
             display: flex;
             margin-top: 3mm;
             align-items: flex-start;
         }
         
-        .legal-info {
+        .info-legal {
             font-size: 6.5pt;
             text-align: justify;
             line-height: 1.3;
-            background-color: var(--light-gray);
+            background-color: var(--color-fondo-claro);
             padding: 2mm;
             border-radius: 3px;
             width: 70%;
         }
         
-        .qr-section {
+        .seccion-qr {
             width: 25%;
             text-align: center;
             margin-left: auto;
         }
         
-        .qr-code {
+        .codigo-qr {
             display: inline-block;
             padding: 1mm;
             background-color: white;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--color-borde);
             border-radius: 3px;
             margin-bottom: 1mm;
         }
         
-        .qr-code img {
-            width: 60px;
-            height: 60px;
-        }
-        
-        .verification-text {
+        .texto-verificacion {
             font-size: 7pt;
             margin-top: 1mm;
         }
         
-        .footer {
+        .firma {
             font-size: 7pt;
             text-align: center;
             margin-top: 4mm;
             padding-top: 2mm;
-            color: var(--text-color);
-            border-top: 1px solid var(--primary-color);
+            border-top: 1px solid var(--color-primario);
         }
         
-        .footer p {
-            margin: 0.5mm 0;
-        }
-        
+        /* Estilos para impresión */
         @media print {
             body {
                 font-size: 9pt;
             }
             
-            .header, .footer {
-                border-color: var(--primary-color) !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            table.items th {
-                background-color: var(--primary-color) !important;
-                color: white !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            .totals tr:last-child {
-                background-color: var(--primary-color) !important;
+            .tabla-items th,
+            .fila-total {
+                background-color: var(--color-primario) !important;
                 color: white !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
@@ -263,21 +225,21 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="company-name">{{empresa_nombre}}</div>
+    <div class="encabezado">
+        <div class="nombre-empresa">{{empresa_nombre}}</div>
         <div>RUC: {{empresa_ruc}}</div>
         
-        <div class="header-box">
-            <div class="document-title">Boleta de Venta Electrónica</div>
+        <div class="contenedor-encabezado">
+            <div class="titulo-documento">Boleta de Venta Electrónica</div>
             <div>N° {{serie_numero}}</div>
         </div>
     </div>
 
-    <div class="sunat-leyend">
+    <div class="leyenda-sunat">
         Representación Impresa de la Boleta de Venta Electrónica • Verificar en: <strong>https://e-consultaruc.sunat.gob.pe</strong>
     </div>
 
-    <div class="client-info">
+    <div class="info-cliente">
         <table>
             <tr>
                 <td>Señor(es):</td>
@@ -302,14 +264,14 @@
         </table>
     </div>
 
-    <table class="items">
+    <table class="tabla-items">
         <thead>
             <tr>
                 <th>Cantidad</th>
                 <th>Unidad</th>
                 <th>Descripción</th>
-                <th>Valor Unit.</th>
-                <th>Importe</th>
+                <th class="align-right">Valor Unit.</th>
+                <th class="align-right">Importe</th>
             </tr>
         </thead>
         <tbody>
@@ -317,58 +279,58 @@
         </tbody>
     </table>
 
-    <div class="totals">
-        <table>
+    <div class="seccion-totales">
+        <table class="tabla-totales">
             <tr>
                 <td>Op. Gravada:</td>
-                <td>S/ 6.00</td>
+                <td class="align-right">S/ 0.00</td>
             </tr>
             <tr>
                 <td>Op. Exonerada:</td>
-                <td>S/ 0.00</td>
+                <td class="align-right">S/ 0.00</td>
             </tr>
             <tr>
                 <td>Op. Inafecta:</td>
-                <td>S/ 0.00</td>
+                <td class="align-right">S/ 0.00</td>
             </tr>
             <tr>
                 <td>IGV (18%):</td>
-                <td>S/ 0.00</td>
+                <td class="align-right">S/ 0.00</td>
             </tr>
             <tr>
                 <td>Otros Cargos/Tributos:</td>
-                <td>S/ 0.00</td>
+                <td class="align-right">S/ 0.00</td>
             </tr>
-            <tr>
+            <tr class="fila-total">
                 <td>Importe Total:</td>
-                <td><strong>{{total}}</strong></td>
+                <td class="align-right"><strong>{{total}}</strong></td>
             </tr>
         </table>
     </div>
 
-    <div class="amount-in-words">
-        SON: SEIS CON 00/100 SOLES
+    <div class="monto-letras">
+        {{monto_texto}}
     </div>
 
-    <div class="footer-section">
-        <div class="legal-info">
+    <div class="pie-pagina">
+        <div class="info-legal">
             (*) Sin impuestos. (**) Incluye impuestos, de ser Op. Gravada.<br>
             Esta es una representación impresa de la Boleta de Venta Electrónica, generada en el Sistema de la SUNAT. 
             El Emisor Electrónico puede verificarla utilizando su clave SOL, el Adquirente o Usuario puede consultar 
             su validez en SUNAT Virtual: www.sunat.gob.pe, en Opciones sin Clave SOL/ Consulta de Validez del CPE.
         </div>
         
-        <div class="qr-section">
-            <div class="qr-code">
+        <div class="seccion-qr">
+            <div class="codigo-qr">
                 <img src="/api/placeholder/60/60" alt="Código QR">
             </div>
-            <div class="verification-text">
+            <div class="texto-verificacion">
                 Escanee para verificar
             </div>
         </div>
     </div>
 
-    <div class="footer">
+    <div class="firma">
         <p>Autorizado mediante Resolución de Intendencia N° 034-005-0000000</p>
         <p>Consulte su comprobante en https://e-consultaruc.sunat.gob.pe</p>
     </div>
