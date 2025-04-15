@@ -32,6 +32,25 @@ class ModeloUsuarios
     }
     
     /* =============================================
+    MOSTRAR MODULOS PARA INICIAR SESIÓN
+    ============================================= */
+    static public function mdlMostrarLoginRol($tabla, $item, $valor)
+    {
+        try {
+            $stmt = Conexion::conectar()->prepare("SELECT * FROM $tabla WHERE $item = :$item");
+            $stmt->bindParam(":", $item, $valor, PDO::PARAM_STR);
+            $stmt->execute();
+            $modulos = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $modulos ?: false;
+        } catch (PDOException $e) {
+            error_log("Error en mdlMostrarLoginUsuario: " . $e->getMessage());
+            return false;
+        }finally {
+            $stmt = null;
+        }
+    }
+
+    /* =============================================
     ACTUALIZAR USUARIO (ÚLTIMO LOGIN)
     ============================================= */
     static public function mdlActualizarUsuario($tabla, $item1, $valor1, $item2, $valor2)

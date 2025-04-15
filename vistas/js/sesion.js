@@ -17,14 +17,14 @@ async function obtenerSesion() {
         if (data.status === false) {
             console.log('Mensaje del servidor:', data.message);
         } else {
-            /* console.log('Datos completos de sesión:', data); */
+            console.log('Datos completos de sesión:', data);
             
             // Ejemplos de acceso a datos específicos
-            /* console.log('Usuario:', data.usuario);
-            console.log('Sucursal ID:', data.id_sucursal); */
+            console.log('Usuario:', data.usuario);
+            console.log('Sucursal ID:', data.id_sucursal);
             
             // Mostrar permisos en formato tabla para mejor visualización
-           /*  console.table(data.permisos); */
+            console.table(data.permisos);
             return data
         }
     } catch (error) {
@@ -36,6 +36,6 @@ async function obtenerSesion() {
 /* obtenerSesion(); */
 obtenerSesion().then(datosUsuario =>{
     if(datosUsuario){
-        /* console.log(datosUsuario); */
+        console.log(datosUsuario);
     }
 })
