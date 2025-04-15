@@ -215,13 +215,13 @@ $(document).ready(function () {
                             
                             <ul class="dropdown-menu shadow-sm" aria-labelledby="dropdownMenuButton${envio.id_envio}">
                                 <!-- Opción Ver Detalle -->
-                                <li>
+                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("ver")? `<li>
                                     <a class="dropdown-item d-flex align-items-center btnDetalleEnvio" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-eye text-primary me-2"></i>
                                         <span>Ver Detalle</span>
                                     </a>
-                                </li>
-                                
+                                </li>`:``}
+
                                 <!-- Opción Cambiar Estado -->
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center btnCambiarEstado" href="#" data-id="${envio.id_envio}">

@@ -50,7 +50,10 @@
         color: #6c757d;
     }
 </style>
-
+<?php 
+if(isset($_SESSION["permisos"])){
+    $permisos = $_SESSION["permisos"];
+?>
 <div class="page-wrapper">
     <div class="content">
         <!-- Encabezado -->
@@ -59,11 +62,13 @@
                 <h4>Gestión de Envíos <i class="fas fa-truck me-1"></i></h4>
                 <h6>Administración de envíos entre sucursales</h6>
             </div>
+            <?php if(isset($permisos["envios"]) && in_array("crear", $permisos["envios"]["acciones"])): ?>
             <div class="page-btn">
                 <button class="btn btn-added" id="btnNuevoEnvio">
                     <img src="vistas/assets/img/icons/plus.svg" alt="img" class="me-2">Nuevo Envío
                 </button>
             </div>
+            <?php endif; ?>
         </div>
 
         <!-- Filtros -->
@@ -154,7 +159,7 @@
     </div>
 </div>
 
-<!-- Modal Nuevo Envío -->
+
 <!-- Modal Nuevo Envío -->
 <div class="modal fade" id="modalNuevoEnvio" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -748,3 +753,6 @@
         </div>
     </div>
 </div>
+<?php 
+} 
+?>
