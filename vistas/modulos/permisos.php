@@ -153,3 +153,39 @@
         </div>
     </div>
 </div>
+
+
+<!-- MODAL VER PERMISOS -->
+<div class="modal fade" id="modal_ver_permiso" tabindex="-1" aria-labelledby="modal_ver_permiso_Label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Visualizar Permisos</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="form-group col-md-6">
+                        <label>Usuario</label>
+                        <input type="text" class="form-control" id="view_usuario" readonly>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Rol</label>
+                        <input type="text" class="form-control" id="view_rol" readonly>
+                    </div>
+                </div>
+
+                <!-- Módulos y Acciones -->
+                <div class="form-group mt-4">
+                    <label class="form-label">Módulos y acciones permitidas</label>
+                    <div class="row" id="view_contenedor_modulos_acciones">
+                        <!-- Módulos con sus acciones dinámicas -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -277,19 +277,23 @@ $(document).ready(function () {
 
             // Mostrar en la tabla
             Object.values(permisosPorRol).forEach((permisoRol, index) => {
-                const moduloNames = Array.from(permisoRol.modulos).map(idModulo => {
-                    const modulo = modulosDisponibles.find(m => m.id_modulo == idModulo);
-                    return modulo ? modulo.nombre : 'Desconocido';
-                }).join(', ');
+                const totalModulos = permisoRol.modulos.size || 0;
 
                 const fila = `
                     <tr data-id-rol="${permisoRol.rol.id_rol}" data-id-usuario="${permisoRol.usuario.id_usuario || ''}">
                         <td>${index + 1}</td>
                         <td>${permisoRol.usuario.nombre_usuario || 'No asignado'}</td>
                         <td>${permisoRol.rol.nombre}</td>
-                        <td>${moduloNames}</td>
+                        <td>${totalModulos} módulo(s)</td>
                         <td>${permisoRol.fecha || 'No registrada'}</td>
                         <td class="text-center">
+                            <a href="#" class="me-3 btnVerPermiso" 
+                            data-id-rol="${permisoRol.rol.id_rol}"
+                            data-id-usuario="${permisoRol.usuario.id_usuario || ''}"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#modal_ver_permiso">
+                                <i class="text-primary fas fa-eye fa-lg"></i>
+                            </a>
                             <a href="#" class="me-3 btnEditarPermiso" 
                             data-id-rol="${permisoRol.rol.id_rol}"
                             data-id-usuario="${permisoRol.usuario.id_usuario || ''}"
@@ -306,6 +310,7 @@ $(document).ready(function () {
                     </tr>`;
                 tbody.append(fila);
             });
+
 
             // Inicializar DataTable si no está inicializado
             if ($.fn.DataTable.isDataTable(tabla)) {
@@ -487,6 +492,117 @@ $(document).ready(function () {
             Swal.fire("Error", "Ocurrió un error al actualizar el permiso", "error");
         }
     });
+
+
+    /* ===========================================
+    VER DETALLES MODULSO
+    =========================================== */
+
+    // Evento para ver permiso
+    $("#tabla_permisos").on("click", ".btnVerPermiso", async function (e) {
+        e.preventDefault();
+
+        const idUsuario = $(this).data('id-usuario');
+        const idRol = $(this).data('id-rol');
+
+        try {
+            // Buscar información del usuario
+            const usuario = usuariosDisponibles.find(r => r.id_usuario == idUsuario) || { nombre: 'Desconocido' };
+            // Buscar información del rol
+            const rol = rolesDisponibles.find(r => r.id_rol == idRol) || { nombre: 'Desconocido' };
+
+            // Obtener permisos para este rol
+            const permisosRol = permisosActuales.filter(p => p.id_rol == idRol);
+
+            // Llenar datos en el modal de visualización
+            $("#view_usuario").val(usuario.nombre);
+            $("#view_rol").val(rol.nombre);
+
+            // Generar vista de módulos y acciones
+            generarVistaModulosAcciones("#view_contenedor_modulos_acciones", permisosRol);
+
+            // Mostrar modal
+            $("#modal_ver_permiso").modal("show");
+
+        } catch (error) {
+            console.error("Error al cargar datos para visualización:", error);
+            Swal.fire("Error", "No se pudieron cargar los datos para visualizar", "error");
+        }
+    });
+
+    // Función para generar la vista de módulos y acciones (solo lectura)
+    const generarVistaModulosAcciones = (contenedor, permisosRol = []) => {
+        const $contenedor = $(contenedor);
+        $contenedor.empty();
+
+        // Ordenar módulos alfabéticamente
+        const modulosOrdenados = [...modulosDisponibles].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        modulosOrdenados.forEach(modulo => {
+            // Verificar si el módulo tiene permisos para este rol
+            const moduloTienePermisos = permisosRol.some(p => p.id_modulo == modulo.id_modulo);
+
+            // Si no tiene permisos, no mostrarlo
+            if (!moduloTienePermisos) return;
+
+            // Obtener acciones permitidas para este módulo y rol
+            const accionesPermitidas = permisosRol
+                .filter(p => p.id_modulo == modulo.id_modulo)
+                .map(p => p.id_accion.toString());
+
+            // Crear card para el módulo
+            const card = $(`
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="fw-bold mb-0">${modulo.nombre}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="view_acciones_modulo_${modulo.id_modulo}">
+                            <!-- Acciones dinámicas -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
+            $contenedor.append(card);
+
+            // Generar acciones para este módulo
+            generarVistaAccionesModulo(modulo.id_modulo, accionesPermitidas);
+        });
+    };
+
+    // Generar vista de acciones para un módulo específico
+    const generarVistaAccionesModulo = (idModulo, accionesSeleccionadas = []) => {
+        const $contenedor = $(`#view_acciones_modulo_${idModulo}`);
+        $contenedor.empty();
+
+        // Filtrar acciones para este módulo
+        const accionesModulo = accionesDisponibles.filter(accion =>
+            accionesSeleccionadas.includes(accion.id_accion.toString())
+        ).sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        if (accionesModulo.length === 0) {
+            $contenedor.append('<div class="col-12"><p class="text-muted mb-0">No hay acciones permitidas</p></div>');
+            return;
+        }
+
+        accionesModulo.forEach(accion => {
+            $contenedor.append(`
+            <div class="col-md-6 mb-2">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    <span>${accion.nombre}</span>
+                </div>
+            </div>
+        `);
+        });
+    };
+
+
+
+
 
     // Evento para eliminar permiso
     $("#tabla_permisos").on("click", ".btnEliminarPermiso", async function (e) {
