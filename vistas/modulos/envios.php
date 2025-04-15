@@ -1,43 +1,54 @@
 <style>
     /* Estilos para el dropdown */
-.dropdown-toggle {
-    transition: all 0.3s ease;
-    border-radius: 4px;
-}
+    .dropdown-toggle {
+        transition: all 0.3s ease;
+        border-radius: 4px;
+    }
 
-.dropdown-toggle:hover {
-    background-color: #0d6efd;
-    color: white !important;
-}
+    .dropdown-toggle:hover {
+        background-color: #0d6efd;
+        color: white !important;
+    }
 
-.dropdown-menu {
-    border: none;
-    border-radius: 8px;
-    min-width: 180px;
-    padding: 5px 0;
-}
+    .dropdown-menu {
+        border: none;
+        border-radius: 8px;
+        min-width: 180px;
+        padding: 5px 0;
+    }
 
-.dropdown-item {
-    padding: 8px 15px;
-    font-size: 14px;
-    border-radius: 4px;
-    margin: 2px 8px;
-    transition: all 0.2s;
-}
+    .dropdown-item {
+        padding: 8px 15px;
+        font-size: 14px;
+        border-radius: 4px;
+        margin: 2px 8px;
+        transition: all 0.2s;
+    }
 
-.dropdown-item:hover {
-    background-color: #f8f9fa;
-}
+    .dropdown-item:hover {
+        background-color: #f8f9fa;
+    }
 
-.dropdown-item span {
-    flex-grow: 1;
-}
+    .dropdown-item span {
+        flex-grow: 1;
+    }
 
-/* Colores para íconos */
-.fa-eye { color: #0d6efd; }
-.fa-exchange-alt { color: #ffc107; }
-.fa-times { color: #dc3545; }
-.fa-print { color: #6c757d; }
+    /* Colores para íconos */
+    .fa-eye {
+        color: #0d6efd;
+    }
+
+    .fa-exchange-alt {
+        color: #ffc107;
+    }
+
+    .fa-times {
+        color: #dc3545;
+    }
+
+    .fa-print {
+        color: #6c757d;
+    }
 </style>
 
 <div class="page-wrapper">
@@ -127,7 +138,7 @@
                                 <th>Origen</th>
                                 <th>Destino</th>
                                 <th>Tipo</th>
-                                <th>Fecha Envío</th>
+                                <th>Fecha creación</th>
                                 <th>Estado</th>
                                 <th>Transportista</th>
                                 <th class="text-center">Acciones</th>
@@ -166,8 +177,8 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Selecione el comprobante<span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_serie" id="id_serie" >
-                                            
+                                        <select class="form-select select" name="id_serie" id="id_serie">
+
                                         </select>
                                     </div>
                                 </div>
@@ -197,14 +208,14 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Fecha Estimada de Entrega <span class="text-danger">*</span></label>
-                                        <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega" >
+                                        <input type="datetime-local" class="form-control" name="fecha_estimada_entrega" id="fecha_estimada_entrega">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Tipo de Envío <span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_tipo_encomienda" id="id_tipo_encomienda" >
-                                            
+                                        <select class="form-select select" name="id_tipo_encomienda" id="id_tipo_encomienda">
+
                                         </select>
                                     </div>
                                 </div>
@@ -222,7 +233,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Sucursal Origen <span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_sucursal_origen" id="id_sucursal_origen" >
+                                        <select class="form-select select" name="id_sucursal_origen" id="id_sucursal_origen">
                                             <option value="" disabled selected>Seleccionar</option>
                                             <!-- Opciones dinámicas -->
                                         </select>
@@ -231,7 +242,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         <label>Sucursal Destino <span class="text-danger">*</span></label>
-                                        <select class="form-select select" name="id_sucursal_destino" id="id_sucursal_destino" >
+                                        <select class="form-select select" name="id_sucursal_destino" id="id_sucursal_destino">
                                             <option value="" disabled selected>Seleccionar</option>
                                             <!-- Opciones dinámicas -->
                                         </select>
@@ -410,7 +421,7 @@
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Peso (kg) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control peso" step="0.01" min="0.01" placeholder="Peso del paquete" >
+                        <input type="number" class="form-control peso" step="0.01" min="0.01" placeholder="Peso del paquete">
                     </div>
                 </div>
             </div>
@@ -438,7 +449,7 @@
                 <label>Instrucciones de Manejo</label>
                 <textarea class="form-control instrucciones" rows="2" placeholder="Instrucciones del paquete"></textarea>
             </div>
-            
+
             <h6 class="mt-4 mb-3"><i class="fas fa-box-open me-2"></i> Ítems del Paquete</h6>
             <button type="button" class="btn btn-sm btn-primary btnAgregarItem mb-3">
                 <i class="fas fa-plus me-1"></i> Agregar Ítem
@@ -467,13 +478,13 @@
 <template id="templateItemPaquete">
     <tr class="item">
         <td>
-            <select class="form-control form-control-sm selectProducto" >
+            <select class="form-control form-control-sm selectProducto">
                 <option value="" disabled selected>Seleccionar</option>
                 <!-- Opciones dinámicas -->
             </select>
         </td>
         <td>
-            <input type="number" class="form-control form-control-sm cantidad" min="1" value="1" placeholder="Cantidad" >
+            <input type="number" class="form-control form-control-sm cantidad" min="1" value="1" placeholder="Cantidad">
         </td>
         <td>
             <input type="number" class="form-control form-control-sm pesoUnitario" step="0.01" min="0.01" placeholder="Peso">
@@ -674,7 +685,7 @@
                     <input type="hidden" id="idEnvioEstado">
                     <div class="form-group">
                         <label>Nuevo Estado <span class="text-danger">*</span></label>
-                        <select class="form-select" id="nuevoEstado" >
+                        <select class="form-select" id="nuevoEstado">
                             <option value="" disabled selected>Seleccionar</option>
                             <option value="PREPARACION">Preparación</option>
                             <option value="EN_TRANSITO">En Tránsito</option>
@@ -712,7 +723,7 @@
                     <input type="hidden" id="idEnvioDocumento">
                     <div class="form-group">
                         <label>Tipo de Documento <span class="text-danger">*</span></label>
-                        <select class="form-select" name="tipo_documento" >
+                        <select class="form-select" name="tipo_documento">
                             <option value="" disabled selected>Seleccionar</option>
                             <option value="FOTO">Foto</option>
                             <option value="FACTURA">Factura</option>
@@ -722,7 +733,7 @@
                     </div>
                     <div class="form-group">
                         <label>Documento <span class="text-danger">*</span></label>
-                        <input type="file" class="form-control" name="documento" accept=".pdf,.jpg,.jpeg,.png" >
+                        <input type="file" class="form-control" name="documento" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>

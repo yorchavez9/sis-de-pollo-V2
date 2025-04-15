@@ -40,7 +40,7 @@ if (isset($_GET['action'])) {
             break;
             
         case 'cambiarEstado':
-            echo ControladorEnvio::ctrCambiarEstadoEnvio();
+            ControladorEnvio::ctrCambiarEstadoEnvio();
             break;
             
         case 'subirDocumento':

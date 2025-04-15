@@ -21,7 +21,7 @@ class ControladorEnvio
                     "id_sucursal_origen" => $_POST['id_sucursal_origen'],
                     "id_sucursal_destino" => $_POST['id_sucursal_destino'],
                     "id_tipo_encomienda" => $_POST['id_tipo_encomienda'],
-                    "id_usuario_creador" => $_SESSION['id_usuario'],
+                    "id_usuario_creador" => $_SESSION["usuario"]["id_usuario"],
                     "id_transportista" => $_POST['id_transportista'] ?? null,
                     "dni_remitente" => $_POST['dni_remitente'] ?? null,
                     "nombre_remitente" => $_POST['nombre_remitente'] ?? null,
@@ -83,7 +83,7 @@ class ControladorEnvio
                 "id_envio" => $_POST['id_envio'],
                 "estado" => $_POST['estado'],
                 "observaciones" => $_POST['observaciones'] ?? null,
-                "id_usuario" => $_SESSION['id_usuario']
+                "id_usuario" => $_SESSION["usuario"]["id_usuario"]
             );
 
             $respuesta = ModeloEnvio::mdlCambiarEstadoEnvio($datos);
