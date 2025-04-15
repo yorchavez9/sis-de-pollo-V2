@@ -44,7 +44,6 @@ class GeneradorComprobante {
     
     private function obtenerDatosEnvio() {
         $response = ControladorEnvio::ctrMostrarDetalleEnvio($this->idEnvio);
-        
         if (!$response['status'] || empty($response['data'])) {
             $this->terminarConError("Error: No se pudieron obtener los datos del envío");
         }

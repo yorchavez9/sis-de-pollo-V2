@@ -235,6 +235,7 @@ class ModeloEnvio
             $sql = "SELECT 
                 e.id_envio, e.codigo_envio, 
                 so.nombre as sucursal_origen, 
+                e.id_sucursal_origen, 
                 sd.nombre as sucursal_destino,
                 te.nombre as tipo_encomienda,
                 CONCAT(p.nombre, ' ', p.apellidos) as transportista,
@@ -299,7 +300,7 @@ class ModeloEnvio
                 LEFT JOIN personas p ON t.id_persona = p.id_persona
                 LEFT JOIN usuarios u ON e.id_usuario_creador = u.id_usuario
                 LEFT JOIN usuarios ur ON e.id_usuario_receptor = ur.id_usuario
-                LEFT JOIN series_comprobantes sc ON e.id_serie = e.id_serie
+                LEFT JOIN series_comprobantes sc ON sc.id_serie = e.id_serie
                 WHERE e.id_envio = :id_envio"
             );
             $stmtEnvio->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);

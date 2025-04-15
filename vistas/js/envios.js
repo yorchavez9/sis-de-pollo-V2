@@ -1,5 +1,25 @@
 $(document).ready(function () {
 
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
+
     function fechaHoraActual() {
         const now = new Date();
         const timezoneOffset = now.getTimezoneOffset() * 60000;
@@ -142,7 +162,12 @@ $(document).ready(function () {
             url += `&${params.toString()}`;
         }
 
-        const envios = await fetchData(url);
+        /* const envios = await fetchData(url); */
+        const [sesion, envios] = await Promise.all([
+            obtenerSesion(),
+            fetchData(url)
+        ]);
+        
         if (!envios || !envios.status) {
             console.error("Error al cargar envíos:", envios?.message);
             return;
@@ -153,22 +178,24 @@ $(document).ready(function () {
         tbody.empty();
 
         envios.data.forEach((envio, index) => {
-            // Formatear fechas
-            const fechaEnvio = envio.fecha_creacion ? new Date(envio.fecha_creacion).toLocaleString() : 'Pendiente';
+            if (sesion.usuario.id_sucursal === envio.id_sucursal_origen) {
+                
+                // Formatear fechas
+                const fechaEnvio = envio.fecha_creacion ? new Date(envio.fecha_creacion).toLocaleString() : 'Pendiente';
 
-            // Determinar clase para el estado
-            let claseEstado = "";
-            switch (envio.estado) {
-                case 'PENDIENTE': claseEstado = "badge bg-secondary"; break;
-                case 'PREPARACION': claseEstado = "badge bg-warning text-dark"; break;
-                case 'EN_TRANSITO': claseEstado = "badge bg-primary"; break;
-                case 'EN_REPARTO': claseEstado = "badge bg-info"; break;
-                case 'ENTREGADO': claseEstado = "badge bg-success"; break;
-                case 'CANCELADO': case 'RECHAZADO': claseEstado = "badge bg-danger"; break;
-                default: claseEstado = "badge bg-secondary";
-            }
+                // Determinar clase para el estado
+                let claseEstado = "";
+                switch (envio.estado) {
+                    case 'PENDIENTE': claseEstado = "badge bg-secondary"; break;
+                    case 'PREPARACION': claseEstado = "badge bg-warning text-dark"; break;
+                    case 'EN_TRANSITO': claseEstado = "badge bg-primary"; break;
+                    case 'EN_REPARTO': claseEstado = "badge bg-info"; break;
+                    case 'ENTREGADO': claseEstado = "badge bg-success"; break;
+                    case 'CANCELADO': case 'RECHAZADO': claseEstado = "badge bg-danger"; break;
+                    default: claseEstado = "badge bg-secondary";
+                }
 
-            const fila = `
+                const fila = `
                 <tr>
                     <td>${index + 1}</td>
                     <td>${envio.codigo_envio}</td>
@@ -205,13 +232,13 @@ $(document).ready(function () {
                                 
                                 <!-- Opción Cancelar (condicional) -->
                                 ${envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION' ?
-                    `<li>
+                        `<li>
                                         <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
                                             <i class="fas fa-times text-danger me-2"></i>
                                             <span>Cancelar Envío</span>
                                         </a>
                                     </li>` : ''
-                }
+                    }
                                 
                                 <!-- Separador visual -->
                                 <li><hr class="dropdown-divider"></li>
@@ -227,7 +254,8 @@ $(document).ready(function () {
                         </div>
                     </td>
                 </tr>`;
-            tbody.append(fila);
+                tbody.append(fila);
+            }
         });
 
         if ($.fn.DataTable.isDataTable(tabla)) {
@@ -241,9 +269,12 @@ $(document).ready(function () {
 
     // Cargar sucursales en select
     const cargarSerieComprobante = async (selectId, todas = false) => {
-        const series = await fetchData("ajax/serie_comprobante.ajax.php");
+        const [sesion, series] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/serie_comprobante.ajax.php")
+        ]);
 
-        if (!series || !series.status) return;
+        if (!series || !series.status || !sesion) return;
 
         const select = $(`#${selectId}`);
         select.empty();
@@ -255,7 +286,7 @@ $(document).ready(function () {
 
         // Recorremos las series y las agregamos al select con data-serie
         series.data.forEach(serie => {
-            if (serie.estado === 1) {
+            if (serie.estado === 1 && sesion.usuario.id_sucursal === serie.id_sucursal) {
                 select.append(`
                     <option 
                         value="${serie.id_serie}" 
@@ -295,24 +326,46 @@ $(document).ready(function () {
         });
     };
 
-    // Cargar sucursales en select
+    // Cargar sucursales en select id_sucursal_origen
     const cargarSucursales = async (selectId, todas = false) => {
-        const sucursales = await fetchData("ajax/sucursal.ajax.php");
-        if (!sucursales || !sucursales.status) return;
+        try {
+            // Obtener datos de sesión y sucursales en paralelo
+            const [sesion, sucursales] = await Promise.all([
+                obtenerSesion(),
+                fetchData("ajax/sucursal.ajax.php")
+            ]);
 
-        const select = $(`#${selectId}`);
-        select.empty();
-        if (todas) {
-            select.append('<option value="">Todas</option>');
-        } else {
-            select.append('<option value="" disabled selected>Seleccionar sucursal</option>');
-        }
-
-        sucursales.data.forEach(sucursal => {
-            if (sucursal.estado === 1) {
-                select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
+            // Validar respuestas
+            if (!sucursales?.status || !sesion) {
+                console.error('Error al cargar datos');
+                return;
             }
-        });
+
+            const select = $(`#${selectId}`);
+            select.empty().append(
+                todas ? '<option value="">Todas</option>' 
+                    : '<option value="" disabled selected>Seleccionar sucursal</option>'
+            );
+
+            // Filtrar y agregar sucursales
+            sucursales.data.forEach(sucursal => {
+                if (sucursal.estado !== 1) return;
+
+                // Lógica especial para sucursal origen
+                if (selectId === "id_sucursal_origen" || selectId === "filtroOrigen") {
+                    if (sesion.usuario.id_sucursal === sucursal.id_sucursal) {
+                        select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
+                    }
+                } else {
+                    if (sesion.usuario.id_sucursal !== sucursal.id_sucursal) {
+                        select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error al cargar sucursales:', error);
+        }
     };
 
     // Cargar transportistas
