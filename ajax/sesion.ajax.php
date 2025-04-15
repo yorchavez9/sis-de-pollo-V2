@@ -7,7 +7,12 @@ if(isset($_GET['action']) && $_GET['action'] == 'sesion') {
     if(isset($_SESSION["usuario"])) {
         // Devolver los datos de la sesión en formato JSON
         header('Content-Type: application/json');
-        echo json_encode($_SESSION["usuario"]);
+        echo json_encode([
+            "status" => true,
+            "usuario" => $_SESSION["usuario"],
+            "roles" => $_SESSION["roles"],
+            "permisos" => $_SESSION["permisos"]
+        ]);
     } else {
         // Si no hay sesión activa
         header('Content-Type: application/json');

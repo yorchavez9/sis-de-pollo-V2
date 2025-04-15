@@ -21,7 +21,7 @@ async function obtenerSesion() {
             
             // Ejemplos de acceso a datos específicos
             console.log('Usuario:', data.usuario);
-            console.log('Sucursal ID:', data.id_sucursal);
+            console.log('Sucursal ID:', data.usuario.id_sucursal);
             
             // Mostrar permisos en formato tabla para mejor visualización
             console.table(data.permisos);

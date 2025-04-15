@@ -43,9 +43,15 @@ class ControladorUsuarios
         // Crear sesión
         $_SESSION["iniciarSesion"] = "ok";
         $datosSesion = ModeloUsuarios::mdlObtenerDatosSesion($respuesta["id_usuario"]);
-        $datosSesion = ModeloUsuarios::mdlMostrarLoginRol("usuario_roles", "id_usuario", $respuesta["id_usuario"]);
-        $datosSesion = ModeloUsuarios::mdlMostrarLoginRol("usuario_roles", "id_usuario", $respuesta["id_usuario"]);
+        
+        // Obtener roles y permisos del usuario
+        $roles = ModeloUsuarios::mdlObtenerRolesUsuario($respuesta["id_usuario"]);
+        $permisos = ModeloUsuarios::mdlObtenerPermisosUsuario($respuesta["id_usuario"]);
+
         $_SESSION["usuario"] = $datosSesion;
+        $_SESSION["roles"] = $roles;
+        $_SESSION["permisos"] = $permisos;
+        
 
         // Actualizar último login
         $fecha = date('Y-m-d H:i:s');
