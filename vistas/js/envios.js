@@ -223,33 +223,34 @@ $(document).ready(function () {
                                 </li>`:``}
 
                                 <!-- Opción Cambiar Estado -->
-                                <li>
+                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("estado")? `<li>
                                     <a class="dropdown-item d-flex align-items-center btnCambiarEstado" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-exchange-alt text-warning me-2"></i>
                                         <span>Cambiar Estado</span>
                                     </a>
-                                </li>
+                                </li>`: ``}
+                                
                                 
                                 <!-- Opción Cancelar (condicional) -->
-                                ${envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION' ?
-                        `<li>
+                                ${(sesion.permisos.envios && sesion.permisos.envios.acciones.includes("imprimir")) && (envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION') ?
+                                    `<li>
                                         <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
                                             <i class="fas fa-times text-danger me-2"></i>
                                             <span>Cancelar Envío</span>
                                         </a>
-                                    </li>` : ''
-                    }
+                                    </li>` : ''}
                                 
                                 <!-- Separador visual -->
                                 <li><hr class="dropdown-divider"></li>
                                 
                                 <!-- Opción adicional (ejemplo) -->
-                                <li>
+                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("imprimir")? `<li>
                                     <a class="dropdown-item d-flex align-items-center btnImprimirEnvio" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-print text-secondary me-2"></i>
                                         <span>Imprimir</span>
                                     </a>
-                                </li>
+                                </li>`: ``}
+                                
                             </ul>
                         </div>
                     </td>
