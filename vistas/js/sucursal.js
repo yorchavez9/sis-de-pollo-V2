@@ -1,5 +1,24 @@
 $(document).ready(function () {
 
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     const validateField = (field, regex, errorField, errorMessage) => {
         const value = field.val();
         if (!value) {
@@ -48,7 +67,10 @@ $(document).ready(function () {
         }
     };
     const mostrarSucursal = async () => {
-        const sucursales = await fetchData("ajax/sucursal.ajax.php");
+        const [sesion, sucursales] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/sucursal.ajax.php")
+        ]);
         if (!sucursales) return;
 
         const tabla = $("#tabla_sucursal");
@@ -63,21 +85,27 @@ $(document).ready(function () {
                     <td>${sucursal.direccion}</td>
                     <td>${sucursal.telefono}</td>
                     <td class="text-center">
-                        ${sucursal.estado != 0
+                    ${sesion.permisos.sucursales && sesion.permisos.sucursales.acciones.includes("estado")?` ${sucursal.estado != 0
                     ? `<button class="btn btn-sm text-white btn-sm btnActivar" style="background-color: #28C76F" idSucursal="${sucursal.id_sucursal}" estadoSucursal="0">Activado</button>`
                     : `<button class="btn btn-sm text-white btn-sm btnActivar" style="background-color: #E53250" idSucursal="${sucursal.id_sucursal}" estadoSucursal="1">Desactivado</button>`
-                }
+                    }`:`` }
+                       
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarSucursal" idSucursal="${sucursal.id_sucursal}" data-bs-toggle="modal" data-bs-target="#modal_editar_sucursal">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnVerDetallesSucursal" idSucursal="${sucursal.id_sucursal}">
-                            <i class="text-primary fas fa-eye fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarSucursal" idSucursal="${sucursal.id_sucursal}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.sucursales && sesion.permisos.sucursales.acciones.includes("editar")? 
+                            `<a href="#" class="me-3 btnEditarSucursal" idSucursal="${sucursal.id_sucursal}" data-bs-toggle="modal" data-bs-target="#modal_editar_sucursal">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        
+                        ${sesion.permisos.sucursales && sesion.permisos.sucursales.acciones.includes("ver")?
+                            `<a href="#" class="me-3 btnVerDetallesSucursal" idSucursal="${sucursal.id_sucursal}">
+                                <i class="text-primary fas fa-eye fa-lg"></i>
+                            </a>`:``} 
+                        ${sesion.permisos.sucursales && sesion.permisos.sucursales.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarSucursal" idSucursal="${sucursal.id_sucursal}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);
