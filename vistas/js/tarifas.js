@@ -1,5 +1,25 @@
 $(document).ready(function () {
 
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
+
     function formatCurrency(value) {
         if (!value) return "S/ 0.00";
         return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
@@ -98,7 +118,10 @@ $(document).ready(function () {
 
     // Mostrar lista de tarifas
     const mostrarTarifas = async () => {
-        const tarifas = await fetchData("ajax/tarifa.ajax.php");
+        const [sesion, tarifas] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/tarifa.ajax.php")
+        ]);
         if (!tarifas) return;
 
         const tabla = $("#tabla_tarifas");
@@ -122,18 +145,23 @@ $(document).ready(function () {
                     <td>${tarifa.tiempo_estimado ? tarifa.tiempo_estimado + ' horas' : 'No especificado'}</td>
                     <td>${vigenciaDesde} - ${vigenciaHasta}</td>
                     <td class="text-center">
-                        ${tarifa.estado != 0
+                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("estado")?
+                            `${tarifa.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarTarifa" idTarifa="${tarifa.id_tarifa}" estadoTarifa="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarTarifa" idTarifa="${tarifa.id_tarifa}" estadoTarifa="1">Desactivado</button>`
-                        }
+                        }`:``}
+                        
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarTarifa" idTarifa="${tarifa.id_tarifa}" data-bs-toggle="modal" data-bs-target="#modal_editar_tarifa">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarTarifa" idTarifa="${tarifa.id_tarifa}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarTarifa" idTarifa="${tarifa.id_tarifa}" data-bs-toggle="modal" data-bs-target="#modal_editar_tarifa">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarTarifa" idTarifa="${tarifa.id_tarifa}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);
