@@ -109,7 +109,7 @@ $(document).ready(async function () {
         }
     }
 
-    setInterval(cargarGraficos, 300000); // Actualizar cada 5 minutos
+    setInterval(obtenerDatosEnvios, 300000); // Actualizar cada 5 minutos
     if ($("#invoice_chart").length > 0) {
         var pieCtx = document.getElementById("invoice_chart"),
             pieConfig = {

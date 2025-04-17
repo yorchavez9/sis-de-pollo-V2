@@ -38,7 +38,7 @@ $(document).ready(function() {
                 console.error("Error al cargar envíos:", envios?.message);
                 return;
             }
-            console.log(envios);
+         
     
             // Actualizar contadores
             const enviosEnTransito = envios.data.filter(envio => envio.estado === 'EN_TRANSITO').length;

@@ -282,7 +282,7 @@
                     <a href="javascript:void(0);"><i class="fas fa-cog"></i><span>Configuración</span> <span class="menu-arrow"></span></a>
                     <ul>
                         <?php if(isset($permisos["configuracion-sistema"])): ?>
-                        <li><a href="configuracion-sistema"><i class="fas fa-sliders-h"></i> Sistema</a></li>
+                        <li><a href="configuracionSistema"><i class="fas fa-sliders-h"></i> Sistema</a></li>
                         <?php endif; ?>
                         
                         <?php if(isset($permisos["tipoComprobantes"])): ?>

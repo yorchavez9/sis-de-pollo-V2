@@ -42,6 +42,8 @@
 
 <script  src="vistas/js/dashboard.js"></script>
 
+<script  src="vistas/js/configuracion_sistema.js"></script>
+
 </body>
 
 </html>
