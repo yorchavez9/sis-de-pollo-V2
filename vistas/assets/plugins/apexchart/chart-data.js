@@ -1,5 +1,23 @@
 "use strict";
-$(document).ready(function () {
+$(document).ready(async function () {
+
+    async function obtenerDatosEnvios() {
+        try {
+            const response = await fetch('ajax/envios.ajax.php?action=listar');
+            const data = await response.json();
+            
+            if (!data.status) {
+                console.error('Error al obtener envíos:', data.message);
+                return null;
+            }
+            
+            return data.data;
+        } catch (error) {
+            console.error('Error en obtenerDatosEnvios:', error);
+            return null;
+        }
+    }
+
     function generateData(baseval, count, yrange) {
         var i = 0;
         var series = [];
@@ -14,20 +32,40 @@ $(document).ready(function () {
         }
         return series;
     }
-    if ($("#sales_chart").length > 0) {
-        var columnCtx = document.getElementById("sales_chart"),
-            columnConfig = {
-                colors: ["#7638ff", "#fda600"],
+    
+    if ($("#sales_shipping_charts").length > 0) {
+        const enviosData = await obtenerDatosEnvios();
+        
+        if (enviosData) {
+            // Procesar datos para el gráfico
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const enviosPorMes = new Array(12).fill(0);
+            const ventasPorMes = new Array(12).fill(0);
+            
+            enviosData.forEach(envio => {
+                const fecha = new Date(envio.fecha_creacion);
+                const mes = fecha.getMonth();
+                
+                // Contar envíos por mes
+                enviosPorMes[mes]++;
+                
+                // Sumar costos de envío como "ventas" (ajustar según tu lógica de negocio)
+                ventasPorMes[mes] += parseFloat(envio.costo_envio) || 0;
+            });
+            
+            const columnCtx = document.getElementById("sales_shipping_charts");
+            const columnConfig = {
+                colors: ["#28C76F", "#fda600"],
                 series: [
                     {
-                        name: "Received",
+                        name: "Costo envio",
                         type: "column",
-                        data: [70, 150, 80, 180, 150, 175, 201, 60, 200, 120, 190, 160, 50],
+                        data: ventasPorMes,
                     },
                     {
-                        name: "Pending",
+                        name: "Envíos",
                         type: "column",
-                        data: [23, 42, 35, 27, 43, 22, 17, 31, 22, 22, 12, 16, 80],
+                        data: enviosPorMes,
                     },
                 ],
                 chart: {
@@ -46,32 +84,32 @@ $(document).ready(function () {
                 dataLabels: { enabled: false },
                 stroke: { show: true, width: 2, colors: ["transparent"] },
                 xaxis: {
-                    categories: [
-                        "Jan",
-                        "Feb",
-                        "Mar",
-                        "Apr",
-                        "May",
-                        "Jun",
-                        "Jul",
-                        "Aug",
-                        "Sep",
-                        "Oct",
-                    ],
+                    categories: meses,
                 },
-                yaxis: { title: { text: "$ (thousands)" } },
+                yaxis: { 
+                    title: { text: "Cantidad" },
+                    labels: {
+                        formatter: function(value) {
+                            return value.toFixed(0);
+                        }
+                    }
+                },
                 fill: { opacity: 1 },
                 tooltip: {
                     y: {
                         formatter: function (val) {
-                            return "$ " + val + " thousands";
+                            return val.toFixed(2);
                         },
                     },
                 },
             };
-        var columnChart = new ApexCharts(columnCtx, columnConfig);
-        columnChart.render();
+            
+            const columnChart = new ApexCharts(columnCtx, columnConfig);
+            columnChart.render();
+        }
     }
+
+    setInterval(cargarGraficos, 300000); // Actualizar cada 5 minutos
     if ($("#invoice_chart").length > 0) {
         var pieCtx = document.getElementById("invoice_chart"),
             pieConfig = {
