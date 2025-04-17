@@ -1,4 +1,25 @@
 $(document).ready(function () {
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
+
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",
@@ -73,7 +94,10 @@ $(document).ready(function () {
 
     // Mostrar lista de almacenes
     const mostrarAlmacenes = async () => {
-        const almacenes = await fetchData("ajax/almacen.ajax.php");
+        const [sesion, almacenes] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/almacen.ajax.php")
+        ]);
         if (!almacenes) return;
 
         const tabla = $("#tabla_almacenes");
@@ -89,18 +113,23 @@ $(document).ready(function () {
                     <td>${almacen.descripcion || 'Sin descripción'}</td>
                     <td>${almacen.tipo}</td>
                     <td class="text-center">
-                        ${almacen.estado != 0
+                        ${sesion.permisos.almacenes && sesion.permisos.almacenes.acciones.includes("estado")?
+                            `${almacen.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarAlmacen" idAlmacen="${almacen.id_almacen}" estadoAlmacen="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarAlmacen" idAlmacen="${almacen.id_almacen}" estadoAlmacen="1">Desactivado</button>`
-                        }
+                            }`:``}
+                        
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarAlmacen" idAlmacen="${almacen.id_almacen}" data-bs-toggle="modal" data-bs-target="#modal_editar_almacen">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarAlmacen" idAlmacen="${almacen.id_almacen}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.almacenes && sesion.permisos.almacenes.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarAlmacen" idAlmacen="${almacen.id_almacen}" data-bs-toggle="modal" data-bs-target="#modal_editar_almacen">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        ${sesion.permisos.almacenes && sesion.permisos.almacenes.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarAlmacen" idAlmacen="${almacen.id_almacen}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);
