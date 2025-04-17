@@ -122,6 +122,10 @@ $(document).ready(function () {
             obtenerSesion(),
             fetchData("ajax/tarifa.ajax.php")
         ]);
+
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!tarifas) return;
 
         const tabla = $("#tabla_tarifas");

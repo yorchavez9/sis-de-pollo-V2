@@ -121,6 +121,9 @@ $(document).ready(function () {
             obtenerSesion(),
             fetchData("ajax/tipo_encomienda.ajax.php")
         ]);
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!tipos || !tipos.status) return;
 
         const tabla = $("#tabla_tipo_encomiendas");

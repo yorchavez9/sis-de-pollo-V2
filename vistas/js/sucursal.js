@@ -71,6 +71,10 @@ $(document).ready(function () {
             obtenerSesion(),
             fetchData("ajax/sucursal.ajax.php")
         ]);
+        
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!sucursales) return;
 
         const tabla = $("#tabla_sucursal");

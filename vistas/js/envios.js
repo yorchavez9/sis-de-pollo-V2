@@ -167,6 +167,10 @@ $(document).ready(function () {
             obtenerSesion(),
             fetchData(url)
         ]);
+
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         
         if (!envios || !envios.status) {
             console.error("Error al cargar envíos:", envios?.message);
@@ -338,7 +342,7 @@ $(document).ready(function () {
 
             // Validar respuestas
             if (!sucursales?.status || !sesion) {
-                console.error('Error al cargar datos');
+                /* console.error('Error al cargar datos'); */
                 return;
             }
 

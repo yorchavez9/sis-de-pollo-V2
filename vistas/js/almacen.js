@@ -98,6 +98,9 @@ $(document).ready(function () {
             obtenerSesion(),
             fetchData("ajax/almacen.ajax.php")
         ]);
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!almacenes) return;
 
         const tabla = $("#tabla_almacenes");

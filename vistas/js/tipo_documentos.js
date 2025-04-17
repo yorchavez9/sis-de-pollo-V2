@@ -1,4 +1,24 @@
 $(document).ready(function () {
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",
@@ -81,7 +101,16 @@ $(document).ready(function () {
 
     // Mostrar lista de tipos de documentos
     const mostrarTiposDocumentos = async () => {
-        const response = await fetchData("ajax/tipo_documentos.ajax.php?action=listar");
+
+        const [sesion, response] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/tipo_documentos.ajax.php?action=listar")
+        ]);
+
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
+        
         if (!response || !response.status) {
             console.error("Error al cargar tipos de documentos:", response?.message);
             return;
@@ -104,17 +133,23 @@ $(document).ready(function () {
                             : '<span class="badge bg-secondary">No</span>'}
                     </td>
                     <td class="text-center">
-                        ${tipo.estado == 1 
+                        ${sesion.permisos.tipoDocumentos && sesion.permisos.tipoDocumentos.acciones.includes("estado")?
+                            `${tipo.estado == 1 
                             ? `<button class="btn btn-sm btn-estado-success text-white btn-activar" data-id="${tipo.id_tipo_documento}" data-estado="0">Activo</button>`
-                            : `<button class="btn btn-sm btn-estado-danger text-white btn-activar" data-id="${tipo.id_tipo_documento}" data-estado="1">Inactivo</button>`}
+                            : `<button class="btn btn-sm btn-estado-danger text-white btn-activar" data-id="${tipo.id_tipo_documento}" data-estado="1">Inactivo</button>`}`:``}
+                        
                     </td>
                     <td class="text-center">
-                        <a href="#" class="btn-editar me-3" data-id="${tipo.id_tipo_documento}" data-bs-toggle="modal" data-bs-target="#modal_editar_tipo_documento">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="btn-eliminar" data-id="${tipo.id_tipo_documento}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.tipoDocumentos && sesion.permisos.tipoDocumentos.acciones.includes("editar")?
+                            `<a href="#" class="btn-editar me-3" data-id="${tipo.id_tipo_documento}" data-bs-toggle="modal" data-bs-target="#modal_editar_tipo_documento">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        
+                        ${sesion.permisos.tipoDocumentos && sesion.permisos.tipoDocumentos.acciones.includes("eliminar")?
+                            `<a href="#" class="btn-eliminar" data-id="${tipo.id_tipo_documento}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);
