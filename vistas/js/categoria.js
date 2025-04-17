@@ -1,4 +1,24 @@
 $(document).ready(function () {
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     // Función para validar campos
     const validateField = (field, regex, errorField, errorMessage) => {
         const value = field.val();
@@ -52,7 +72,15 @@ $(document).ready(function () {
 
     // Mostrar lista de categorías
     const mostrarCategorias = async () => {
-        const categorias = await fetchData("ajax/categoria.ajax.php");
+
+        const [sesion, categorias] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/categoria.ajax.php")
+        ]);
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
+
         if (!categorias) return;
 
         const tabla = $("#tabla_categorias");
@@ -67,18 +95,24 @@ $(document).ready(function () {
                     <td>${categoria.descripcion || 'Sin descripción'}</td>
                     <td>${categoria.tipo}</td>
                     <td class="text-center">
-                        ${categoria.estado != 0
+                    ${sesion.permisos.categorias && sesion.permisos.categorias.acciones.includes("estado")?
+                        `${categoria.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarCategoria" idCategoria="${categoria.id_categoria}" estadoCategoria="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarCategoria" idCategoria="${categoria.id_categoria}" estadoCategoria="1">Desactivado</button>`
-                        }
+                        }`:``}
+                        
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarCategoria" idCategoria="${categoria.id_categoria}" data-bs-toggle="modal" data-bs-target="#modal_editar_categoria">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarCategoria" idCategoria="${categoria.id_categoria}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.categorias && sesion.permisos.categorias.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarCategoria" idCategoria="${categoria.id_categoria}" data-bs-toggle="modal" data-bs-target="#modal_editar_categoria">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        
+                        ${sesion.permisos.categorias && sesion.permisos.categorias.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarCategoria" idCategoria="${categoria.id_categoria}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);

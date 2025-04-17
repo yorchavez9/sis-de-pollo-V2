@@ -1,4 +1,24 @@
 $(document).ready(function () {
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",
@@ -83,7 +103,16 @@ $(document).ready(function () {
 
     // Mostrar lista de transportistas
     const mostrarTransportistas = async () => {
-        const response = await fetchData("ajax/transporte.ajax.php");
+
+        const [sesion, response] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/transporte.ajax.php")
+        ]);
+        
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
+
         if (!response || !response.status) {
             console.error("Error al cargar transportistas:", response?.message);
             return;
@@ -107,17 +136,20 @@ $(document).ready(function () {
                     <td>${transportista.fecha_registro ? transportista.fecha_registro.split('-').reverse().join('/') : 'N/A'}</td>
                     <td>
                         ${transportista.estado != 0
-                            ? `<span class="badge bg-success">Activo</span>`
-                            : `<span class="badge bg-danger">Inactivo</span>`
+                            ? `<span class="badge bg-activado">Activo</span>`
+                            : `<span class="badge bg-desactivado">Inactivo</span>`
                         }
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarTransportista" data-id="${transportista.id_transportista}" data-bs-toggle="modal" data-bs-target="#modal_editar_transportista">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarTransportista" data-id="${transportista.id_transportista}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.transporte && sesion.permisos.transporte.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarTransportista" data-id="${transportista.id_transportista}" data-bs-toggle="modal" data-bs-target="#modal_editar_transportista">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        ${sesion.permisos.transporte && sesion.permisos.transporte.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarTransportista" data-id="${transportista.id_transportista}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);

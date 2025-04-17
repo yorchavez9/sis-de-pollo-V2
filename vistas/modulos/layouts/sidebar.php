@@ -117,9 +117,9 @@
                         <li><a href="inventario"><i class="fas fa-clipboard-check"></i> Control Inventario</a></li>
                         <?php endif; ?>
                         
-                        <?php if(isset($permisos["codigoBarra"])): ?>
-                        <li><a href="codigoBarra"><i class="fas fa-barcode"></i> Códigos de Barras</a></li>
-                        <?php endif; ?>
+                        <?php /* if(isset($permisos["codigoBarra"])): */ ?>
+                        <!-- <li><a href="codigoBarra"><i class="fas fa-barcode"></i> Códigos de Barras</a></li> -->
+                        <?php /* endif; */ ?>
                         
                         <?php if(isset($permisos["lotes-pollos"])): ?>
                         <li><a href="lotes-pollos"><i class="fas fa-kiwi-bird"></i> Lotes de Pollos</a></li>

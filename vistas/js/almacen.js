@@ -19,7 +19,6 @@ $(document).ready(function () {
         }
     }
 
-
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",

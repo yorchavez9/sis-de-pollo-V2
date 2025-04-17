@@ -1,5 +1,24 @@
 $(document).ready(function () {
 
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     function formatearFecha(fecha) {
         const date = new Date(fecha);
         const options = {
@@ -98,7 +117,16 @@ $(document).ready(function () {
         if (filtroAlmacen || filtroProducto || filtroEstado) {
             url += `?filtro_almacen=${filtroAlmacen}&filtro_producto=${filtroProducto}&filtro_estado=${filtroEstado}`;
         }
-        const inventario = await fetchData(url);
+
+        const [sesion, inventario] = await Promise.all([
+            obtenerSesion(),
+            fetchData(url)
+        ]);
+
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
+
         if (!inventario) return;
 
         const tabla = $("#tabla_inventario");
@@ -133,12 +161,16 @@ $(document).ready(function () {
                     <td class="${estadoClass}">${estadoText}</td>
                     <td>${formatearFecha(item.ultima_actualizacion)}</td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarInventario" idInventario="${item.id_inventario}" data-bs-toggle="modal" data-bs-target="#modal_ajustar_inventario">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnHistorialInventario" idInventario="${item.id_inventario}" data-bs-toggle="modal" data-bs-target="#modal_historial_inventario">
-                            <i class="text-info fas fa-history fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.inventario && sesion.permisos.inventario.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarInventario" idInventario="${item.id_inventario}" data-bs-toggle="modal" data-bs-target="#modal_ajustar_inventario">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        
+                        ${sesion.permisos.inventario && sesion.permisos.inventario.acciones.includes("ver")?
+                            `<a href="#" class="me-3 btnHistorialInventario" idInventario="${item.id_inventario}" data-bs-toggle="modal" data-bs-target="#modal_historial_inventario">
+                                <i class="text-info fas fa-history fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);

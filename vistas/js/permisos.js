@@ -1,4 +1,25 @@
 $(document).ready(function () {
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
+
     // Variables globales
     let rolesDisponibles = [];
     let usuariosDisponibles = [];
@@ -251,7 +272,13 @@ $(document).ready(function () {
     // Mostrar permisos en la tabla
     const mostrarPermisos = async () => {
         try {
-            const response = await fetchData("ajax/permiso.ajax.php");
+            const [sesion, response] = await Promise.all([
+                obtenerSesion(),
+                fetchData("ajax/permiso.ajax.php")
+            ]);
+            if (!sesion || !sesion.permisos) {
+                return;
+            }
 
             if (!response?.status) return;
 
@@ -287,25 +314,33 @@ $(document).ready(function () {
                         <td>${totalModulos} módulo(s)</td>
                         <td>${permisoRol.fecha || 'No registrada'}</td>
                         <td class="text-center">
-                            <a href="#" class="me-3 btnVerPermiso" 
-                            data-id-rol="${permisoRol.rol.id_rol}"
-                            data-id-usuario="${permisoRol.usuario.id_usuario || ''}"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#modal_ver_permiso">
-                                <i class="text-primary fas fa-eye fa-lg"></i>
-                            </a>
-                            <a href="#" class="me-3 btnEditarPermiso" 
-                            data-id-rol="${permisoRol.rol.id_rol}"
-                            data-id-usuario="${permisoRol.usuario.id_usuario || ''}"
-                            data-bs-toggle="modal" 
-                            data-bs-target="#modal_editar_permiso">
-                                <i class="text-warning fas fa-edit fa-lg"></i>
-                            </a>
-                            <a href="#" class="me-3 btnEliminarPermiso" 
-                            data-id-rol="${permisoRol.rol.id_rol}"
-                            data-id-usuario="${permisoRol.usuario.id_usuario || ''}">
-                                <i class="text-danger fa fa-trash fa-lg"></i>
-                            </a>
+                            ${sesion.permisos.permisos && sesion.permisos.permisos.acciones.includes("ver")?
+                                `<a href="#" class="me-3 btnVerPermiso" 
+                                data-id-rol="${permisoRol.rol.id_rol}"
+                                data-id-usuario="${permisoRol.usuario.id_usuario || ''}"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modal_ver_permiso">
+                                    <i class="text-primary fas fa-eye fa-lg"></i>
+                                </a>`:``}
+                            
+
+                            ${sesion.permisos.permisos && sesion.permisos.permisos.acciones.includes("editar")?
+                                `<a href="#" class="me-3 btnEditarPermiso" 
+                                data-id-rol="${permisoRol.rol.id_rol}"
+                                data-id-usuario="${permisoRol.usuario.id_usuario || ''}"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modal_editar_permiso">
+                                    <i class="text-warning fas fa-edit fa-lg"></i>
+                                </a>`:``}
+                            
+
+                            ${sesion.permisos.permisos && sesion.permisos.permisos.acciones.includes("eliminar")?
+                                `<a href="#" class="me-3 btnEliminarPermiso" 
+                                data-id-rol="${permisoRol.rol.id_rol}"
+                                data-id-usuario="${permisoRol.usuario.id_usuario || ''}">
+                                    <i class="text-danger fa fa-trash fa-lg"></i>
+                                </a>`:``}
+                            
                         </td>
                     </tr>`;
                 tbody.append(fila);
@@ -615,8 +650,8 @@ $(document).ready(function () {
             text: "Esta acción eliminará todos los permisos para este rol",
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
+            confirmButtonColor: "#655CC9",
+            cancelButtonColor: "#E53250",
             confirmButtonText: "Sí, eliminar",
             cancelButtonText: "Cancelar"
         }).then(async (result) => {

@@ -64,7 +64,7 @@ class ControladorInventario
             "stock_minimo" => isset($_POST["stock_minimo"]) ? (float)$_POST["stock_minimo"] : null,
             "stock_maximo" => isset($_POST["stock_maximo"]) ? (float)$_POST["stock_maximo"] : null,
             "motivo" => $_POST["motivo"] ?? null,
-            "id_usuario" => $_SESSION["id_usuario"] ?? 0
+            "id_usuario" => $_SESSION["usuario"]["id_usuario"] ?? 0
         );
         
         $respuesta = ModeloInventario::mdlAjustarInventario($tabla, $datos);

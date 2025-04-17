@@ -1,4 +1,24 @@
 $(document).ready(function () {
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     // Función para validar campos
     const validateField = (field, regex, errorField, errorMessage) => {
         const value = field.val();
@@ -50,7 +70,14 @@ $(document).ready(function () {
 
     // Mostrar lista de roles
     const mostrarRoles = async () => {
-        const roles = await fetchData("ajax/rol.ajax.php");
+
+        const [sesion, roles] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/rol.ajax.php")
+        ]);
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!roles) return;
 
         const tabla = $("#tabla_roles");
@@ -67,18 +94,23 @@ $(document).ready(function () {
                     <td>${rol.descripcion || 'N/A'}</td>
                     <td>${nivelAcceso}</td>
                     <td class="text-center">
+                     ${sesion.permisos.roles && sesion.permisos.roles.acciones.includes("estado")?``:``}
                         ${rol.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarRol" idRol="${rol.id_rol}" estadoRol="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarRol" idRol="${rol.id_rol}" estadoRol="1">Desactivado</button>`
                         }
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarRol" idRol="${rol.id_rol}" data-bs-toggle="modal" data-bs-target="#modal_editar_rol">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarRol" idRol="${rol.id_rol}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.roles && sesion.permisos.roles.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarRol" idRol="${rol.id_rol}" data-bs-toggle="modal" data-bs-target="#modal_editar_rol">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        
+                        ${sesion.permisos.roles && sesion.permisos.roles.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarRol" idRol="${rol.id_rol}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);

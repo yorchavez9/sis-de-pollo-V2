@@ -1,5 +1,24 @@
 $(document).ready(function () {
 
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     function formatCurrency(value) {
         if (!value) return "S/ 0.00";
         return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
@@ -121,7 +140,14 @@ $(document).ready(function () {
 
     // Mostrar lista de productos
     const mostrarProductos = async () => {
-        const productos = await fetchData("ajax/producto.ajax.php");
+
+        const [sesion, productos] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/producto.ajax.php")
+        ]);
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!productos) return;
         const tabla = $("#tabla_productos");
         const tbody = tabla.find("tbody");
@@ -145,6 +171,7 @@ $(document).ready(function () {
                         }
                     </td>
                     <td class="text-center">
+                    ${sesion.permisos.productos && sesion.permisos.productos.acciones.includes("estado")?``:``}
                         ${producto.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarProducto" idProducto="${producto.id_producto}" estadoProducto="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarProducto" idProducto="${producto.id_producto}" estadoProducto="1">Desactivado</button>`
@@ -156,29 +183,37 @@ $(document).ready(function () {
                                 <i class="fas fa-cog"></i>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton${producto.id_producto}">
-                                <li>
-                                    <a class="dropdown-item btnEditarProducto" href="#" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_editar_producto">
-                                        <i class="text-warning fas fa-edit me-2"></i>Editar
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item btnVerDetalles" href="#" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_ver_detalles">
-                                        <i class="text-primary fas fa-eye me-2"></i>Ver detalles
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item btnImprimirCodigo" href="#" idProducto="${producto.id_producto}" 
-                                    codigoBarras="${producto.codigo_barras || producto.codigo}" 
-                                    data-bs-toggle="modal" data-bs-target="#modal_imprimir_codigo">
-                                        <i class="text-info fas fa-barcode me-2"></i>Imprimir código
-                                    </a>
-                                </li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item btnEliminarProducto text-danger" href="#" idProducto="${producto.id_producto}">
-                                        <i class="fas fa-trash me-2"></i>Eliminar
-                                    </a>
-                                </li>
+                                ${sesion.permisos.productos && sesion.permisos.productos.acciones.includes("editar")?
+                                    `<li>
+                                        <a class="dropdown-item btnEditarProducto" href="#" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_editar_producto">
+                                            <i class="text-warning fas fa-edit me-2"></i>Editar
+                                        </a>
+                                    </li>`:``}
+                                
+                                ${sesion.permisos.productos && sesion.permisos.productos.acciones.includes("ver")?
+                                    `<li>
+                                        <a class="dropdown-item btnVerDetalles" href="#" idProducto="${producto.id_producto}" data-bs-toggle="modal" data-bs-target="#modal_ver_detalles">
+                                            <i class="text-primary fas fa-eye me-2"></i>Ver detalles
+                                        </a>
+                                    </li>`:``}
+                                
+                                ${sesion.permisos.productos && sesion.permisos.productos.acciones.includes("eliminar")?`
+                                    <li>
+                                        <a class="dropdown-item btnEliminarProducto text-danger" href="#" idProducto="${producto.id_producto}">
+                                            <i class="fas fa-trash me-2"></i>Eliminar
+                                        </a>
+                                    </li>`:``}
+                                
+                                ${sesion.permisos.productos && sesion.permisos.productos.acciones.includes("imprimir")?
+                                    `<li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item btnImprimirCodigo" href="#" idProducto="${producto.id_producto}" 
+                                        codigoBarras="${producto.codigo_barras || producto.codigo}" 
+                                        data-bs-toggle="modal" data-bs-target="#modal_imprimir_codigo">
+                                            <i class="text-info fas fa-barcode me-2"></i>Imprimir código
+                                        </a>
+                                    </li>`:``}
+                                
                             </ul>
                         </div>
                     </td>

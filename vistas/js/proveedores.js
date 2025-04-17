@@ -1,4 +1,25 @@
 $(document).ready(function () {
+
+
+    async function obtenerSesion() {
+        try {
+            const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Error en la respuesta del servidor');
+
+            const data = await response.json();
+            return data.status === false ? null : data;
+
+        } catch (error) {
+            console.error('Error al obtener sesión:', error);
+            return null;
+        }
+    }
+
     // Configuración común para Select2
     const select2Config = {
         placeholder: "Seleccionar",
@@ -101,7 +122,13 @@ $(document).ready(function () {
 
     // Mostrar lista de proveedores
     const mostrarProveedores = async () => {
-        const proveedores = await fetchData("ajax/proveedores.ajax.php");
+        const [sesion, proveedores] = await Promise.all([
+            obtenerSesion(),
+            fetchData("ajax/proveedores.ajax.php")
+        ]);
+        if (!sesion || !sesion.permisos) {
+            return;
+        }
         if (!proveedores) return;
 
         const tabla = $("#tabla_proveedores");
@@ -123,18 +150,24 @@ $(document).ready(function () {
                     <td>${proveedor.celular || 'N/A'}</td>
                     <td>${proveedor.email || 'N/A'}</td>
                     <td class="text-center">
-                        ${proveedor.estado != 0
+                    ${sesion.permisos.proveedores && sesion.permisos.proveedores.acciones.includes("estado")?
+                        `${proveedor.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarProveedor" idProveedor="${proveedor.id_persona}" estadoProveedor="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarProveedor" idProveedor="${proveedor.id_persona}" estadoProveedor="1">Desactivado</button>`
-                        }
+                        }`:``}
+                        
                     </td>
                     <td class="text-center">
-                        <a href="#" class="me-3 btnEditarProveedor" idProveedor="${proveedor.id_persona}" data-bs-toggle="modal" data-bs-target="#modal_editar_proveedor">
-                            <i class="text-warning fas fa-edit fa-lg"></i>
-                        </a>
-                        <a href="#" class="me-3 btnEliminarProveedor" idProveedor="${proveedor.id_persona}">
-                            <i class="text-danger fa fa-trash fa-lg"></i>
-                        </a>
+                        ${sesion.permisos.proveedores && sesion.permisos.proveedores.acciones.includes("editar")?
+                            `<a href="#" class="me-3 btnEditarProveedor" idProveedor="${proveedor.id_persona}" data-bs-toggle="modal" data-bs-target="#modal_editar_proveedor">
+                                <i class="text-warning fas fa-edit fa-lg"></i>
+                            </a>`:``}
+                        
+                        ${sesion.permisos.proveedores && sesion.permisos.proveedores.acciones.includes("eliminar")?
+                            `<a href="#" class="me-3 btnEliminarProveedor" idProveedor="${proveedor.id_persona}">
+                                <i class="text-danger fa fa-trash fa-lg"></i>
+                            </a>`:``}
+                        
                     </td>
                 </tr>`;
             tbody.append(fila);

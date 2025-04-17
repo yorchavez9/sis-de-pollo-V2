@@ -1,3 +1,7 @@
+<?php
+if (isset($_SESSION["permisos"])) {
+    $permisos = $_SESSION["permisos"];
+?>
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -5,11 +9,13 @@
                 <h4>Tipos de Documentos <i class="fas fa-file-alt"></i></h4>
                 <h6>Administrar tipos de documentos identificatorios</h6>
             </div>
+            <?php if(isset($permisos["tipoDocumentos"]) && in_array("crear", $permisos["tipoDocumentos"]["acciones"])): ?>
             <div class="page-btn">
                 <a href="#" class="btn btn-added" data-bs-toggle="modal" data-bs-target="#modal_nuevo_tipo_documento">
                     <img src="vistas/assets/img/icons/plus.svg" alt="img" class="me-2">Agregar Tipo
                 </a>
             </div>
+            <?php endif; ?>
         </div>
 
         <div class="card">
@@ -169,3 +175,6 @@
     </div>
 </div>
 
+<?php
+}
+?>
