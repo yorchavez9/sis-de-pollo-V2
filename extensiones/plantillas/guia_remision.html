@@ -8,103 +8,210 @@
         * {
             box-sizing: border-box;
             font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
         }
     
         body {
             padding: 10px;
-            margin: 0;
-            font-size: 12px;
+            margin: 15px;
+            font-size: 9pt;
+            color: #333;
+            background-color: #fff;
         }
     
         .container {
             width: 100%;
+            max-width: 100%;
             margin: 0 auto;
             padding: 10px;
+            overflow: hidden;
         }
     
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0056b3;
+        }
+        
+        .logo {
+            max-height: 60px;
+            margin-bottom: 5px;
+        }
+        
         h1 {
             text-align: center;
-            font-size: 18px;
+            font-size: 16pt;
+            margin-bottom: 3px;
+            color: #0056b3;
+            font-weight: 700;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 14pt;
             margin-bottom: 10px;
+            color: #0056b3;
+        }
+        
+        h3 {
+            font-size: 12pt;
+            margin: 10px 0 5px;
+            color: #0056b3;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #0056b3;
+        }
+        
+        h4 {
+            font-size: 10pt;
+            margin: 5px 0;
             color: #333;
         }
 
-        .serie_numero_guia{
-            text-align: center;
-            font-size: 16px;
-            margin-bottom: 10xp;
-            color: #333;
+        .section-header {
+            background-color: #0056b3;
+            color: white;
+            padding: 5px 8px;
+            margin: 10px 0 5px;
+            border-radius: 3px;
+            font-size: 10pt;
+            font-weight: bold;
         }
     
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 10px;
+            page-break-inside: avoid;
         }
     
         th, td {
-            border: 1px solid #000;
-            padding: 6px;
+            border: 1px solid #ddd;
+            padding: 4px;
             text-align: left;
             vertical-align: top;
+            font-size: 8pt;
+            word-wrap: break-word;
+            max-width: 150px;
         }
     
         th {
-            background-color: #f0f0f0;
+            background-color: #f8f9fa;
             font-weight: bold;
+            color: #0056b3;
         }
-    
-        .section-title {
-            font-weight: bold;
-            background-color: #dcdcdc;
-            padding: 6px;
-            margin: 15px 0 5px;
-            font-size: 14px;
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
-    
-        .package-header {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-    
+        
         .data-table, .package-table, .items {
-            font-size: 11px;
+            font-size: 8pt;
+            margin-bottom: 8px;
+        }
+        
+        .items th {
+            background-color: #e6f2ff;
+        }
+        
+        .package-table th {
+            background-color: #e6f7ff;
         }
     
         .no-break {
             page-break-inside: avoid;
         }
+        
+        .page-break {
+            page-break-before: always;
+        }
     
         .status {
-            padding: 3px 6px;
+            padding: 2px 4px;
             border-radius: 3px;
-            font-size: 10px;
-            color: #221f1f;
+            font-size: 8pt;
+            color: white;
             text-align: center;
+            font-weight: bold;
+            display: inline-block;
+            text-transform: uppercase;
+            background-color: #6c757d;
+        }
+        
+        .EN_TRANSITO {
+            background-color: #007bff;
+        }
+        
+        .ENTREGADO {
+            background-color: #28a745;
+        }
+        
+        .PENDIENTE {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .CANCELADO {
+            background-color: #dc3545;
+        }
+        
+        .footer {
+            margin-top: 15px;
+            text-align: center;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+            font-size: 9pt;
+        }
+        
+        .footer h1 {
+            font-size: 12pt;
+            color: #0056b3;
+        }
+        
+        .package-section {
+            margin-bottom: 10px;
+        }
+        
+        .table-responsive {
+            width: 100%;
+            overflow-x: hidden;
         }
 
         @page {
-            margin: 20px;
+            margin: 15mm 10mm;
+            size: A4 portrait;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .container {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+            }
         }
     </style>
-    
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align: center; margin-bottom: 10px;">
-        <img src="data:image/png;base64,{{empresa_logo}}" style="max-height: 80px;">
-    </div>
-    <h1>Guía de Remisión - SUNAT</h1>
-    <h2 class="serie_numero_guia">GUIA T001-{{serie_numero}}</h2>
+    <header>
+        <img src="data:image/png;base64,{{empresa_logo}}" class="logo" alt="Logo de la empresa">
+        <h1>GUÍA DE REMISIÓN</h1>
+        <h2>T001-{{serie_numero}}</h2>
+    </header>
 
-    <!-- Información de la Empresa y Remitente -->
+    <div class="section-header">Información General</div>
     <table class="header-table">
         <tr>
-            <th>Empresa</th>
-            <td>{{empresa_nombre}}</td>
-            <th>RUC</th>
-            <td>{{empresa_ruc}}</td>
+            <th width="20%">Empresa</th>
+            <td width="30%">{{empresa_nombre}}</td>
+            <th width="20%">RUC</th>
+            <td width="30%">{{empresa_ruc}}</td>
         </tr>
         <tr>
             <th>Comprobante</th>
@@ -112,11 +219,15 @@
             <th>Fecha de Emisión</th>
             <td>{{fecha_emision}}</td>
         </tr>
+    </table>
+
+    <div class="section-header">Datos del Envío</div>
+    <table>
         <tr>
-            <th>Remitente</th>
-            <td>{{remitente_nombre}}</td>
-            <th>DNI</th>
-            <td>{{remitente_dni}}</td>
+            <th width="20%">Remitente</th>
+            <td width="30%">{{remitente_nombre}}</td>
+            <th width="20%">DNI</th>
+            <td width="30%">{{remitente_dni}}</td>
         </tr>
         <tr>
             <th>Destinatario</th>
@@ -124,15 +235,19 @@
             <th>DNI</th>
             <td>{{destinatario_dni}}</td>
         </tr>
+        <tr>
+            <th>Clave de Recepción</th>
+            <td colspan="3"><strong>{{clave_recepcion}}</strong></td>
+        </tr>
     </table>
 
-    <!-- Información de Estado -->
-    <table class="footer-table">
+    <div class="section-header">Estado y Ubicación</div>
+    <table>
         <tr>
-            <th>Estado de Envío</th>
-            <td><span class="status {{estado}}">{{estado}}</span></td>
-            <th>Fecha Estimada de Entrega</th>
-            <td>{{fecha_estimada_entrega}}</td>
+            <th width="20%">Estado de Envío</th>
+            <td width="30%"><span class="status {{estado}}">{{estado}}</span></td>
+            <th width="20%">Fecha Estimada</th>
+            <td width="30%">{{fecha_estimada_entrega}}</td>
         </tr>
         <tr>
             <th>Punto de Partida</th>
@@ -140,37 +255,42 @@
             <th>Punto de Llegada</th>
             <td>{{punto_llegada}}</td>
         </tr>
+        <tr>
+            <th>Fecha de Traslado</th>
+            <td>{{fecha_traslado}}</td>
+            <th>Transportista</th>
+            <td>{{transportista}}</td>
+        </tr>
     </table>
 
-    <!-- Paquetes -->
-    <table class="data-table">
-   
-     
-            {{paquetes}} <!-- Aquí se insertan los datos de los paquetes -->
-       
-    </table>
-
-    <!-- Seguimiento -->
-    <h3>Seguimiento de la Guía</h3>
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Estado</th>
-                <th>Ubicación</th>
-                <th>Observaciones</th>
-                <th>Usuario</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{seguimiento}} <!-- Aquí se insertan los datos de seguimiento -->
-        </tbody>
-    </table>
-
-    <div class="footer">
-        <h1>Gracias por su preferencia</h1>
+    <div class="section-header">Detalles de la Mercadería</div>
+    <div class="paquetes-container">
+        {{paquetes}}
     </div>
 
+    <div class="section-header">Historial de Seguimiento</div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Ubicación</th>
+                    <th>Observaciones</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{seguimiento}}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Este documento es una constancia de transporte de mercadería</p>
+        <h1>¡Gracias por su preferencia!</h1>
+        <p>Documento generado el {{fecha_emision}}</p>
+    </div>
 </div>
 
 </body>

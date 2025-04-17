@@ -90,63 +90,66 @@ if (!empty($configuracion['data']['logo'])) {
 }
 
 // Generar sección de paquetes
+// Generar sección de paquetes
 foreach ($paquetes as $paquete) {
     $data['paquetes'] .= '
-    <table class="data-table package-table">
-        <thead>
-            <tr>
-            <th>Codigo</th>
-            <th>Estado</th>
-            <th>Paquete</th>
-            <th>Descripción</th>
-            <th>Dimensiones</th>
-            <th>Peso</th>
-            <th>Valor</th>
-        </thead>
-        <tbody>
-            <tr>
-                <td>'.$paquete['codigo_paquete'].'</td>
-                <td>'.$paquete['estado'].'</td>
-                <td>'.$paquete['descripcion'].'</td>
-                <td>S/ '.number_format($paquete['valor_declarado'], 2).'</td>
-                <td>'.$paquete['alto'].'×'.$paquete['ancho'].'×'.$paquete['profundidad'].' cm</td>
-                <td>'.$paquete['peso'].' kg</td>
-                <td>'.number_format($paquete['volumen']/1000000, 3).' m³</td>
-            </tr>
-        </tbody>
-    </table>
-    <tr>
-    <td>Items del paquete</td>
-    <tr>
-
-    <table class="data-table items">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>P.Unit</th>
-                <th>V.Unit</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>';
+    <div class="package-section no-break">
+        <table class="data-table package-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Estado</th>
+                    <th>Paquete</th>
+                    <th>Descripción</th>
+                    <th>Dimensiones</th>
+                    <th>Peso</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>'.$paquete['codigo_paquete'].'</td>
+                    <td>'.$paquete['estado'].'</td>
+                    <td>'.$paquete['descripcion'].'</td>
+                    <td>S/ '.number_format($paquete['valor_declarado'], 2).'</td>
+                    <td>'.$paquete['alto'].'×'.$paquete['ancho'].'×'.$paquete['profundidad'].' cm</td>
+                    <td>'.$paquete['peso'].' kg</td>
+                    <td>'.number_format($paquete['volumen']/1000000, 3).' m³</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4 style="margin-top: 10px; margin-bottom: 5px;">Items del paquete:</h4>
+        
+        <table class="data-table items">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Cantidad</th>
+                    <th>P.Unit</th>
+                    <th>V.Unit</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>';
 
     foreach ($paquete['items'] as $item) {
         $data['paquetes'] .= '
-            <tr>
-                <td>'.$item['codigo_producto'].'</td>
-                <td>'.$item['nombre_producto'].'</td>
-                <td>'.$item['cantidad'].'</td>
-                <td>'.$item['peso_unitario'].' kg</td>
-                <td>S/ '.number_format($item['valor_unitario'], 2).'</td>
-                <td>S/ '.number_format($item['valor_unitario'] * $item['cantidad'], 2).'</td>
-            </tr>';
+                <tr>
+                    <td>'.$item['codigo_producto'].'</td>
+                    <td>'.$item['nombre_producto'].'</td>
+                    <td>'.$item['cantidad'].'</td>
+                    <td>'.$item['peso_unitario'].' kg</td>
+                    <td>S/ '.number_format($item['valor_unitario'], 2).'</td>
+                    <td>S/ '.number_format($item['valor_unitario'] * $item['cantidad'], 2).'</td>
+                </tr>';
     }
 
     $data['paquetes'] .= '
-        </tbody>
-    </table>';
+            </tbody>
+        </table>
+    </div>';
 }
 
 
