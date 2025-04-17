@@ -56,3 +56,25 @@
         </div>
     </div>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Delegación de eventos para mejor performance
+    $(document).on('click', '.toggle-password', function(e) {
+        e.preventDefault();
+        
+        // Selecciona el input de contraseña asociado
+        var passwordInput = $(this).closest('.pass-group').find('.pass-input');
+        
+        // Cambia el tipo de input
+        var newType = passwordInput.attr('type') === 'password' ? 'text' : 'password';
+        passwordInput.attr('type', newType);
+        
+        // Cambia el icono visualmente
+        $(this).toggleClass('fa-eye fa-eye-slash');
+        
+        // Opcional: Cambia el título del tooltip
+        $(this).attr('title', newType === 'password' ? 'Mostrar contraseña' : 'Ocultar contraseña');
+    });
+});
+</script>
