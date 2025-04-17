@@ -294,7 +294,7 @@
                         <?php endif; ?>
                         
                         <?php if(isset($permisos["configuracion-correo"])): ?>
-                        <li><a href="configuracion-correo"><i class="fas fa-envelope"></i> Correo</a></li>
+                        <li><a href="#"><i class="fas fa-envelope"></i> Correo</a></li>
                         <?php endif; ?>
                     </ul>
                 </li>

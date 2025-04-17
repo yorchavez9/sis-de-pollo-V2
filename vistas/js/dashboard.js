@@ -31,7 +31,6 @@ $(document).ready(function() {
             ]);
     
             if (!sesion || !sesion.permisos) {
-                console.error("No hay sesión o permisos");
                 return;
             }
             if (!envios || !envios.status) {

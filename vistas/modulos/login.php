@@ -6,10 +6,10 @@
         <div class="login-content">
             <div class="login-userset">
                 <div class="login-logo text-center">
-                    <!-- <img src="vistas/assets/img/logo.png" class="text-center" alt="img"> -->
+                   <!--  <img src="vistas/assets/img/logo.png" class="text-center" alt="img" width="50%"> -->
                 </div>
                 <div class="login-userheading text-center mb-4">
-                    <img src="<?php echo ($icono != '' && $icono != null) ? $icono : 'vistas/img/sistema/login-logo.png'; ?>" width="100" alt="">
+                    <img src="" id="login_icon" width="100" alt="">
 
                     <h3 style="margin-top: 15px; font-family: Arial, sans-serif; color: #333;">Iniciar sesión</h3>
                 </div>

@@ -1,10 +1,10 @@
 <div class="header">
     <div class="header-left active">
         <a href="#" class="logo">
-            <img src="vistas/img/sistema/logo-apuuray.png" alt="">
+            <img class="empresa_logo" src="vistas/img/sistema/logo-apuuray.png" alt="">
         </a>
         <a href="#" class="logo-small">
-            <img src="vistas/img/sistema/logo-small.png" alt="">
+            <img class="empresa_logo" src="vistas/img/sistema/logo-small.png" alt="">
         </a>
         <a id="toggle_btn" href="javascript:void(0);"></a>
     </div>

@@ -9,7 +9,7 @@
     <meta name="robots" content="index, follow">
 
     <title>Apuuray</title>
-    <link rel="shortcut icon" type="image/x-icon" href="vistas/img/sistema/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="">
 
     <link rel="stylesheet" href="vistas/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="vistas/assets/plugins/select2/css/select2.min.css">

@@ -65,10 +65,6 @@ $(document).ready(function () {
         }
     });
 
-
-
-    // Las funciones cargarConfiguracion() y guardarConfiguracion() se mantienen igual
-
     // Previsualización del logo
     $("#logo").change(function () {
         const file = this.files[0];
@@ -105,7 +101,14 @@ async function cargarConfiguracion() {
 
             if (config.logo) {
                 $("#preview_logo").html(`<img src="${config.logo}" class="img-thumbnail" style="max-height: 100px;">`);
+                $(".empresa_logo").attr("src", config.logo);
+                $("#login_icon").attr("src", config.logo);
+                $("link[rel='shortcut icon']").attr("href", config.logo);
+            }else{
+                $("#login_icon").attr("src", "vistas/img/sistema/login-logo.png");
+                $("link[rel='shortcut icon']").attr("href", "vistas/img/sistema/favicon.png");
             }
+
         }
     } catch (error) {
         console.error("Error:", error);
