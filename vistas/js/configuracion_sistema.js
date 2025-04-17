@@ -88,10 +88,10 @@ async function cargarConfiguracion() {
             method: "GET",
             headers: { "Accept": "application/json" }
         });
-
         if (!response.ok) throw new Error("Error al cargar configuración");
 
         const data = await response.json();
+        console.log(data);
 
         if (data.status) {
             const config = data.data;

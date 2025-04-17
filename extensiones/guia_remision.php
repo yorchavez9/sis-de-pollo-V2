@@ -2,6 +2,12 @@
 require_once "../modelos/Envio.modelo.php";
 require_once "../controladores/Envio.controlador.php";
 
+// Agrega al inicio del script
+require_once "../modelos/Configuracion.sistema.modelo.php";
+require_once "../controladores/Configuracion.sistema.controlador.php";
+
+
+
 require 'vendor/autoload.php';
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -18,6 +24,13 @@ $options->set([
     'logOutputFile' => ''
 ]);
 
+// Obtener configuración del sistema
+$configuracion = ControladorConfiguracion::ctrMostrarConfiguracionPDF();
+if (is_string($configuracion)) {
+    $configuracion = json_decode($configuracion, true);
+}
+
+
 // Obtener datos del envío
 $tipoDocumento = $_GET["comprobante"]; 
 $idEnvio = $_GET['id'];
@@ -33,8 +46,11 @@ $seguimiento = $response['data']['seguimiento'];
 
 // Preparar datos para la plantilla
 $data = [
-    'empresa_nombre'    => 'TRANSPORTES AKIL',
-    'empresa_ruc'       => $envio['dni_remitente'],
+    'empresa_nombre'    => $configuracion['data']['nombre_empresa'] ?? 'TRANSPORTES AKIL',
+    'empresa_ruc'       => $configuracion['data']['ruc'] ?? '10456789012',
+    'empresa_direccion' => $configuracion['data']['direccion'] ?? '',
+    'empresa_telefono'  => $configuracion['data']['telefono'] ?? '',
+    'empresa_email'     => $configuracion['data']['email'] ?? '',
     'serie'      => $envio['serie'],
     'serie_numero'      => $envio['numero_comprobante'],
     'remitente_nombre'  => $envio['nombre_remitente'],
@@ -64,9 +80,15 @@ $data = [
     'seguimiento'       => ''
 ];
 
+// Procesar el logo en base64
+if (!empty($configuracion['data']['logo'])) {
+    $logoPath = '../' . $configuracion['data']['logo'];
+    if (file_exists($logoPath)) {
+        $logoData = base64_encode(file_get_contents($logoPath));
+        $data['empresa_logo'] = $logoData;
+    }
+}
 
-// Generar sección de paquetes
-// Generar sección de paquetes
 // Generar sección de paquetes
 foreach ($paquetes as $paquete) {
     $data['paquetes'] .= '

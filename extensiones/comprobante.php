@@ -1,6 +1,9 @@
 <?php
 require_once "../modelos/Envio.modelo.php";
+require_once "../modelos/Configuracion.sistema.modelo.php";
+
 require_once "../controladores/Envio.controlador.php";
+require_once "../controladores/Configuracion.sistema.controlador.php";
 require 'vendor/autoload.php';
 
 use Dompdf\Dompdf;
@@ -13,11 +16,13 @@ class GeneradorComprobante {
     private $envio;
     private $paquetes;
     private $templatePath;
+    private $configuracion;
     
     public function __construct() {
         $this->validarParametros();
         $this->configurarDompdf();
         $this->obtenerDatosEnvio();
+        $this->obtenerConfiguracion();
         $this->determinarTipoDocumento();
         $this->generarComprobante();
     }
@@ -26,12 +31,13 @@ class GeneradorComprobante {
         $this->idEnvio = isset($_GET['id']) ? $_GET['id'] : $this->terminarConError("Error: ID de envío no proporcionado");
         $this->tipoDocumento = isset($_GET["comprobante"]) ? $_GET["comprobante"] : "boleta";
     }
+
     
     private function configurarDompdf() {
         $options = new Options();
         $options->set([
             'isHtml5ParserEnabled' => true,
-            'isRemoteEnabled' => false,
+            'isRemoteEnabled' => true,
             'defaultMediaType' => 'print',
             'defaultFont' => 'Arial',
             'chroot' => __DIR__,
@@ -50,6 +56,21 @@ class GeneradorComprobante {
         
         $this->envio = $response['data']['envio'];
         $this->paquetes = $response['data']['paquetes'];
+    }
+
+    private function obtenerConfiguracion() {
+        $response = ControladorConfiguracion::ctrMostrarConfiguracionPDF();
+        
+        // Si la respuesta es string (por si acaso), decodifícala
+        if (is_string($response)) {
+            $response = json_decode($response, true);
+        }
+        
+        if (!$response || !$response['status'] || empty($response['data'])) {
+            $this->terminarConError("Error: Configuración no disponible");
+        }
+        
+        $this->configuracion = $response['data'];
     }
     
     private function determinarTipoDocumento() {
@@ -120,18 +141,36 @@ class GeneradorComprobante {
             $totalValor += floatval($this->envio['costo_envio']);
         }
         
+        $ruta_logo = '';
+        if (!empty($this->configuracion['logo'])) {
+            $logoPath = '../' . $this->configuracion['logo'];
+            if (file_exists($logoPath)) {
+                $ruta_logo = base64_encode(file_get_contents($logoPath));
+            }
+        }
+        
+        // Calcular IGV (18% del total)
+        $igv = $totalValor * 0.18;
+        $subtotal = $totalValor - $igv;
+        
         return [
-            'empresa_nombre'    => 'TRANSPORTES AKIL',
-            'empresa_ruc'       => '10456789012',
+            'empresa_nombre'    => $this->configuracion['nombre_empresa'],
+            'empresa_ruc'       => $this->configuracion['ruc'],
+            'empresa_direccion' => $this->configuracion['direccion'],
+            'empresa_telefono'  => $this->configuracion['telefono'],
+            'empresa_email'    => $this->configuracion['email'],
+            'empresa_logo' => $ruta_logo, 
             'serie_numero'      => $this->envio['serie'] . '-' . sprintf('%08d', $this->envio['numero_comprobante']),
             'cliente_nombre'    => $this->envio['nombre_remitente'],
             'cliente_dni'       => $this->envio['dni_remitente'],
             'cliente_direccion' => $this->envio['sucursal_origen'] . ' - ' . $this->envio['sucursal_destino'],
             'fecha_emision'     => date('d/m/Y', strtotime($this->envio['fecha_creacion'])),
-            'moneda'            => 'SOLES',
+            'moneda'            => $this->configuracion['moneda'] == 'PEN' ? 'SOLES' : 'DÓLARES',
             'items'             => $itemsHtml,
-            'total'             => 'S/ ' . number_format($totalValor, 2),
-            'monto_texto'       => 'SON: ' . $this->convertirNumeroALetras($totalValor) . ' SOLES'
+            'subtotal'          => number_format($subtotal, 2),
+            'igv'               => number_format($igv, 2),
+            'total'             => $this->configuracion['moneda'] . ' ' . number_format($totalValor, 2),
+            'monto_texto'       => 'SON: ' . $this->convertirNumeroALetras($totalValor) . ' ' . ($this->configuracion['moneda'] == 'PEN' ? 'SOLES' : 'DÓLARES AMERICANOS')
         ];
     }
     

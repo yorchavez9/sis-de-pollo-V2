@@ -9,6 +9,15 @@ class ControladorConfiguracion
         $respuesta = ModeloConfiguracion::mdlMostrarConfiguracion();
         echo $respuesta;
     }
+    /*=============================================
+    MOSTRAR CONFIGURACIÓN
+    =============================================*/
+    static public function ctrMostrarConfiguracionPDF()
+    {
+        $respuesta = ModeloConfiguracion::mdlMostrarConfiguracion();
+        /* echo $respuesta; */
+        return json_decode($respuesta, true);
+    }
 
     /*=============================================
     GUARDAR CONFIGURACIÓN
