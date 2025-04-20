@@ -1,6 +1,6 @@
 $(document).ready(function () {
     // Validar formulario antes de enviar
-    $("form").on("submit", function (e) {
+    $("#login_form").on("submit", function (e) {
         e.preventDefault();
         let usuario = $("[name='ingUsuario']").val();
         let password = $("[name='ingPassword']").val();
@@ -14,24 +14,38 @@ $(document).ready(function () {
             return false;
         }
 
+        const datos = new FormData();
+        datos.append('ingUsuario', usuario);
+        datos.append('ingPassword', password);
+        datos.append('action', "login");
+        
         // Enviar formulario
         $.ajax({
             url: "ajax/usuarios.ajax.php",
             type: "POST",
-            data: $(this).serialize(),
+            data: datos,
+            processData: false,  // Necesario para FormData
+            contentType: false,  // Necesario para FormData
+            dataType: "json",
             success: function (respuesta) {
-            let data = JSON.parse(respuesta);
-            if (data.status) {
-                window.location = "inicio";
-            } else {
+                if (respuesta.status) {
+                    window.location = respuesta.redirect;
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: respuesta.message || 'Usuario o contraseña incorrectos'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error(error);
                 Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message || 'Usuario o contraseña incorrectos'
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Ocurrió un error al procesar la solicitud'
                 });
-            }
             }
         });
     });
-
 });
