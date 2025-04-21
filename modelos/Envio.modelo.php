@@ -213,6 +213,10 @@ class ModeloEnvio
                     $conditions[] = "e.id_sucursal_origen = :origen";
                     $params[':origen'] = $filtros['origen'];
                 }
+                if (isset($filtros['codigo']) && $filtros['codigo']) {
+                    $conditions[] = "e.codigo_envio = :codigo";
+                    $params[':codigo'] = $filtros['codigo'];
+                }                
                 if (isset($filtros['destino']) && $filtros['destino']) {
                     $conditions[] = "e.id_sucursal_destino = :destino";
                     $params[':destino'] = $filtros['destino'];
@@ -301,9 +305,10 @@ class ModeloEnvio
                 LEFT JOIN usuarios u ON e.id_usuario_creador = u.id_usuario
                 LEFT JOIN usuarios ur ON e.id_usuario_receptor = ur.id_usuario
                 LEFT JOIN series_comprobantes sc ON sc.id_serie = e.id_serie
-                WHERE e.id_envio = :id_envio"
+                WHERE e.id_envio = :id_envio OR e.codigo_envio = :codigo_envio"
             );
             $stmtEnvio->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
+            $stmtEnvio->bindParam(":codigo_envio", $idEnvio, PDO::PARAM_INT);
             $stmtEnvio->execute();
             $envio = $stmtEnvio->fetch();
 

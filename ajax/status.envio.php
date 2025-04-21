@@ -5,40 +5,77 @@ require_once "../controladores/Envio.controlador.php";
 // Configurar cabeceras para respuesta JSON
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET');
+header('Access-Control-Max-Age: 3600');
 
 try {
-    // Obtener todos los envíos sin filtros
-    $envios = ControladorEnvio::ctrMostrarEnvios();
-    
-    // Verificar si se obtuvieron resultados
-    if ($envios === false || $envios === null) {
-        http_response_code(500);
-        echo json_encode([
-            'success' => false,
-            'message' => 'Error al obtener los envíos',
-            'timestamp' => date('Y-m-d H:i:s')
-        ]);
-        exit;
+    // Verificar que la acción esté definida
+    if (!isset($_GET['action'])) {
+        throw new Exception('Acción no especificada');
     }
-    
-    // Si no hay envíos, devolver array vacío
-    if (empty($envios)) {
-        $envios = [];
+
+    $action = $_GET['action'];
+    $response = [];
+
+    switch ($action) {
+        case 'codigo':
+            // Validar que el código esté presente
+            if (!isset($_GET['codigo']) || empty($_GET['codigo'])) {
+                throw new Exception('Código de envío no proporcionado');
+            }
+
+            $codigo = trim($_GET['codigo']);
+            $detalles = ModeloEnvio::mdlMostrarDetalleEnvio($codigo);
+
+            $response = [
+                'success' => true,
+                'data' => $detalles ?: [],
+                'count' => $detalles ? count($detalles) : 0,
+                'codigo' => $codigo,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            break;
+
+        case 'detalle':
+            // Validar que el código esté presente
+            if (!isset($_GET['codigo']) || empty($_GET['codigo'])) {
+                throw new Exception('Código de envío no proporcionado');
+            }
+
+            $codigo = trim($_GET['codigo']);
+            $detalles = ModeloEnvio::mdlMostrarDetalleEnvio($codigo);
+
+            $response = [
+                'success' => true,
+                'data' => $detalles ?: [],
+                'count' => $detalles ? count($detalles) : 0,
+                'codigo' => $codigo,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            break;
+
+        case 'listar':
+            $envios = ControladorEnvio::ctrMostrarEnvios();
+            $response = [
+                'success' => true,
+                'data' => $envios ?: [],
+                'count' => $envios ? count($envios) : 0,
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+            break;
+
+        default:
+            throw new Exception('Acción no reconocida');
     }
-    
-    // Devolver respuesta exitosa
-    echo json_encode([
-        'success' => true,
-        'data' => $envios,
-        'count' => count($envios),
-        'timestamp' => date('Y-m-d H:i:s')
-    ]);
-    
+
+    // Enviar respuesta
+    echo json_encode($response);
+
 } catch (Exception $e) {
-    http_response_code(500);
+    http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => 'Error interno del servidor: ' . $e->getMessage(),
+        'message' => $e->getMessage(),
         'timestamp' => date('Y-m-d H:i:s')
     ]);
 }
