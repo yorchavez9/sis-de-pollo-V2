@@ -25,7 +25,7 @@ try {
             }
 
             $codigo = trim($_GET['codigo']);
-            $detalles = ModeloEnvio::mdlMostrarDetalleEnvio($codigo);
+            $detalles = ModeloEnvio::mdlMostrarDetalleEnvioRastreo($codigo);
 
             $response = [
                 'success' => true,
@@ -43,7 +43,7 @@ try {
             }
 
             $codigo = trim($_GET['codigo']);
-            $detalles = ModeloEnvio::mdlMostrarDetalleEnvio($codigo);
+            $detalles = ModeloEnvio::mdlMostrarDetalleEnvioRastreo($codigo);
 
             $response = [
                 'success' => true,

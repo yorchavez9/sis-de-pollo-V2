@@ -382,6 +382,111 @@ class ModeloEnvio
         }
     }
 
+    
+    /*=============================================
+    MOSTRAR DETALLE DE ENVÍO API
+    =============================================*/
+    static public function mdlMostrarDetalleEnvioRastreo($codigo)
+    {
+        try {
+            // Información básica del envío
+            $stmtEnvio = Conexion::conectar()->prepare(
+                "SELECT 
+                    e.*,
+                    so.nombre as sucursal_origen, 
+                    sd.nombre as sucursal_destino,
+                    te.nombre as tipo_encomienda,
+                    CONCAT(p.nombre, ' ', p.apellidos) as transportista,
+                    CONCAT(u.nombre_usuario, ' (', u.usuario, ')') as usuario_creador,
+                    CONCAT(ur.nombre_usuario, ' (', ur.usuario, ')') as usuario_receptor,
+                    sc.serie
+                FROM envios e
+                LEFT JOIN sucursales so ON e.id_sucursal_origen = so.id_sucursal
+                LEFT JOIN sucursales sd ON e.id_sucursal_destino = sd.id_sucursal
+                LEFT JOIN tipo_encomiendas te ON e.id_tipo_encomienda = te.id_tipo_encomienda
+                LEFT JOIN transportistas t ON e.id_transportista = t.id_transportista
+                LEFT JOIN personas p ON t.id_persona = p.id_persona
+                LEFT JOIN usuarios u ON e.id_usuario_creador = u.id_usuario
+                LEFT JOIN usuarios ur ON e.id_usuario_receptor = ur.id_usuario
+                LEFT JOIN series_comprobantes sc ON sc.id_serie = e.id_serie
+                WHERE e.clave_recepcion = :clave_recepcion OR e.codigo_envio = :codigo_envio"
+            );
+            $stmtEnvio->bindParam(":clave_recepcion", $codigo, PDO::PARAM_STR);
+            $stmtEnvio->bindParam(":codigo_envio", $codigo, PDO::PARAM_STR);
+            $stmtEnvio->execute();
+            $envio = $stmtEnvio->fetch();
+
+            if (!$envio) {
+                return ["status" => false, "message" => "Envío no encontrado"];
+            }
+
+            // Paquetes del envío
+            $stmtPaquetes = Conexion::conectar()->prepare(
+                "SELECT * FROM paquetes WHERE id_envio = :id_envio"
+            );
+            $stmtPaquetes->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
+            $stmtPaquetes->execute();
+            $paquetes = $stmtPaquetes->fetchAll();
+
+            // Items de cada paquete
+            foreach ($paquetes as &$paquete) {
+                $stmtItems = Conexion::conectar()->prepare(
+                    "SELECT 
+                        ip.*,
+                        p.codigo as codigo_producto,
+                        p.nombre as nombre_producto
+                    FROM items_paquete ip
+                    LEFT JOIN productos p ON ip.id_producto = p.id_producto
+                    WHERE ip.id_paquete = :id_paquete"
+                );
+                $stmtItems->bindParam(":id_paquete", $paquete['id_paquete'], PDO::PARAM_INT);
+                $stmtItems->execute();
+                $paquete['items'] = $stmtItems->fetchAll();
+            }
+
+            // Seguimiento del envío
+            $stmtSeguimiento = Conexion::conectar()->prepare(
+                "SELECT 
+                    s.*,
+                    CONCAT(u.nombre_usuario, ' (', u.usuario, ')') as usuario
+                FROM seguimiento_envios s
+                LEFT JOIN usuarios u ON s.id_usuario = u.id_usuario
+                WHERE s.id_envio = :id_envio
+                ORDER BY s.fecha_registro DESC"
+            );
+            $stmtSeguimiento->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
+            $stmtSeguimiento->execute();
+            $seguimiento = $stmtSeguimiento->fetchAll();
+
+            // Documentos del envío
+            $stmtDocumentos = Conexion::conectar()->prepare(
+                "SELECT 
+                    d.*,
+                    CONCAT(u.nombre_usuario, ' (', u.usuario, ')') as usuario
+                FROM documentos_envios d
+                LEFT JOIN usuarios u ON d.id_usuario = u.id_usuario
+                WHERE d.id_envio = :id_envio
+                ORDER BY d.fecha_subida DESC"
+            );
+            $stmtDocumentos->bindParam(":id_envio", $idEnvio, PDO::PARAM_INT);
+            $stmtDocumentos->execute();
+            $documentos = $stmtDocumentos->fetchAll();
+
+            return [
+                "status" => true,
+                "data" => [
+                    "envio" => $envio,
+                    "paquetes" => $paquetes,
+                    "seguimiento" => $seguimiento,
+                    "documentos" => $documentos
+                ]
+            ];
+        } catch (Exception $e) {
+            return ["status" => false, "message" => $e->getMessage()];
+        }
+    }
+
+
     /*=============================================
     CAMBIAR ESTADO DE ENVÍO
     =============================================*/
