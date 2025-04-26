@@ -420,6 +420,8 @@ class ModeloEnvio
                 return ["status" => false, "message" => "Envío no encontrado"];
             }
 
+            $idEnvio = $envio['id_envio'];
+            
             // Paquetes del envío
             $stmtPaquetes = Conexion::conectar()->prepare(
                 "SELECT * FROM paquetes WHERE id_envio = :id_envio"
