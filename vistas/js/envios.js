@@ -675,17 +675,19 @@ $(document).ready(function () {
         const destino = $("#formNuevoEnvio [name='id_sucursal_destino']").val();
         const tipo = $("#formNuevoEnvio [name='id_tipo_encomienda']").val();
         const pesoTotal = parseFloat($("#pesoTotal").val()) || 0;
-
+        const volumenTotal = parseFloat($("#volumenTotal").val()) || 0;
+        const cantidadPaquetes = parseInt($("#totalPaquetes").val()) || 1;
+    
         if (!origen || !destino || !tipo) {
             Swal.fire("Advertencia", "Debe completar los datos de origen, destino y tipo de envío", "warning");
             return;
         }
-
+    
         if (pesoTotal <= 0) {
             Swal.fire("Advertencia", "El peso total debe ser mayor a cero", "warning");
             return;
         }
-
+    
         // Mostrar carga mientras se calcula
         Swal.fire({
             title: 'Calculando costo...',
@@ -694,9 +696,9 @@ $(document).ready(function () {
                 Swal.showLoading();
             }
         });
-
+    
         try {
-            const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal);
+            const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal, volumenTotal, cantidadPaquetes);
             Swal.close();
             if (costo.status) {
                 $("#costoEnvio").val(costo.data.costo.toFixed(2));
