@@ -455,6 +455,9 @@ $(document).ready(function () {
                 Swal.fire("¡Correcto!", response.message || "Permisos guardados correctamente", "success");
                 $("#modal_nuevo_permiso").modal("hide");
                 $("#form_nuevo_permiso")[0].reset();
+                if ($.fn.DataTable.isDataTable("#tabla_permisos")) {
+                    $("#tabla_permisos").DataTable().destroy();
+                }
                 await mostrarPermisos();
             } else {
                 Swal.fire("Error", response?.message || "Error al guardar los permisos", "error");
@@ -518,6 +521,9 @@ $(document).ready(function () {
             if (response?.status) {
                 Swal.fire("¡Correcto!", response.message || "Permisos actualizados correctamente", "success");
                 $("#modal_editar_permiso").modal("hide");
+                if ($.fn.DataTable.isDataTable("#tabla_permisos")) {
+                    $("#tabla_permisos").DataTable().destroy();
+                }
                 await mostrarPermisos();
             } else {
                 Swal.fire("Error", response?.message || "Error al actualizar los permisos", "error");
@@ -665,6 +671,9 @@ $(document).ready(function () {
 
                     if (response?.status) {
                         Swal.fire("¡Eliminado!", response.message || "Permisos eliminados correctamente", "success");
+                        if ($.fn.DataTable.isDataTable("#tabla_permisos")) {
+                            $("#tabla_permisos").DataTable().destroy();
+                        }
                         await mostrarPermisos();
                     } else {
                         Swal.fire("Error", response?.message || "Error al eliminar los permisos", "error");
