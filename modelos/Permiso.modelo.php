@@ -238,28 +238,43 @@ class ModeloPermiso
     {
         try {
             $conexion = Conexion::conectar();
-            $stmt = $conexion->prepare(
+            $conexion->beginTransaction();
+
+            // Eliminar permisos asociados al rol
+            $stmtPermisos = $conexion->prepare(
                 "DELETE FROM permisos WHERE id_rol = :id_rol"
             );
-            $stmt->bindParam(":id_rol", $idRol, PDO::PARAM_INT);
-            
-            if ($stmt->execute()) {
-                    return json_encode([
-                        "status" => true,
-                        "message" => "Permisos eliminados correctamente"
-                    ]);
-                } else {
-                    return json_encode([
-                        "status" => false,
-                        "message" => "Error al eliminar los permisos"
-                    ]);
-                }
-            } catch (Exception $e) {
-                return json_encode([
-                    "status" => false,
-                    "message" => $e->getMessage()
-                ]);
+            $stmtPermisos->bindParam(":id_rol", $idRol, PDO::PARAM_INT);
+
+            if (!$stmtPermisos->execute()) {
+                throw new Exception("Error al eliminar los permisos: " . implode(" ", $stmtPermisos->errorInfo()));
             }
+
+            // Eliminar el registro de la tabla usuario_roles
+            $stmtUsuarioRoles = $conexion->prepare(
+                "DELETE FROM usuario_roles WHERE id_rol = :id_rol"
+            );
+            $stmtUsuarioRoles->bindParam(":id_rol", $idRol, PDO::PARAM_INT);
+
+            if (!$stmtUsuarioRoles->execute()) {
+                throw new Exception("Error al eliminar el registro de usuario_roles: " . implode(" ", $stmtUsuarioRoles->errorInfo()));
+            }
+
+            $conexion->commit();
+
+            return json_encode([
+                "status" => true,
+                "message" => "Permisos eliminados correctamente"
+            ]);
+        } catch (Exception $e) {
+            if ($conexion) {
+                $conexion->rollBack();
+            }
+            return json_encode([
+                "status" => false,
+                "message" => $e->getMessage()
+            ]);
         }
+    }
     }
     
