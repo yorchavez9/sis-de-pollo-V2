@@ -78,9 +78,11 @@ class GeneradorComprobante {
         $serie = $this->envio['serie'];
         
         if (strtoupper($serie[0]) === 'B') {
-            $this->tipoDocumento = 'boleta';
+            /* $this->tipoDocumento = 'boleta'; */
+            $this->tipoDocumento = 'ticket';
         } elseif (strtoupper($serie[0]) === 'F') {
-            $this->tipoDocumento = 'factura';
+            /* $this->tipoDocumento = 'factura'; */
+            $this->tipoDocumento = 'ticket';
         }
         
         // Establecer la plantilla correspondiente
