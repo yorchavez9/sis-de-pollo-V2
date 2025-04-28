@@ -87,7 +87,7 @@ async function cargarConfiguracion() {
         if (!response.ok) throw new Error("Error al cargar configuración");
 
         const data = await response.json();
-
+        console.log(data);
         if (data.status) {
             const config = data.data;
             $("#nombre_empresa").val(config.nombre_empresa);

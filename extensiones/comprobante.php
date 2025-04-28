@@ -78,26 +78,24 @@ class GeneradorComprobante {
         $serie = $this->envio['serie'];
         
         if (strtoupper($serie[0]) === 'B') {
-            /* $this->tipoDocumento = 'boleta'; */
-            $this->tipoDocumento = 'ticket';
+            $this->tipoDocumento = 'boleta';
         } elseif (strtoupper($serie[0]) === 'F') {
-            /* $this->tipoDocumento = 'factura'; */
-            $this->tipoDocumento = 'ticket';
+            $this->tipoDocumento = 'factura';
+        } else {
+            $this->tipoDocumento = 'ticket'; // valor por defecto
         }
         
         // Establecer la plantilla correspondiente
         switch ($this->tipoDocumento) {
-            case 'ticket':
+            case 'boleta':
+            case 'factura':
                 $this->templatePath = 'plantillas/ticket.html';
                 break;
             case 'guia_remision':
                 $this->templatePath = 'plantillas/guia_remision.html';
                 break;
-            case 'factura':
-                $this->templatePath = 'plantillas/comprobante.html';
-                break;
-            default: // boleta por defecto
-                $this->templatePath = 'plantillas/comprobante.html';
+            default: // ticket genérico por defecto
+                $this->templatePath = 'plantillas/ticket.html';
                 break;
         }
     }
@@ -172,7 +170,10 @@ class GeneradorComprobante {
             'subtotal'          => number_format($subtotal, 2),
             'igv'               => number_format($igv, 2),
             'total'             => $this->configuracion['moneda'] . ' ' . number_format($totalValor, 2),
-            'monto_texto'       => 'SON: ' . $this->convertirNumeroALetras($totalValor) . ' ' . ($this->configuracion['moneda'] == 'PEN' ? 'SOLES' : 'DÓLARES AMERICANOS')
+            'monto_texto'       => 'SON: ' . $this->convertirNumeroALetras($totalValor) . ' ' . ($this->configuracion['moneda'] == 'PEN' ? 'SOLES' : 'DÓLARES AMERICANOS'),
+            'tipo_documento' => strtoupper($this->tipoDocumento) === 'BOLETA' ? 
+                        'BOLETA DE VENTA ELECTRÓNICA' : 
+                        'FACTURA ELECTRÓNICA',
         ];
     }
     
@@ -211,12 +212,12 @@ class GeneradorComprobante {
         $this->dompdf->loadHtml($html);
         
         // Configurar tamaño según tipo de documento
-        if ($this->tipoDocumento == "ticket") {
+        /* if ($this->tipoDocumento == "ticket") {
             $this->dompdf->setPaper([0, 0, 226.77, 600], 'portrait');
         } else {
             $this->dompdf->setPaper('A4', 'portrait');
-        }
-        
+        } */
+        $this->dompdf->setPaper([0, 0, 226.77, 600], 'portrait');
         $this->dompdf->render();
         
         // Generar nombre de archivo
