@@ -634,14 +634,11 @@ class ModeloEnvio
     /*=============================================
     CALCULAR COSTO DE ENVÍO
     =============================================*/
-    static public function mdlCalcularCostoEnvio($origen, $destino, $tipo, $peso, $volumen = 0, $cantidadPaquetes = 1)
+    static public function mdlCalcularCostoEnvio($origen, $destino, $tipo, $peso)
     {
         try {
             // Validar y convertir peso a decimal
             $peso = (float)str_replace(',', '.', $peso);
-            $volumen = (float)str_replace(',', '.', $volumen);
-            $cantidadPaquetes = (int)$cantidadPaquetes;
-            
             if ($peso <= 0) {
                 return ["status" => false, "message" => "El peso debe ser mayor a cero"];
             }
@@ -672,21 +669,10 @@ class ModeloEnvio
                 // Calcular costo basado en la tarifa
                 $costo = (float)$tarifa['costo_base'];
 
-                // Costo por peso excedente
+                // Si el peso excede el rango base, calcular costo adicional
                 if ($peso > $tarifa['rango_peso_min']) {
                     $pesoExcedente = $peso - $tarifa['rango_peso_min'];
                     $costo += $pesoExcedente * $tarifa['costo_kg_extra'];
-                }
-
-                // Costo por volumen (si aplica)
-                if ($volumen > 0 && isset($tarifa['costo_volumen'])) {
-                    $costo += $volumen * $tarifa['costo_volumen'];
-                }
-
-                // Costo por paquete adicional (si aplica)
-                if ($cantidadPaquetes > 1 && isset($tarifa['costo_paquete_extra'])) {
-                    $paquetesExtras = $cantidadPaquetes - 1;
-                    $costo += $paquetesExtras * $tarifa['costo_paquete_extra'];
                 }
 
                 // Redondear a 2 decimales

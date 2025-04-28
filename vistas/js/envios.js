@@ -1,5 +1,4 @@
 $(document).ready(function () {
-
     async function obtenerSesion() {
         try {
             const response = await fetch('ajax/sesion.ajax.php?action=sesion', {
@@ -9,16 +8,13 @@ $(document).ready(function () {
             });
 
             if (!response.ok) throw new Error('Error en la respuesta del servidor');
-
             const data = await response.json();
             return data.status === false ? null : data;
-
         } catch (error) {
             console.error('Error al obtener sesión:', error);
             return null;
         }
     }
-
 
     function fechaHoraActual() {
         const now = new Date();
@@ -28,13 +24,12 @@ $(document).ready(function () {
     }
     fechaHoraActual();
 
-    // Configuración común para Select2
+    // Configuración para Select2
     const select2Config = {
         placeholder: "Seleccionar",
         width: '100%'
     };
 
-    // Inicializar Select2
     function initSelect2(selector, dropdownParent = null) {
         const config = { ...select2Config };
         if (dropdownParent) {
@@ -48,7 +43,7 @@ $(document).ready(function () {
     let contadorItems = 0;
     let envioActual = null;
 
-    // Inicializar todos los Select2 al cargar
+    // Inicializar Select2
     initSelect2('.select');
 
     // Reinicializar Select2 en modales
@@ -79,7 +74,6 @@ $(document).ready(function () {
             validateField(form.find("[name='id_sucursal_origen']"), null, form.find("#error_origen"), "Selección inválida"),
             validateField(form.find("[name='id_sucursal_destino']"), null, form.find("#error_destino"), "Selección inválida"),
             validateField(form.find("[name='id_tipo_encomienda']"), null, form.find("#error_tipo"), "Selección inválida"),
-            // Validar que hay al menos un paquete
             contadorPaquetes > 0
         ].every(Boolean);
 
@@ -107,7 +101,7 @@ $(document).ready(function () {
                 method,
                 headers: {},
                 cache: "no-cache",
-                credentials: 'same-origin' // Para manejar cookies si es necesario
+                credentials: 'same-origin'
             };
 
             if (data instanceof FormData) {
@@ -120,7 +114,6 @@ $(document).ready(function () {
             const response = await fetch(url, options);
 
             if (!response.ok) {
-                // Intentar obtener el mensaje de error del cuerpo de la respuesta
                 let errorDetails = '';
                 try {
                     const errorResponse = await response.json();
@@ -128,7 +121,6 @@ $(document).ready(function () {
                 } catch (e) {
                     errorDetails = await response.text();
                 }
-
                 throw new Error(`HTTP error! status: ${response.status}, message: ${errorDetails}`);
             }
 
@@ -139,7 +131,7 @@ $(document).ready(function () {
                 method,
                 errorName: error.name,
                 errorMessage: error.message,
-                stack: error.stack // Solo en desarrollo
+                stack: error.stack
             });
 
             return {
@@ -155,14 +147,12 @@ $(document).ready(function () {
 
     // Mostrar lista de envíos
     const mostrarEnvios = async (filtros = {}) => {
-        // Construir URL con filtros
         let url = "ajax/envios.ajax.php?action=listar";
         if (Object.keys(filtros).length > 0) {
             const params = new URLSearchParams(filtros);
             url += `&${params.toString()}`;
         }
 
-        /* const envios = await fetchData(url); */
         const [sesion, envios] = await Promise.all([
             obtenerSesion(),
             fetchData(url)
@@ -171,7 +161,7 @@ $(document).ready(function () {
         if (!sesion || !sesion.permisos) {
             return;
         }
-        
+
         if (!envios || !envios.status) {
             console.error("Error al cargar envíos:", envios?.message);
             return;
@@ -183,11 +173,7 @@ $(document).ready(function () {
 
         envios.data.forEach((envio, index) => {
             if (sesion.usuario.id_sucursal === envio.id_sucursal_origen) {
-                
-                // Formatear fechas
                 const fechaEnvio = envio.fecha_creacion ? new Date(envio.fecha_creacion).toLocaleString() : 'Pendiente';
-
-                // Determinar clase para el estado
                 let claseEstado = "";
                 switch (envio.estado) {
                     case 'PENDIENTE': claseEstado = "badge bg-secondary"; break;
@@ -201,6 +187,7 @@ $(document).ready(function () {
 
                 const fila = `
                 <tr>
+                    <td><input type="checkbox" class="selectRow" value="${envio.id_envio}"></td>
                     <td>${index + 1}</td>
                     <td>${envio.codigo_envio}</td>
                     <td>${envio.sucursal_origen}</td>
@@ -216,45 +203,37 @@ $(document).ready(function () {
                                     aria-expanded="false">
                                 <i class="fas fa-cog"></i>
                             </button>
-                            
                             <ul class="dropdown-menu shadow-sm" aria-labelledby="dropdownMenuButton${envio.id_envio}">
-                                <!-- Opción Ver Detalle -->
-                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("ver")? `<li>
+                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("ver") ? `
+                                <li>
                                     <a class="dropdown-item d-flex align-items-center btnDetalleEnvio" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-eye text-primary me-2"></i>
                                         <span>Ver Detalle</span>
                                     </a>
-                                </li>`:``}
-
-                                <!-- Opción Cambiar Estado -->
-                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("estado")? `<li>
+                                </li>` : ''}
+                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("estado") ? `
+                                <li>
                                     <a class="dropdown-item d-flex align-items-center btnCambiarEstado" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-exchange-alt text-warning me-2"></i>
                                         <span>Cambiar Estado</span>
                                     </a>
-                                </li>`: ``}
-                                
-                                
-                                <!-- Opción Cancelar (condicional) -->
-                                ${(sesion.permisos.envios && sesion.permisos.envios.acciones.includes("imprimir")) && (envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION') ?
-                                    `<li>
-                                        <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
-                                            <i class="fas fa-times text-danger me-2"></i>
-                                            <span>Cancelar Envío</span>
-                                        </a>
-                                    </li>` : ''}
-                                
-                                <!-- Separador visual -->
+                                </li>` : ''}
+                                ${(sesion.permisos.envios && sesion.permisos.envios.acciones.includes("imprimir")) && 
+                                (envio.estado === 'PENDIENTE' || envio.estado === 'PREPARACION') ? `
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center btnCancelarEnvio" href="#" data-id="${envio.id_envio}">
+                                        <i class="fas fa-times text-danger me-2"></i>
+                                        <span>Cancelar Envío</span>
+                                    </a>
+                                </li>` : ''}
                                 <li><hr class="dropdown-divider"></li>
-                                
-                                <!-- Opción adicional (ejemplo) -->
-                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("imprimir")? `<li>
+                                ${sesion.permisos.envios && sesion.permisos.envios.acciones.includes("imprimir") ? `
+                                <li>
                                     <a class="dropdown-item d-flex align-items-center btnImprimirEnvio" href="#" data-id="${envio.id_envio}">
                                         <i class="fas fa-print text-secondary me-2"></i>
                                         <span>Imprimir</span>
                                     </a>
-                                </li>`: ``}
-                                
+                                </li>` : ''}
                             </ul>
                         </div>
                     </td>
@@ -270,9 +249,25 @@ $(document).ready(function () {
             autoWidth: false,
             responsive: true
         });
+
+        // Re-asignar eventos a los checkboxes
+        $(".selectRow").off("change").on("change", toggleCambiarEstadoMasivoButton);
     };
 
-    // Cargar sucursales en select
+    // Habilitar/Deshabilitar botón de cambio masivo
+    function toggleCambiarEstadoMasivoButton() {
+        const selectedRows = $(".selectRow:checked").length;
+        $("#btnCambiarEstadoMasivo").prop("disabled", selectedRows === 0);
+    }
+
+    // Seleccionar/Deseleccionar todas las filas
+    $("#selectAll").on("change", function () {
+        const isChecked = $(this).is(":checked");
+        $(".selectRow").prop("checked", isChecked);
+        toggleCambiarEstadoMasivoButton();
+    });
+
+    // Cargar series de comprobante
     const cargarSerieComprobante = async (selectId, todas = false) => {
         const [sesion, series] = await Promise.all([
             obtenerSesion(),
@@ -289,7 +284,6 @@ $(document).ready(function () {
             select.append('<option value="" disabled selected>Seleccionar comprobante</option>');
         }
 
-        // Recorremos las series y las agregamos al select con data-serie
         series.data.forEach(serie => {
             if (serie.estado === 1 && sesion.usuario.id_sucursal === serie.id_sucursal) {
                 select.append(`
@@ -303,15 +297,14 @@ $(document).ready(function () {
             }
         });
 
-        // Evento change: Cuando seleccionan una opción, actualizar el input
         select.on("change", function () {
             const selectedOption = $(this).find("option:selected");
-            const serieValue = selectedOption.data("serie") || ""; // Obtiene "B002", "N002", etc.
-            $("#serie").val(serieValue); // Asigna al input
+            const serieValue = selectedOption.data("serie") || "";
+            $("#serie").val(serieValue);
         });
     };
 
-    // Cargar sucursales en select
+    // Cargar tipo encomienda
     const cargarTipoEncomienda = async (selectId, todas = false) => {
         const tipo_encomiendas = await fetchData("ajax/tipo_encomienda.ajax.php");
         if (!tipo_encomiendas || !tipo_encomiendas.status) return;
@@ -321,7 +314,7 @@ $(document).ready(function () {
         if (todas) {
             select.append('<option value="">Todas</option>');
         } else {
-            select.append('<option value="" disabled selected>Seleccionar sucursal</option>');
+            select.append('<option value="" disabled selected>Seleccionar tipo</option>');
         }
 
         tipo_encomiendas.data.forEach(tipo => {
@@ -331,32 +324,27 @@ $(document).ready(function () {
         });
     };
 
-    // Cargar sucursales en select id_sucursal_origen
+    // Cargar sucursales
     const cargarSucursales = async (selectId, todas = false) => {
         try {
-            // Obtener datos de sesión y sucursales en paralelo
             const [sesion, sucursales] = await Promise.all([
                 obtenerSesion(),
                 fetchData("ajax/sucursal.ajax.php")
             ]);
 
-            // Validar respuestas
             if (!sucursales?.status || !sesion) {
-                /* console.error('Error al cargar datos'); */
                 return;
             }
 
             const select = $(`#${selectId}`);
             select.empty().append(
                 todas ? '<option value="">Todas</option>' 
-                    : '<option value="" disabled selected>Seleccionar sucursal</option>'
+                      : '<option value="" disabled selected>Seleccionar sucursal</option>'
             );
 
-            // Filtrar y agregar sucursales
             sucursales.data.forEach(sucursal => {
                 if (sucursal.estado !== 1) return;
 
-                // Lógica especial para sucursal origen
                 if (selectId === "id_sucursal_origen" || selectId === "filtroOrigen") {
                     if (sesion.usuario.id_sucursal === sucursal.id_sucursal) {
                         select.append(`<option value="${sucursal.id_sucursal}">${sucursal.nombre}</option>`);
@@ -367,7 +355,6 @@ $(document).ready(function () {
                     }
                 }
             });
-
         } catch (error) {
             console.error('Error al cargar sucursales:', error);
         }
@@ -406,7 +393,6 @@ $(document).ready(function () {
         const template = $("#templatePaquete").html();
         const $paquete = $(template.replace(/{{numero}}/g, contadorPaquetes));
 
-        // Asignar eventos al paquete
         $paquete.find(".btnEliminarPaquete").click(function () {
             $(this).closest(".paquete").remove();
             contadorPaquetes--;
@@ -417,16 +403,13 @@ $(document).ready(function () {
             agregarItem($(this).closest(".paquete").find(".table-items tbody"));
         });
 
-        // Cargar productos para este paquete
         cargarProductos($paquete.find(".selectProducto"));
 
-        // Evento para actualizar peso cuando se selecciona producto
         $paquete.find(".selectProducto").change(function () {
             const peso = $(this).find("option:selected").data("peso");
             $(this).closest(".item").find(".pesoUnitario").val(peso);
         });
 
-        // Eventos para actualizar resumen cuando cambian valores
         $paquete.find(".peso, .alto, .ancho, .profundidad").on('input', function () {
             actualizarResumen();
         });
@@ -440,13 +423,11 @@ $(document).ready(function () {
         const template = $("#templateItemPaquete").html();
         const $item = $(template);
 
-        // Asignar eventos al ítem
         $item.find(".btnEliminarItem").click(function () {
             $(this).closest(".item").remove();
             contadorItems--;
         });
 
-        // Cargar productos para este ítem
         cargarProductos($item.find(".selectProducto"));
 
         tbody.append($item);
@@ -466,7 +447,7 @@ $(document).ready(function () {
             const profundidad = parseFloat($(this).find(".profundidad").val()) || 0;
 
             pesoTotal += peso;
-            volumenTotal += (alto * ancho * profundidad) / 1000000; // Convertir a m³
+            volumenTotal += (alto * ancho * profundidad) / 1000000;
         });
 
         $("#totalPaquetes").val(totalPaquetes);
@@ -485,7 +466,6 @@ $(document).ready(function () {
         const envio = response.data.envio;
         envioActual = envio;
 
-        // Actualizar información básica
         $("#codigoEnvio").text(envio.codigo_envio);
         $("#detalleCodigo").text(envio.codigo_envio);
         $("#detalleOrigen").text(envio.sucursal_origen);
@@ -496,7 +476,6 @@ $(document).ready(function () {
         $("#detalleFechaEnvio").text(envio.fecha_envio ? new Date(envio.fecha_envio).toLocaleString() : 'Pendiente');
         $("#detalleFechaRecepcion").text(envio.fecha_recepcion ? new Date(envio.fecha_recepcion).toLocaleString() : 'Pendiente');
 
-        // Estado
         let claseEstado = "";
         switch (envio.estado) {
             case 'PENDIENTE': claseEstado = "badge bg-secondary"; break;
@@ -509,7 +488,6 @@ $(document).ready(function () {
         }
         $("#detalleEstado").html(`<span class="${claseEstado}">${envio.estado.replace('_', ' ')}</span>`);
 
-        // Mostrar paquetes
         const tbodyPaquetes = $("#tablaPaquetes tbody");
         tbodyPaquetes.empty();
         $("#totalPaquetesDetalle").text(response.data.paquetes.length);
@@ -535,7 +513,6 @@ $(document).ready(function () {
             tbodyPaquetes.append(fila);
         });
 
-        // Mostrar seguimiento
         const timeline = $("#timelineSeguimiento");
         timeline.empty();
 
@@ -548,7 +525,6 @@ $(document).ready(function () {
             timeline.append(template);
         });
 
-        // Mostrar documentos
         const listaDocumentos = $("#listaDocumentos");
         listaDocumentos.empty();
 
@@ -568,7 +544,6 @@ $(document).ready(function () {
             listaDocumentos.append($doc);
         });
 
-        // Mostrar modal
         $("#modalDetalleEnvio").modal("show");
     };
 
@@ -581,19 +556,7 @@ $(document).ready(function () {
         formData.append("action", "cambiarEstado");
 
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
-        if (response?.status) {
-            Swal.fire("¡Correcto!", "Estado del envío actualizado", "success");
-            if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
-                $("#tablaEnvios").DataTable().destroy();
-            }
-            mostrarEnvios();
-            if (envioActual && envioActual.id_envio == idEnvio) {
-                mostrarDetalleEnvio(idEnvio);
-            }
-            $("#modalCambiarEstado").modal("hide");
-        } else {
-            Swal.fire("Error", response?.message || "Error al actualizar el estado", "error");
-        }
+        return response;
     };
 
     // Subir documento para un envío
@@ -639,13 +602,25 @@ $(document).ready(function () {
         }
     };
 
-    // Calcular costo de envío
-    const calcularCostoEnvio = async (idSucursalOrigen, idSucursalDestino, idTipoEncomienda, pesoTotal) => {
-        const response = await fetchData(`ajax/envios.ajax.php?action=calcularCosto&origen=${idSucursalOrigen}&destino=${idSucursalDestino}&tipo=${idTipoEncomienda}&peso=${pesoTotal}`);
+    // Calcular costo de envío (versión mejorada)
+    const calcularCostoEnvio = async (idSucursalOrigen, idSucursalDestino, idTipoEncomienda, pesoTotal, volumenTotal = 0, cantidadPaquetes = 1) => {
+        const params = new URLSearchParams({
+            origen: idSucursalOrigen,
+            destino: idSucursalDestino,
+            tipo: idTipoEncomienda,
+            peso: pesoTotal,
+            volumen: volumenTotal,
+            paquetes: cantidadPaquetes
+        });
+
+        const response = await fetchData(`ajax/envios.ajax.php?action=calcularCosto&${params.toString()}`);
         if (response.status) {
-            return response
+            return response;
         }
-        return 0;
+        return {
+            status: false,
+            message: response.message || "Error al calcular el costo"
+        };
     };
 
     // Generar código único para envío
@@ -662,14 +637,13 @@ $(document).ready(function () {
     $("#btnNuevoEnvio").click(function () {
         resetForm();
         $("#modalNuevoEnvio").modal("show");
-        // Generar código de envío
         $("#formNuevoEnvio [name='codigo_envio']").val(generarCodigoEnvio());
     });
 
     // Evento para agregar paquete
     $("#btnAgregarPaquete").click(agregarPaquete);
 
-    // Evento para calcular costo de envío
+    // Evento para calcular costo de envío (versión mejorada)
     $("#btnCalcularCosto").click(async function () {
         const origen = $("#formNuevoEnvio [name='id_sucursal_origen']").val();
         const destino = $("#formNuevoEnvio [name='id_sucursal_destino']").val();
@@ -677,18 +651,17 @@ $(document).ready(function () {
         const pesoTotal = parseFloat($("#pesoTotal").val()) || 0;
         const volumenTotal = parseFloat($("#volumenTotal").val()) || 0;
         const cantidadPaquetes = parseInt($("#totalPaquetes").val()) || 1;
-    
+
         if (!origen || !destino || !tipo) {
             Swal.fire("Advertencia", "Debe completar los datos de origen, destino y tipo de envío", "warning");
             return;
         }
-    
+
         if (pesoTotal <= 0) {
             Swal.fire("Advertencia", "El peso total debe ser mayor a cero", "warning");
             return;
         }
-    
-        // Mostrar carga mientras se calcula
+
         Swal.fire({
             title: 'Calculando costo...',
             allowOutsideClick: false,
@@ -696,7 +669,7 @@ $(document).ready(function () {
                 Swal.showLoading();
             }
         });
-    
+
         try {
             const costo = await calcularCostoEnvio(origen, destino, tipo, pesoTotal, volumenTotal, cantidadPaquetes);
             Swal.close();
@@ -719,11 +692,9 @@ $(document).ready(function () {
 
         if (!validateEnvioForm()) return;
 
-        // Recolectar datos del formulario
         const formData = new FormData(this);
         formData.append("action", "crear");
 
-        // Recolectar datos de paquetes
         const paquetes = [];
         $(".paquete").each(function (index) {
             const paquete = {
@@ -737,7 +708,6 @@ $(document).ready(function () {
                 items: []
             };
 
-            // Recolectar items del paquete
             $(this).find(".item").each(function () {
                 paquete.items.push({
                     id_producto: $(this).find(".selectProducto").val(),
@@ -751,23 +721,18 @@ $(document).ready(function () {
             paquetes.push(paquete);
         });
 
-        // Agregar paquetes al FormData
         formData.append("paquetes", JSON.stringify(paquetes));
 
-        // Calcular peso total
         const pesoTotal = paquetes.reduce((total, p) => total + parseFloat(p.peso), 0);
         formData.append("peso_total", pesoTotal);
 
-        // Calcular volumen total
         const volumenTotal = paquetes.reduce((total, p) => {
             const volumen = (parseFloat(p.alto) * parseFloat(p.ancho) * parseFloat(p.profundidad)) / 1000000;
             return total + (isNaN(volumen) ? 0 : volumen);
         }, 0);
         formData.append("volumen_total", volumenTotal);
         formData.append("cantidad_paquetes", paquetes.length);
-        formData.forEach(element => {
-            console.log(element);
-        });
+
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
         if (response?.status) {
             Swal.fire({
@@ -779,7 +744,6 @@ $(document).ready(function () {
                 cancelButtonText: "Cerrar"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Abrir ventana para imprimir la guía
                     window.open(`extensiones/comprobante.php?action=imprimirComprobante&id=${response.id_envio}`, "_blank");
                 }
                 resetForm();
@@ -813,17 +777,87 @@ $(document).ready(function () {
     $("#tablaEnvios").on("click", ".btnDetalleEnvio", function () {
         const idEnvio = $(this).data("id");
         mostrarDetalleEnvio(idEnvio);
-        $("#modalDetalleEnvio").modal("show");
     });
 
-    // Evento para cambiar estado de envío
+    // Evento para cambiar estado de envío (individual)
     $("#tablaEnvios").on("click", ".btnCambiarEstado", function () {
         const idEnvio = $(this).data("id");
-        $("#idEnvioEstado").val(idEnvio);
+        $("#idEnviosEstado").val(idEnvio);
+        $("#nuevoEstado").val("");
+        $("#observacionesEstado").val("");
         $("#modalCambiarEstado").modal("show");
     });
 
-    // Evento para cambiar estado de envío
+    // Evento para cambiar estado masivo
+    $("#btnCambiarEstadoMasivo").on("click", function () {
+        const selectedIds = $(".selectRow:checked").map(function () {
+            return $(this).val();
+        }).get();
+
+        if (selectedIds.length === 0) {
+            Swal.fire("Advertencia", "No hay envíos seleccionados", "warning");
+            return;
+        }
+
+        $("#idEnviosEstado").val(JSON.stringify(selectedIds));
+        $("#nuevoEstado").val("");
+        $("#observacionesEstado").val("");
+        $("#modalCambiarEstado").modal("show");
+    });
+
+    // Evento para enviar formulario de cambio de estado
+    $("#formCambiarEstado").submit(async function (e) {
+        e.preventDefault();
+
+        let idEnvios = $("#idEnviosEstado").val();
+        const estado = $("#nuevoEstado").val();
+        const observaciones = $("#observacionesEstado").val();
+
+        if (!estado) {
+            Swal.fire("Advertencia", "Por favor seleccione un estado", "warning");
+            return;
+        }
+
+        try {
+            idEnvios = JSON.parse(idEnvios);
+            if (!Array.isArray(idEnvios)) {
+                idEnvios = [idEnvios];
+            }
+        } catch (e) {
+            idEnvios = [idEnvios];
+        }
+
+        Swal.fire({
+            title: 'Actualizando estados...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const results = await Promise.all(idEnvios.map(idEnvio => 
+            actualizarEstadoEnvio(idEnvio, estado, observaciones)
+        ));
+
+        Swal.close();
+
+        const errors = results.filter(result => !result.status);
+        if (errors.length > 0) {
+            Swal.fire("Error", "No se pudieron actualizar algunos envíos: " + errors.map(e => e.message).join(", "), "error");
+        } else {
+            Swal.fire("¡Correcto!", "Estados actualizados correctamente", "success");
+            $("#modalCambiarEstado").modal("hide");
+            if ($.fn.DataTable.isDataTable("#tablaEnvios")) {
+                $("#tablaEnvios").DataTable().destroy();
+            }
+            mostrarEnvios();
+            $(".selectRow").prop("checked", false);
+            $("#selectAll").prop("checked", false);
+            toggleCambiarEstadoMasivoButton();
+        }
+    });
+
+    // Evento para imprimir envío
     $("#tablaEnvios").on("click", ".btnImprimirEnvio", function () {
         const idEnvio = $(this).data("id");
         window.open(`extensiones/comprobante.php?action=imprimirComprobante&id=${idEnvio}`, "_blank");
@@ -846,15 +880,6 @@ $(document).ready(function () {
         if (result.isConfirmed) {
             await actualizarEstadoEnvio(idEnvio, "CANCELADO", "Envío cancelado por el usuario");
         }
-    });
-
-    // Evento para enviar formulario de cambio de estado
-    $("#formCambiarEstado").submit(function (e) {
-        e.preventDefault();
-        const idEnvio = $("#idEnvioEstado").val();
-        const estado = $("#nuevoEstado").val();
-        const observaciones = $("#observacionesEstado").val();
-        actualizarEstadoEnvio(idEnvio, estado, observaciones);
     });
 
     // Evento para abrir modal de subir documento
@@ -881,7 +906,7 @@ $(document).ready(function () {
     // Evento para agregar seguimiento
     $("#btnNuevoSeguimiento").click(function () {
         if (!envioActual) return;
-        $("#idEnvioEstado").val(envioActual.id_envio);
+        $("#idEnviosEstado").val(envioActual.id_envio);
         $("#modalCambiarEstado").modal("show");
     });
 

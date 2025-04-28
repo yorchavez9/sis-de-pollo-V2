@@ -57,19 +57,24 @@ if (isset($_SESSION["permisos"])) {
     <div class="page-wrapper">
         <div class="content">
             <!-- Encabezado -->
+            <!-- Encabezado -->
             <div class="page-header">
                 <div class="page-title">
                     <h4>Gestión de Envíos <i class="fas fa-truck me-1"></i></h4>
                     <h6>Administración de envíos entre sucursales</h6>
                 </div>
                 <?php if (isset($permisos["envios"]) && in_array("crear", $permisos["envios"]["acciones"])): ?>
-                    <div class="page-btn">
+                    <div class="page-btn d-flex align-items-center gap-2">
                         <button class="btn btn-added" id="btnNuevoEnvio">
                             <img src="vistas/assets/img/icons/plus.svg" alt="img" class="me-2">Nuevo Envío
+                        </button>
+                        <button class="btn btn-primary" id="btnCambiarEstadoMasivo" disabled>
+                            <i class="fas fa-exchange-alt me-2"></i>Cambiar Estado Masivo
                         </button>
                     </div>
                 <?php endif; ?>
             </div>
+
 
             <!-- Filtros -->
             <div class="card">
@@ -138,6 +143,7 @@ if (isset($_SESSION["permisos"])) {
                         <table class="table datanew" id="tablaEnvios">
                             <thead>
                                 <tr>
+                                    <th><input type="checkbox" id="selectAll"></th> <!-- Checkbox para seleccionar todas -->
                                     <th>N°</th>
                                     <th>Código</th>
                                     <th>Origen</th>
@@ -676,7 +682,7 @@ if (isset($_SESSION["permisos"])) {
     </template>
 
     <!-- Modal Cambiar Estado -->
-    <div class="modal fade" id="modalCambiarEstado" tabindex="-1" aria-hidden="true">
+    <!-- <div class="modal fade" id="modalCambiarEstado" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -711,7 +717,7 @@ if (isset($_SESSION["permisos"])) {
                 </form>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Modal Subir Documento -->
     <div class="modal fade" id="modalSubirDocumento" tabindex="-1" aria-hidden="true">
@@ -748,6 +754,44 @@ if (isset($_SESSION["permisos"])) {
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary">Subir Documento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="modalCambiarEstado" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Cambiar Estado de Envío(s)</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <form id="formCambiarEstado">
+                    <div class="modal-body">
+                        <input type="hidden" id="idEnviosEstado" name="id_envios">
+                        <div class="form-group">
+                            <label>Nuevo Estado <span class="text-danger">*</span></label>
+                            <select class="form-select" id="nuevoEstado" name="nuevo_estado">
+                                <option value="" disabled selected>Seleccionar</option>
+                                <option value="PREPARACION">Preparación</option>
+                                <option value="EN_TRANSITO">En Tránsito</option>
+                                <option value="EN_REPARTO">En Reparto</option>
+                                <option value="ENTREGADO">Entregado</option>
+                                <option value="CANCELADO">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Observaciones</label>
+                            <textarea class="form-control" id="observacionesEstado" name="observaciones" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="text-end mx-4 mb-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                     </div>
                 </form>
             </div>
