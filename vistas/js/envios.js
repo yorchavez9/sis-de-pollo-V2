@@ -734,6 +734,8 @@ $(document).ready(function () {
         formData.append("cantidad_paquetes", paquetes.length);
 
         const response = await fetchData("ajax/envios.ajax.php", "POST", formData);
+
+        console.log(response);
         if (response?.status) {
             Swal.fire({
                 title: "¡Correcto!",

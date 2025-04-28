@@ -15,42 +15,46 @@ if (isset($_GET['action'])) {
                 'tipo' => $_GET['tipo'] ?? null,
                 'estado' => $_GET['estado'] ?? null
             ];
-            $response =  ControladorEnvio::ctrMostrarEnvios(null, null, $filtros);
+            $response = ControladorEnvio::ctrMostrarEnvios(null, null, $filtros);
             echo json_encode($response);
             break;
-            
+
         case 'detalle':
             $idEnvio = $_GET['id'];
             $response = ControladorEnvio::ctrMostrarDetalleEnvio($idEnvio);
             echo json_encode($response);
             break;
-            
+
         case 'calcularCosto':
             $response = ControladorEnvio::ctrCalcularCostoEnvio();
             echo json_encode($response);
             break;
-            
+
         default:
             echo json_encode(['status' => false, 'message' => 'Acción no válida']);
     }
 } elseif (isset($_POST['action'])) {
     switch ($_POST['action']) {
         case 'crear':
-            ControladorEnvio::ctrCrearEnvio();
+            $response = ControladorEnvio::ctrCrearEnvio();
+            echo json_encode($response);
             break;
-            
+
         case 'cambiarEstado':
-            ControladorEnvio::ctrCambiarEstadoEnvio();
+            $response = ControladorEnvio::ctrCambiarEstadoEnvio();
+            echo json_encode($response);
             break;
-            
+
         case 'subirDocumento':
-            echo ControladorEnvio::ctrSubirDocumentoEnvio();
+            $response = ControladorEnvio::ctrSubirDocumentoEnvio();
+            echo json_encode($response);
             break;
-            
+
         case 'eliminarDocumento':
-            echo ControladorEnvio::ctrEliminarDocumentoEnvio();
+            $response = ControladorEnvio::ctrEliminarDocumentoEnvio();
+            echo json_encode($response);
             break;
-            
+
         default:
             echo json_encode(['status' => false, 'message' => 'Acción no válida']);
     }

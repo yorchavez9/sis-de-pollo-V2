@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once "../modelos/Envio.modelo.php";
+
 class ControladorEnvio
 {
     /*=============================================
@@ -9,12 +10,11 @@ class ControladorEnvio
     static public function ctrCrearEnvio() {
         try {
             if (isset($_POST['action']) && $_POST['action'] == 'crear') {
-                // Verificar si paquetes es un JSON válido
                 $paquetes = json_decode($_POST['paquetes'], true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     throw new Exception("JSON de paquetes inválido: " . json_last_error_msg());
                 }
-    
+
                 $datos = array(
                     "codigo_envio" => $_POST['codigo_envio'],
                     "id_serie" => $_POST['id_serie'],
@@ -37,21 +37,17 @@ class ControladorEnvio
                     "metodo_pago" => $_POST['metodo_pago'] ?? 'EFECTIVO',
                     "paquetes" => $paquetes
                 );
-    
-                error_log("Datos recibidos: " . print_r($datos, true)); // Log para depuración
-    
+
                 $respuesta = ModeloEnvio::mdlCrearEnvio("envios", $datos);
-                echo json_encode($respuesta);
-            } else {
-                throw new Exception("Acción no válida o no especificada");
+                return $respuesta;
             }
+            throw new Exception("Acción no válida o no especificada");
         } catch (Exception $e) {
-            error_log("Error en ctrCrearEnvio: " . $e->getMessage());
-            echo json_encode([
-                "status" => false,
-                "message" => "Error: " . $e->getMessage(),
-                "trace" => $e->getTraceAsString()
-            ]);
+            return [
+                'status' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ];
         }
     }
 
@@ -60,8 +56,7 @@ class ControladorEnvio
     =============================================*/
     static public function ctrMostrarEnvios($item = null, $valor = null, $filtros = [])
     {
-        $respuesta = ModeloEnvio::mdlMostrarEnvios("envios", $item, $valor, $filtros);
-        return $respuesta;
+        return ModeloEnvio::mdlMostrarEnvios("envios", $item, $valor, $filtros);
     }
 
     /*=============================================
@@ -69,8 +64,7 @@ class ControladorEnvio
     =============================================*/
     static public function ctrMostrarDetalleEnvio($idEnvio)
     {
-        $respuesta = ModeloEnvio::mdlMostrarDetalleEnvio($idEnvio);
-        return $respuesta;
+        return ModeloEnvio::mdlMostrarDetalleEnvio($idEnvio);
     }
 
     /*=============================================
@@ -86,9 +80,9 @@ class ControladorEnvio
                 "id_usuario" => $_SESSION["usuario"]["id_usuario"]
             );
 
-            $respuesta = ModeloEnvio::mdlCambiarEstadoEnvio($datos);
-            echo json_encode($respuesta);
+            return ModeloEnvio::mdlCambiarEstadoEnvio($datos);
         }
+        return ["status" => false, "message" => "Acción no válida"];
     }
 
     /*=============================================
@@ -112,15 +106,14 @@ class ControladorEnvio
                     "nombre_archivo" => $nombreArchivo,
                     "ruta_archivo" => $rutaArchivo,
                     "descripcion" => $_POST['descripcion'] ?? null,
-                    "id_usuario" => $_SESSION['id_usuario']
+                    "id_usuario" => $_SESSION['usuario']['id_usuario']
                 );
 
-                $respuesta = ModeloEnvio::mdlSubirDocumentoEnvio($datos);
-                echo json_encode($respuesta);
-            } else {
-                echo json_encode(["status" => false, "message" => "Error al subir el archivo"]);
+                return ModeloEnvio::mdlSubirDocumentoEnvio($datos);
             }
+            return ["status" => false, "message" => "Error al subir el archivo"];
         }
+        return ["status" => false, "message" => "No se recibió documento"];
     }
 
     /*=============================================
@@ -129,35 +122,30 @@ class ControladorEnvio
     static public function ctrEliminarDocumentoEnvio()
     {
         if (isset($_POST['id_documento'])) {
-            $respuesta = ModeloEnvio::mdlEliminarDocumentoEnvio($_POST['id_documento']);
-            echo json_encode($respuesta);
+            return ModeloEnvio::mdlEliminarDocumentoEnvio($_POST['id_documento']);
         }
+        return ["status" => false, "message" => "ID de documento no recibido"];
     }
 
     /*=============================================
-    CALCULAR COSTO DE ENVÍO
+    CALCULAR COSTO DE ENVÍO (MODIFICADO)
     =============================================*/
     static public function ctrCalcularCostoEnvio()
-{
-    if (isset($_GET['origen'], $_GET['destino'], $_GET['tipo'], $_GET['peso'])) {
-        // Validar que sean números
-        if (!is_numeric($_GET['origen']) || !is_numeric($_GET['destino']) || 
-            !is_numeric($_GET['tipo']) || !is_numeric(str_replace(',', '.', $_GET['peso']))) {
-            echo json_encode(["status" => false, "message" => "Datos inválidos"]);
-            return;
-        }
+    {
+        if (isset($_GET['origen'], $_GET['destino'], $_GET['tipo'], $_GET['peso'])) {
+            $origen = (int)$_GET['origen'];
+            $destino = (int)$_GET['destino'];
+            $tipo = (int)$_GET['tipo'];
+            $peso = (float)str_replace(',', '.', $_GET['peso']);
+            $volumen = isset($_GET['volumen']) ? (float)$_GET['volumen'] : 0;
+            $paquetes = isset($_GET['paquetes']) ? (int)$_GET['paquetes'] : 1;
 
-        $respuesta = ModeloEnvio::mdlCalcularCostoEnvio(
-            (int)$_GET['origen'],
-            (int)$_GET['destino'],
-            (int)$_GET['tipo'],
-            (float)str_replace(',', '.', $_GET['peso'])
-        );
-        
-        return $respuesta;
-    } else {
-        echo json_encode(["status" => false, "message" => "Faltan parámetros"]);
+            if ($peso <= 0) {
+                return ["status" => false, "message" => "El peso debe ser mayor a cero"];
+            }
+
+            return ModeloEnvio::mdlCalcularCostoEnvio($origen, $destino, $tipo, $peso, $volumen, $paquetes);
+        }
+        return ["status" => false, "message" => "Faltan parámetros"];
     }
 }
-}
-?>
