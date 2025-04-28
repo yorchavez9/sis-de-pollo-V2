@@ -19,12 +19,10 @@ $(document).ready(function () {
         }
     }
 
-
     function formatCurrency(value) {
         if (!value) return "S/ 0.00";
         return new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
     }
-
 
     // Configuración común para Select2
     const select2Config = {
@@ -51,10 +49,10 @@ $(document).ready(function () {
     // Función para validar campos
     const validateField = (field, regex, errorField, errorMessage) => {
         const value = field.val();
-        if (!value) {
+        if (!value && field.attr('id').includes('costo_base')) {
             errorField.html("Este campo es obligatorio").addClass("text-danger");
             return false;
-        } else if (regex && !regex.test(value)) {
+        } else if (regex && value && !regex.test(value)) {
             errorField.html(errorMessage).addClass("text-danger");
             return false;
         } else {
@@ -145,27 +143,27 @@ $(document).ready(function () {
                     <td>${tarifa.nombre_tipo_encomienda || 'N/A'}</td>
                     <td>${tarifa.rango_peso_min} - ${tarifa.rango_peso_max} kg</td>
                     <td>${formatCurrency(tarifa.costo_base)}</td>
-                    <td>${tarifa.costo_kg_extra ? formatCurrency(tarifa.costo_kg_extra ): '0.00'}</td>
+                    <td>${tarifa.costo_kg_extra ? formatCurrency(tarifa.costo_kg_extra) : '0.00'}</td>
+                    <td>${tarifa.costo_volumen ? formatCurrency(tarifa.costo_volumen) : '0.00'}</td>
+                    <td>${tarifa.costo_paquete_extra ? formatCurrency(tarifa.costo_paquete_extra) : '0.00'}</td>
                     <td>${tarifa.tiempo_estimado ? tarifa.tiempo_estimado + ' horas' : 'No especificado'}</td>
                     <td>${vigenciaDesde} - ${vigenciaHasta}</td>
                     <td class="text-center">
-                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("estado")?
+                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("estado") ?
                             `${tarifa.estado != 0
                             ? `<button class="btn btn-sm text-white btn-estado-success btn-sm btnActivarTarifa" idTarifa="${tarifa.id_tarifa}" estadoTarifa="0">Activado</button>`
                             : `<button class="btn btn-sm text-white btn-estado-danger btn-sm btnActivarTarifa" idTarifa="${tarifa.id_tarifa}" estadoTarifa="1">Desactivado</button>`
-                        }`:``}
-                        
+                        }` : ``}
                     </td>
                     <td class="text-center">
-                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("editar")?
+                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("editar") ?
                             `<a href="#" class="me-3 btnEditarTarifa" idTarifa="${tarifa.id_tarifa}" data-bs-toggle="modal" data-bs-target="#modal_editar_tarifa">
                                 <i class="text-warning fas fa-edit fa-lg"></i>
-                            </a>`:``}
-                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("eliminar")?
+                            </a>` : ``}
+                        ${sesion.permisos.tarifas && sesion.permisos.tarifas.acciones.includes("eliminar") ?
                             `<a href="#" class="me-3 btnEliminarTarifa" idTarifa="${tarifa.id_tarifa}">
                                 <i class="text-danger fa fa-trash fa-lg"></i>
-                            </a>`:``}
-                        
+                            </a>` : ``}
                     </td>
                 </tr>`;
             tbody.append(fila);
@@ -249,6 +247,8 @@ $(document).ready(function () {
             $("#edit_rango_peso_max").val(data.rango_peso_max);
             $("#edit_costo_base").val(data.costo_base);
             $("#edit_costo_kg_extra").val(data.costo_kg_extra);
+            $("#edit_costo_volumen").val(data.costo_volumen);
+            $("#edit_costo_paquete_extra").val(data.costo_paquete_extra);
             $("#edit_tiempo_estimado").val(data.tiempo_estimado);
             $("#edit_vigencia_desde").val(data.vigencia_desde.split(' ')[0]);
             $("#edit_vigencia_hasta").val(data.vigencia_hasta ? data.vigencia_hasta.split(' ')[0] : '');

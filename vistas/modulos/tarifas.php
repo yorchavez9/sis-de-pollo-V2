@@ -31,6 +31,8 @@ if (isset($_SESSION["permisos"])) {
                                     <th>Rango Peso (kg)</th>
                                     <th>Costo Base</th>
                                     <th>Costo Kg Extra</th>
+                                    <th>Costo Volumen</th>
+                                    <th>Costo Paquete Extra</th>
                                     <th>Tiempo Estimado</th>
                                     <th>Vigencia</th>
                                     <th>Estado</th>
@@ -135,6 +137,25 @@ if (isset($_SESSION["permisos"])) {
                                     <label for="costo_kg_extra" class="form-label">Costo por Kg Extra</label>
                                     <input type="number" step="0.01" name="costo_kg_extra" id="costo_kg_extra" class="form-control" placeholder="Ingresa el costo por kg extra" value="0.00">
                                     <small id="error_costo_kg_extra"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Costo Volumen -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="costo_volumen" class="form-label">Costo por Metro Cúbico</label>
+                                    <input type="number" step="0.01" name="costo_volumen" id="costo_volumen" class="form-control" placeholder="Ingresa el costo por metro cúbico" value="0.00">
+                                    <small id="error_costo_volumen"></small>
+                                </div>
+                            </div>
+                            <!-- Costo Paquete Extra -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="costo_paquete_extra" class="form-label">Costo por Paquete Extra</label>
+                                    <input type="number" step="0.01" name="costo_paquete_extra" id="costo_paquete_extra" class="form-control" placeholder="Ingresa el costo por paquete extra" value="0.00">
+                                    <small id="error_costo_paquete_extra"></small>
                                 </div>
                             </div>
                         </div>
@@ -267,6 +288,25 @@ if (isset($_SESSION["permisos"])) {
                                     <label for="edit_costo_kg_extra" class="form-label">Costo por Kg Extra</label>
                                     <input type="number" step="0.01" name="costo_kg_extra" id="edit_costo_kg_extra" class="form-control" placeholder="Ingresa el costo por kg extra">
                                     <small id="error_edit_costo_kg_extra"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Costo Volumen -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit_costo_volumen" class="form-label">Costo por Metro Cúbico</label>
+                                    <input type="number" step="0.01" name="costo_volumen" id="edit_costo_volumen" class="form-control" placeholder="Ingresa el costo por metro cúbico">
+                                    <small id="error_edit_costo_volumen"></small>
+                                </div>
+                            </div>
+                            <!-- Costo Paquete Extra -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="edit_costo_paquete_extra" class="form-label">Costo por Paquete Extra</label>
+                                    <input type="number" step="0.01" name="costo_paquete_extra" id="edit_costo_paquete_extra" class="form-control" placeholder="Ingresa el costo por paquete extra">
+                                    <small id="error_edit_costo_paquete_extra"></small>
                                 </div>
                             </div>
                         </div>

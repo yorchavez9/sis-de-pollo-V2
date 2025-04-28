@@ -65,6 +65,8 @@ class ModeloTarifa
                     rango_peso_max,
                     costo_base,
                     costo_kg_extra,
+                    costo_volumen,
+                    costo_paquete_extra,
                     tiempo_estimado,
                     vigencia_desde,
                     vigencia_hasta,
@@ -77,6 +79,8 @@ class ModeloTarifa
                     :rango_peso_max,
                     :costo_base,
                     :costo_kg_extra,
+                    :costo_volumen,
+                    :costo_paquete_extra,
                     :tiempo_estimado,
                     :vigencia_desde,
                     :vigencia_hasta,
@@ -91,6 +95,8 @@ class ModeloTarifa
             $stmt->bindParam(":rango_peso_max", $datos["rango_peso_max"], PDO::PARAM_STR);
             $stmt->bindParam(":costo_base", $datos["costo_base"], PDO::PARAM_STR);
             $stmt->bindParam(":costo_kg_extra", $datos["costo_kg_extra"], PDO::PARAM_STR);
+            $stmt->bindParam(":costo_volumen", $datos["costo_volumen"], PDO::PARAM_STR);
+            $stmt->bindParam(":costo_paquete_extra", $datos["costo_paquete_extra"], PDO::PARAM_STR);
             $stmt->bindParam(":tiempo_estimado", $datos["tiempo_estimado"], PDO::PARAM_INT);
             $stmt->bindParam(":vigencia_desde", $datos["vigencia_desde"], PDO::PARAM_STR);
             $stmt->bindParam(":vigencia_hasta", $datos["vigencia_hasta"], PDO::PARAM_STR);
@@ -131,6 +137,8 @@ class ModeloTarifa
                     rango_peso_max = :rango_peso_max,
                     costo_base = :costo_base,
                     costo_kg_extra = :costo_kg_extra,
+                    costo_volumen = :costo_volumen,
+                    costo_paquete_extra = :costo_paquete_extra,
                     tiempo_estimado = :tiempo_estimado,
                     vigencia_desde = :vigencia_desde,
                     vigencia_hasta = :vigencia_hasta,
@@ -145,6 +153,8 @@ class ModeloTarifa
             $stmt->bindParam(":rango_peso_max", $datos["rango_peso_max"], PDO::PARAM_STR);
             $stmt->bindParam(":costo_base", $datos["costo_base"], PDO::PARAM_STR);
             $stmt->bindParam(":costo_kg_extra", $datos["costo_kg_extra"], PDO::PARAM_STR);
+            $stmt->bindParam(":costo_volumen", $datos["costo_volumen"], PDO::PARAM_STR);
+            $stmt->bindParam(":costo_paquete_extra", $datos["costo_paquete_extra"], PDO::PARAM_STR);
             $stmt->bindParam(":tiempo_estimado", $datos["tiempo_estimado"], PDO::PARAM_INT);
             $stmt->bindParam(":vigencia_desde", $datos["vigencia_desde"], PDO::PARAM_STR);
             $stmt->bindParam(":vigencia_hasta", $datos["vigencia_hasta"], PDO::PARAM_STR);
